@@ -1,0 +1,151 @@
+import type { CatalogProduct } from '@/types/catalog';
+
+export const IDS = {
+  pizza: '10000000-0000-4000-8000-000000000001',
+  small: '10000000-0000-4000-8000-000000000011',
+  large: '10000000-0000-4000-8000-000000000012',
+  flavorGroup: '10000000-0000-4000-8000-000000000021',
+  crustGroup: '10000000-0000-4000-8000-000000000022',
+  extraGroup: '10000000-0000-4000-8000-000000000023',
+  flavorA: '10000000-0000-4000-8000-000000000031',
+  flavorB: '10000000-0000-4000-8000-000000000032',
+  flavorSweet: '10000000-0000-4000-8000-000000000033',
+  crust: '10000000-0000-4000-8000-000000000041',
+  extra: '10000000-0000-4000-8000-000000000051',
+  extra2: '10000000-0000-4000-8000-000000000052',
+  drink: '10000000-0000-4000-8000-000000000002',
+  can: '10000000-0000-4000-8000-000000000013',
+  bottle: '10000000-0000-4000-8000-000000000014',
+  lunch: '10000000-0000-4000-8000-000000000003',
+  sidesGroup: '10000000-0000-4000-8000-000000000024',
+  side1: '10000000-0000-4000-8000-000000000061',
+  side2: '10000000-0000-4000-8000-000000000062',
+  side3: '10000000-0000-4000-8000-000000000063',
+  combo: '10000000-0000-4000-8000-000000000004',
+  category: '10000000-0000-4000-8000-0000000000c1',
+};
+
+const baseProduct = {
+  categoryId: IDS.category,
+  categorySlug: 'pizzas',
+  categoryName: 'Pizzas',
+  shortDescription: null,
+  description: null,
+  imageUrl: null,
+  imageAlt: null,
+  images: [],
+  basePrice: null,
+  isAvailable: true,
+  isFeatured: false,
+  featuredOrder: null,
+  sortOrder: 0,
+  shiftRestriction: 'any' as const,
+  availableFrom: null,
+  availableUntil: null,
+  tags: [],
+  serves: null,
+  maxQuantity: 30,
+  isDemo: false,
+  variants: [],
+  groups: [],
+  promotions: [],
+  comboItems: [],
+};
+
+export function pizzaProduct(overrides: Partial<CatalogProduct> = {}): CatalogProduct {
+  return {
+    ...baseProduct,
+    id: IDS.pizza,
+    kind: 'pizza',
+    slug: 'pizza',
+    name: 'Pizza',
+    variants: [
+      { id: IDS.small, name: 'Pequena', description: null, price: 3000, maxFlavors: 1, flavorPriceRule: 'highest', allowMixedFlavorTags: true, sortOrder: 1, isAvailable: true },
+      { id: IDS.large, name: 'Grande', description: null, price: 5000, maxFlavors: 2, flavorPriceRule: 'highest', allowMixedFlavorTags: false, sortOrder: 2, isAvailable: true },
+    ],
+    groups: [
+      {
+        id: IDS.flavorGroup, kind: 'flavor', name: 'Sabores', description: null, minSelect: 1, maxSelect: 2, sortOrder: 1,
+        values: [
+          { id: IDS.flavorA, groupId: IDS.flavorGroup, name: 'Sabor A', description: null, imageUrl: null, price: 0, combinationTag: 'salgada', sortOrder: 1, isAvailable: true, variantRules: {} },
+          { id: IDS.flavorB, groupId: IDS.flavorGroup, name: 'Sabor B', description: null, imageUrl: null, price: 0, combinationTag: 'salgada', sortOrder: 2, isAvailable: true,
+            variantRules: { [IDS.small]: { price: 3600, isOffered: true }, [IDS.large]: { price: 6000, isOffered: true } } },
+          { id: IDS.flavorSweet, groupId: IDS.flavorGroup, name: 'Doce', description: null, imageUrl: null, price: 0, combinationTag: 'doce', sortOrder: 3, isAvailable: true,
+            variantRules: { [IDS.small]: { price: null, isOffered: false } } },
+        ],
+      },
+      {
+        id: IDS.crustGroup, kind: 'crust', name: 'Borda', description: null, minSelect: 0, maxSelect: 1, sortOrder: 2,
+        values: [
+          { id: IDS.crust, groupId: IDS.crustGroup, name: 'Borda recheada', description: null, imageUrl: null, price: 600, combinationTag: null, sortOrder: 1, isAvailable: true,
+            variantRules: { [IDS.large]: { price: 900, isOffered: true } } },
+        ],
+      },
+      {
+        id: IDS.extraGroup, kind: 'extra', name: 'Adicionais', description: null, minSelect: 0, maxSelect: 2, sortOrder: 3,
+        values: [
+          { id: IDS.extra, groupId: IDS.extraGroup, name: 'Extra 1', description: null, imageUrl: null, price: 400, combinationTag: null, sortOrder: 1, isAvailable: true, variantRules: {} },
+          { id: IDS.extra2, groupId: IDS.extraGroup, name: 'Extra 2', description: null, imageUrl: null, price: 300, combinationTag: null, sortOrder: 2, isAvailable: false, variantRules: {} },
+        ],
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export function drinkProduct(overrides: Partial<CatalogProduct> = {}): CatalogProduct {
+  return {
+    ...baseProduct,
+    id: IDS.drink,
+    kind: 'simple',
+    slug: 'refri',
+    name: 'Refrigerante',
+    categoryName: 'Bebidas',
+    variants: [
+      { id: IDS.can, name: 'Lata', description: null, price: 600, maxFlavors: 1, flavorPriceRule: 'fixed', allowMixedFlavorTags: true, sortOrder: 1, isAvailable: true },
+      { id: IDS.bottle, name: '2 litros', description: null, price: 1400, maxFlavors: 1, flavorPriceRule: 'fixed', allowMixedFlavorTags: true, sortOrder: 2, isAvailable: true },
+    ],
+    ...overrides,
+  };
+}
+
+export function lunchProduct(overrides: Partial<CatalogProduct> = {}): CatalogProduct {
+  return {
+    ...baseProduct,
+    id: IDS.lunch,
+    kind: 'simple',
+    slug: 'prato',
+    name: 'Prato do dia',
+    categoryName: 'Almoço',
+    basePrice: 2200,
+    shiftRestriction: 'lunch',
+    groups: [
+      {
+        id: IDS.sidesGroup, kind: 'choice', name: 'Acompanhamentos', description: null, minSelect: 1, maxSelect: 2, sortOrder: 1,
+        values: [
+          { id: IDS.side1, groupId: IDS.sidesGroup, name: 'Arroz', description: null, imageUrl: null, price: 0, combinationTag: null, sortOrder: 1, isAvailable: true, variantRules: {} },
+          { id: IDS.side2, groupId: IDS.sidesGroup, name: 'Feijão', description: null, imageUrl: null, price: 0, combinationTag: null, sortOrder: 2, isAvailable: true, variantRules: {} },
+          { id: IDS.side3, groupId: IDS.sidesGroup, name: 'Farofa especial', description: null, imageUrl: null, price: 300, combinationTag: null, sortOrder: 3, isAvailable: true, variantRules: {} },
+        ],
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export function comboProduct(overrides: Partial<CatalogProduct> = {}): CatalogProduct {
+  return {
+    ...baseProduct,
+    id: IDS.combo,
+    kind: 'combo',
+    slug: 'combo',
+    name: 'Combo',
+    categoryName: 'Combos',
+    basePrice: 5800,
+    comboItems: [
+      { productId: IDS.pizza, variantId: IDS.large, quantity: 1, description: 'Pizza grande', productName: 'Pizza', isAvailable: true },
+      { productId: IDS.drink, variantId: IDS.bottle, quantity: 1, description: 'Refri 2L', productName: 'Refrigerante', isAvailable: true },
+    ],
+    ...overrides,
+  };
+}
