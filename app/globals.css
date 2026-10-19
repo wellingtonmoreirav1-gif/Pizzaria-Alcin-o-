@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Design tokens do Alcinão.
+ * Preto (base), vermelho (ação/oferta), branco (leitura) e cinzas quentes (apoio).
+ * Use SEMPRE estas classes/variáveis em vez de cores soltas nos componentes.
+ */
+@theme {
+  --color-ink-950: #0c0a09;
+  --color-ink-900: #151211;
+  --color-ink-800: #211d1b;
+  --color-ink-700: #2f2a27;
+  --color-ink-600: #4a4440;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-brand-50: #fff1f2;
+  --color-brand-100: #ffe0e3;
+  --color-brand-200: #fec5cc;
+  --color-brand-500: #e5283b;
+  --color-brand-600: #c8102e;
+  --color-brand-700: #a50d26;
+  --color-brand-800: #840b20;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-paper: #ffffff;
+  --color-mist: #f6f4f2;
+  --color-line: #e7e3df;
+  --color-muted: #6b6560;
+  --color-muted-strong: #4a4440;
+
+  --color-success-600: #1f7a3f;
+  --color-success-50: #ecf8f0;
+  --color-warning-600: #9a5b00;
+  --color-warning-50: #fff6e5;
+
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 2px rgb(12 10 9 / 0.06), 0 8px 24px -12px rgb(12 10 9 / 0.18);
+  --shadow-float: 0 18px 50px -20px rgb(12 10 9 / 0.45);
+
+  --animate-rise: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+  --animate-fade: fade 0.25s ease-out both;
+  --animate-sheet: sheet 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes sheet {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  dialog::backdrop {
+    background: rgb(12 10 9 / 0.6);
+    backdrop-filter: blur(2px);
+  }
+  ::selection {
+    background: var(--color-brand-200);
+  }
+}
+
+@layer components {
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-mist) 25%, #ece8e4 37%, var(--color-mist) 63%);
+    background-size: 400% 100%;
+    animation: var(--animate-shimmer);
+  }
+  .grain {
+    background-image: radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Leaflet (mapa) */
+.leaflet-container {
+  font-family: var(--font-sans);
+  border-radius: 1rem;
 }

@@ -141,6 +141,14 @@ export function isProductOrderable(product: CatalogProduct, now: Date): boolean 
   return true;
 }
 
+/** Existe alguma promoção válida (preço menor que o normal) em algum tamanho do produto? */
+export function hasActivePromotion(product: CatalogProduct, now: Date): boolean {
+  if (product.variants.length > 0) {
+    return product.variants.some((v) => v.isAvailable && findBestPromotion(product, v.id, v.price, now) !== null);
+  }
+  return product.basePrice !== null && findBestPromotion(product, null, product.basePrice, now) !== null;
+}
+
 /** Menor preço "a partir de" para exibir no cartão do produto (considera promoções). */
 export function startingPrice(product: CatalogProduct, now: Date): { regular: Cents; current: Cents } | null {
   const candidates: { regular: Cents; current: Cents }[] = [];

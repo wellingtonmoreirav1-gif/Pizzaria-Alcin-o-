@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { priceLine, startingPrice, sumLines, computePizzaBase, isProductOrderable } from '@/lib/pricing';
+import { priceLine, startingPrice, sumLines, computePizzaBase, isProductOrderable, hasActivePromotion } from '@/lib/pricing';
 import { comboProduct, drinkProduct, IDS, lunchProduct, pizzaProduct } from '../fixtures/catalog';
 import type { CatalogVariant } from '@/types/catalog';
 
@@ -114,6 +114,14 @@ describe('promotions', () => {
   it('starting price considers promotions and cheapest flavor', () => {
     expect(startingPrice(drinkProduct({ promotions: [promo({ variantId: IDS.can, promoPrice: 500 })] }), now)).toEqual({ regular: 600, current: 500 });
     expect(startingPrice(pizzaProduct(), now)).toEqual({ regular: 3000, current: 3000 });
+  });
+
+  it('detects a promotion on any size, even when the cheapest size has none', () => {
+    const product = drinkProduct({ promotions: [promo()] });
+    expect(startingPrice(product, now)).toEqual({ regular: 600, current: 600 });
+    expect(hasActivePromotion(product, now)).toBe(true);
+    expect(hasActivePromotion(drinkProduct(), now)).toBe(false);
+    expect(hasActivePromotion(drinkProduct({ promotions: [promo({ promoPrice: 2000 })] }), now)).toBe(false);
   });
 });
 

@@ -111,6 +111,8 @@ export interface CatalogCategory {
 export interface Catalog {
   categories: CatalogCategory[];
   products: CatalogProduct[];
+  /** Momento em que os dados foram lidos do banco (ISO). */
+  fetchedAt: string;
 }
 
 /** Escolhas do cliente para um item do carrinho. */
@@ -120,5 +122,5 @@ export interface LineSelection {
   /** groupId -> ids das opções escolhidas (ordem preservada para sabores). */
   options: Record<string, string[]>;
   quantity: number;
-  notes?: string;
+  notes?: string | null;
 }
