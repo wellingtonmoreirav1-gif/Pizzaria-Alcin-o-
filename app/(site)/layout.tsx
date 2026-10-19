@@ -22,8 +22,11 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
         {children}
       </main>
       <SiteFooter />
-      <CartDrawer suggestions={suggestions} fetchedAt={catalog.fetchedAt} />
-      <MobileCartBar />
+      {/* Leem a URL atual (usePathname): ficam fora do HTML estático e carregam no cliente. */}
+      <Suspense fallback={null}>
+        <CartDrawer suggestions={suggestions} fetchedAt={catalog.fetchedAt} />
+        <MobileCartBar />
+      </Suspense>
     </StoreProviders>
   );
 }

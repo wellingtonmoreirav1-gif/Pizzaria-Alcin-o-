@@ -32,7 +32,8 @@ test('busca e filtros do cardápio funcionam', async ({ page }) => {
 
 test('montagem da pizza aplica regras de sabores, borda e preço', async ({ page }) => {
   await page.goto('/produto/exemplo-pizza');
-  await expect(page.getByTestId('add-to-cart')).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  await expect(page.getByTestId('add-to-cart').filter({ visible: true })).toBeVisible();
   // Na pequena só cabe 1 sabor e o doce não é oferecido.
   await page.getByText('Sabor exemplo A', { exact: true }).click();
   await expect(page.getByText('Indisponível neste tamanho')).toBeVisible();

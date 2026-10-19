@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { loadEnvConfig } from '@next/env';
+
+// Lê .env.local (as mesmas variáveis usadas pelo servidor de testes).
+loadEnvConfig(process.cwd());
 
 /**
  * Testes de ponta a ponta. Requer o Supabase local (scripts/local-supabase/start.sh)

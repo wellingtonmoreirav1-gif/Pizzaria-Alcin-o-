@@ -29,6 +29,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     } catch {
       local = [];
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- favoritos lidos do localStorage (sistema externo) após hidratar
     setIds(new Set(local));
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
     const supabase = getBrowserClient();

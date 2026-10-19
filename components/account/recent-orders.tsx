@@ -8,6 +8,7 @@ export function RecentGuestOrders() {
   const [orders, setOrders] = useState<{ code: string; token: string; createdAt: string }[]>([]);
   useEffect(() => {
     try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- lido do localStorage após hidratar
       setOrders(JSON.parse(localStorage.getItem('alcinao:orders') ?? '[]'));
     } catch {
       setOrders([]);

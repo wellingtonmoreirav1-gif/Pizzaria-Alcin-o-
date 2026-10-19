@@ -121,6 +121,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch {
       // Armazenamento indisponível (modo privado): o carrinho funciona só nesta aba.
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carrinho lido do localStorage (sistema externo) após hidratar
     setHydrated(true);
   }, []);
 

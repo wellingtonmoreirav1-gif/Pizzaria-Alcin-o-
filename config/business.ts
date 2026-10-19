@@ -17,8 +17,6 @@ export const BUSINESS_DEFAULTS = {
   state: 'PB',
   referencePoint: 'Ao lado do Hospital Dr. Jarques',
   timezone: 'America/Fortaleza',
-  /** Logo oficial: substitua public/images/brand/logo.svg (ou envie pelo painel). */
-  logoPath: '/images/brand/logo.svg',
 } as const;
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/$/, '');

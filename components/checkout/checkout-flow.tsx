@@ -104,12 +104,14 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
     try {
       const saved = JSON.parse(sessionStorage.getItem(FORM_STORAGE) ?? 'null') as null | { name: string; phone: string; address: AddressForm; fulfillment: Fulfillment | null; notes: string; tableLabel: string };
       if (saved && !prefill) {
+        /* eslint-disable react-hooks/set-state-in-effect -- restaura dados do sessionStorage (sistema externo) após hidratar */
         setName(saved.name);
         setPhone(saved.phone);
         setAddress(saved.address);
         setFulfillment(saved.fulfillment);
         setNotes(saved.notes);
         setTableLabel(saved.tableLabel);
+        /* eslint-enable react-hooks/set-state-in-effect */
       }
     } catch {
       // ignorado
@@ -132,9 +134,6 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
   const hasLineErrors = Object.keys(quote.lineErrors).length > 0;
   const status = quote.status;
 
-  useEffect(() => {
-    if (payment && !methods.includes(payment)) setPayment(null);
-  }, [fulfillment]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cartSignature = useMemo(() => JSON.stringify(cart.lines.map(toSelection)), [cart.lines]);
 
@@ -307,7 +306,10 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                       !config.enabled[mode] && 'cursor-not-allowed opacity-40',
                     )}
                   >
-                    <input type="radio" name="fulfillment" className="sr-only" value={mode} checked={fulfillment === mode} disabled={!config.enabled[mode]} onChange={() => setFulfillment(mode)} />
+                    <input type="radio" name="fulfillment" className="sr-only" value={mode} checked={fulfillment === mode} disabled={!config.enabled[mode]} onChange={() => {
+                        setFulfillment(mode);
+                        if (payment && !(config.paymentMethods[mode] ?? []).includes(payment)) setPayment(null);
+                      }} />
                     {icon}
                     <span className="font-semibold">{FULFILLMENT_LABEL[mode]}</span>
                     <span className="text-xs text-muted">{config.enabled[mode] ? hint : 'Indisponível no momento'}</span>

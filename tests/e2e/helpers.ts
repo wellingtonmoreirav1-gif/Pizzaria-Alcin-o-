@@ -16,15 +16,16 @@ export async function addHalfAndHalfPizza(page: Page) {
   await page.getByText('Sabor exemplo A', { exact: true }).click();
   await page.getByText('Sabor exemplo B (especial)').click();
   await page.getByText('Borda exemplo').click();
-  await expect(page.getByTestId('add-to-cart')).toContainText('R$ 69,00');
-  await page.getByTestId('add-to-cart').click();
+  const add = page.getByTestId('add-to-cart').filter({ visible: true });
+  await expect(add).toContainText('R$ 69,00');
+  await add.click();
 }
 
 export async function addDrink(page: Page) {
   await page.goto('/produto/exemplo-refrigerante');
   await page.waitForLoadState('networkidle');
   await page.getByText('2 litros (exemplo)').click();
-  await page.getByTestId('add-to-cart').click();
+  await page.getByTestId('add-to-cart').filter({ visible: true }).click();
 }
 
 export async function fillCustomer(page: Page, name = 'Maria Teste', phone = '(83) 98888-7777') {

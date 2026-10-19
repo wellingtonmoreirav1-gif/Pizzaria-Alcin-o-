@@ -1,10 +1,13 @@
 import 'server-only';
 import { cookies } from 'next/headers';
+import { connection } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { serverEnv } from '@/lib/env';
 
 /** Cliente com a sessão do usuário (cookies). Toda consulta respeita a RLS. */
 export async function createSessionClient() {
+  // Sessão é sempre dado de requisição: nunca entra em pré-renderização/cache.
+  await connection();
   const cookieStore = await cookies();
   return createServerClient(serverEnv.supabaseUrl, serverEnv.supabasePublishableKey, {
     cookies: {
