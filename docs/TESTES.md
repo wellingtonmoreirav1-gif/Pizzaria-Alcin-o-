@@ -37,7 +37,7 @@ Limitações do ambiente local: não há serviço **Storage** (o envio real de i
 
 ## Resultado da última execução
 
-- Unidade + banco (Vitest): **93 testes, todos passando**.
+- Unidade + banco (Vitest): **95 testes, todos passando**.
 - Ponta a ponta (Playwright, perfil Pixel 7, build de produção): **31 testes, todos passando** (inclui os 9 do cardápio oficial).
 
 ## Cobertura dos itens exigidos
@@ -93,6 +93,9 @@ Limitações do ambiente local: não há serviço **Storage** (o envio real de i
 | 12 | Telas pequenas | `e2e/menu.spec.ts` (320 px sem rolagem horizontal) |
 | 13 | Pedido continua funcionando e resumo do WhatsApp correto | `e2e/menu.spec.ts` (retirada com pizza G + borda, total 132,00, texto da mensagem, opção gravada) |
 | 14 | Sem duplicações | `db/menu.test.ts` (reaplicar o cardápio não duplica), `e2e/menu.spec.ts` (nomes únicos; clique duplo gera 1 pedido) |
-| 15 | Administrador altera preço sem mexer no código | `e2e/menu.spec.ts` (Conferência de preços, molho grátis, tabela de bordas), `db/menu.test.ts` (só gerente/admin; auditoria; quem confirmou gravado pelo banco) |
+| 15 | Administrador altera preço sem mexer no código | `e2e/menu.spec.ts` (Conferência de preços com recusa de R$ 0,00, tabela de bordas, página Fotos e logo), `db/menu.test.ts` (só gerente/admin; auditoria; quem confirmou gravado pelo banco) |
 
-Também: preço em conferência e molho sem valor não podem ser pedidos — nem pela tela nem pela API (`e2e/menu.spec.ts`, `unit/menu-pricing.test.ts`).
+Também:
+- Bebida sem preço não pode ser pedida — nem pela tela nem pela API — e aparece como “Preço a definir” (`e2e/menu.spec.ts`, `unit/menu-pricing.test.ts`).
+- Pizzas especiais liberadas (G + Catupiry = 71,00) e molhos grátis selecionáveis (`e2e/menu.spec.ts`).
+- Bebidas cadastradas sem duplicar e sem mexer em preço já conferido; limpeza dos dados de exemplo só remove itens de demonstração; reaplicar o cardápio não desfaz conferências (`db/menu.test.ts`).

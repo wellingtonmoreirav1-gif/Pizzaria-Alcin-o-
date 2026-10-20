@@ -75,6 +75,8 @@ const NAMES = {
   'calabresa-do-chef': 'Calabresa do Chef', 'picanha-na-chapa': 'Picanha na Chapa', 'file-mignon-na-chapa': 'Filé Mignon na Chapa',
   'file-a-parmegiana-de-frango': 'Parmegiana de Frango', 'peixe-frito': 'Peixe Frito', 'lasanha-de-carne': 'Lasanha de Carne',
   'lasanha-de-frango': 'Lasanha de Frango', 'lasanha-mista': 'Lasanha Mista',
+  'coca-cola': 'Coca-Cola', 'fanta-laranja': 'Fanta Laranja', cajuina: 'Cajuína', cerveja: 'Cerveja',
+  'h2oh-500ml': 'H2OH! 500 ml', 'agua-mineral-500ml': 'Água mineral 500 ml',
 };
 
 function rng(seed) {
@@ -248,7 +250,60 @@ function beiruteSvg(slug) {
   return out;
 }
 
+/** Bebidas: embalagens genéricas, SEM marcas ou rótulos de fabricantes. */
+const DRINK = {
+  cola: { liquid: '#3b1a0e', can: '#8d8f94', band: '#5b5e64' },
+  laranja: { liquid: '#f08a12', can: '#9a9ca1', band: '#c86a0a' },
+  cajuina: { liquid: '#e2b23a', can: '#a3a5a9', band: '#b98a1e' },
+  limao: { liquid: '#d8ef9a', can: '#a9abb0', band: '#7fae3c' },
+  agua: { liquid: '#cfe8f7', can: '#a9abb0', band: '#5a9ccc' },
+};
+
+function bottle(x, color, label, scale = 1) {
+  const w = 92 * scale, h = 300 * scale, y = 470 - h;
+  return `<g>
+  <path d="M${x + w * 0.38} ${y} h${w * 0.24} v${h * 0.12} q${w * 0.38} ${h * 0.08} ${w * 0.38} ${h * 0.26} v${h * 0.58} q0 ${h * 0.04} ${-w * 0.08} ${h * 0.04} h${-w * 0.84} q${-w * 0.08} 0 ${-w * 0.08} ${-h * 0.04} v${-h * 0.58} q0 ${-h * 0.18} ${w * 0.38} ${-h * 0.26}z" fill="${color}" fill-opacity=".92" stroke="#ffffff" stroke-opacity=".35" stroke-width="3"/>
+  <rect x="${x + w * 0.36}" y="${y - 16 * scale}" width="${w * 0.28}" height="${18 * scale}" rx="4" fill="#d9d9d9"/>
+  <rect x="${x + 2}" y="${y + h * 0.5}" width="${w - 4}" height="${h * 0.2}" fill="${label}"/>
+  <rect x="${x + w * 0.12}" y="${y + h * 0.3}" width="${w * 0.1}" height="${h * 0.6}" rx="5" fill="#fff" fill-opacity=".22"/>
+</g>`;
+}
+
+function can(x, c) {
+  return `<g>
+  <rect x="${x}" y="300" width="120" height="170" rx="16" fill="${c.can}"/>
+  <rect x="${x}" y="330" width="120" height="110" fill="${c.band}"/>
+  <ellipse cx="${x + 60}" cy="300" rx="60" ry="12" fill="#c9cbcf"/><ellipse cx="${x + 60}" cy="300" rx="44" ry="8" fill="#aeb0b4"/>
+  <rect x="${x + 16}" y="310" width="12" height="150" rx="6" fill="#fff" fill-opacity=".25"/>
+</g>`;
+}
+
+function drinkSvg(kind) {
+  const c = DRINK[kind];
+  return `${can(250, c)}${bottle(430, c.liquid, c.band, 1)}`;
+}
+
+function waterSvg(kind) {
+  const c = DRINK[kind];
+  return `${bottle(355, c.liquid, c.band, 0.95)}`;
+}
+
+function beerSvg() {
+  return `<g>
+  <path d="M300 220 h150 l-14 250 h-122z" fill="#e7a12a" fill-opacity=".9" stroke="#fff" stroke-opacity=".4" stroke-width="4"/>
+  <path d="M296 220 q20 -36 52 -16 q26 -30 56 -4 q34 -18 50 20 z" fill="#fbf4e2"/>
+  <rect x="318" y="260" width="12" height="190" rx="6" fill="#fff" fill-opacity=".28"/>
+  ${[0, 1, 2, 3, 4, 5].map((i) => `<circle cx="${340 + (i % 3) * 30}" cy="${300 + i * 26}" r="${3 + (i % 2) * 2}" fill="#fff" fill-opacity=".55"/>`).join('')}
+</g>${bottle(470, '#5a3410', '#7a4a17', 1)}`;
+}
+
 const OTHER = {
+  'coca-cola': () => drinkSvg('cola'),
+  'fanta-laranja': () => drinkSvg('laranja'),
+  cajuina: () => drinkSvg('cajuina'),
+  cerveja: () => beerSvg(),
+  'h2oh-500ml': () => waterSvg('limao'),
+  'agua-mineral-500ml': () => waterSvg('agua'),
   'misto-quente': () => burgerSvg('misto-quente', ['ham', 'cheese', 'straw']),
   'x-burguer': () => burgerSvg('x-burguer', ['patty', 'cheese', 'lettuce', 'onion', 'straw']),
   'x-frango': () => burgerSvg('x-frango', ['chicken', 'cheese', 'lettuce', 'straw']),

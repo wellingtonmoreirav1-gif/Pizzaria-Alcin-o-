@@ -77,13 +77,13 @@ export default async function PricesPage() {
                         variants.map((v) => (
                           <label key={v.id} className="text-xs font-medium">
                             {v.name}
-                            <input name={`variant:${v.id}`} defaultValue={centsInput(v.price)} inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
+                            <input name={`variant:${v.id}`} defaultValue={Number(v.price) > 0 ? centsInput(v.price) : ''} placeholder="0,00" inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
                           </label>
                         ))
                       ) : (
                         <label className="text-xs font-medium">
                           Preço
-                          <input name="basePrice" defaultValue={centsInput(p.base_price)} inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
+                          <input name="basePrice" defaultValue={Number(p.base_price) > 0 ? centsInput(p.base_price) : ''} placeholder="0,00" inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
                         </label>
                       )}
                     </div>

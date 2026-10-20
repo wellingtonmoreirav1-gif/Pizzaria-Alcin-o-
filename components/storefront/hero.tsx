@@ -23,7 +23,16 @@ export function Hero({ settings }: { settings: SiteSettings }) {
         <HeroArt />
       )}
       <div className="grain absolute inset-0 -z-10" aria-hidden />
+      {settings.logoUrl ? (
+        // Logo oficial em destaque no topo (enviada em Painel → Fotos e logo).
+        <div className="pointer-events-none absolute right-[4%] top-1/2 hidden -translate-y-1/2 lg:block" aria-hidden>
+          <Image src={settings.logoUrl} alt="" width={480} height={480} sizes="24rem" className="h-80 w-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] xl:h-96" />
+        </div>
+      ) : null}
       <div className="mx-auto flex min-h-[min(78svh,44rem)] max-w-7xl flex-col justify-center gap-7 px-4 py-16 sm:px-6 md:py-24">
+        {settings.logoUrl ? (
+          <Image src={settings.logoUrl} alt="" width={480} height={480} sizes="8rem" className="-mb-2 h-32 w-auto self-start animate-[var(--animate-rise)] object-contain lg:hidden" />
+        ) : null}
         <p className="inline-flex w-fit animate-[var(--animate-rise)] items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
           <UtensilsCrossed className="size-3.5 text-gold" aria-hidden /> {settings.city ?? 'São Bento'} · {settings.state ?? 'PB'}
         </p>

@@ -2,15 +2,35 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 /**
- * Espaço da logo oficial. Enquanto a logo não for enviada em /admin/configuracoes,
+ * Espaço da logo oficial. Enquanto a logo não for enviada no painel (Fotos e logo),
  * exibe apenas o NOME em texto (não é uma nova logo). Veja docs/LOGO-E-IMAGENS.md.
+ * A logo mantém a proporção original (redonda, quadrada ou horizontal): a altura é
+ * fixa e a largura acompanha o arquivo.
  */
-export function BrandLogo({ logoUrl, name, tone = 'dark', className }: { logoUrl: string | null; name: string; tone?: 'dark' | 'light'; className?: string }) {
+export function BrandLogo({
+  logoUrl,
+  name,
+  tone = 'dark',
+  size = 'sm',
+  className,
+}: {
+  logoUrl: string | null;
+  name: string;
+  tone?: 'dark' | 'light';
+  size?: 'sm' | 'lg';
+  className?: string;
+}) {
   if (logoUrl) {
     return (
-      <span className={cn('relative block h-11 w-28', className)}>
-        <Image src={logoUrl} alt={name} fill sizes="112px" className="object-contain object-left" priority />
-      </span>
+      <Image
+        src={logoUrl}
+        alt={name}
+        width={480}
+        height={480}
+        sizes={size === 'lg' ? '240px' : '120px'}
+        priority={size === 'sm'}
+        className={cn('w-auto object-contain', size === 'lg' ? 'h-24 max-w-60' : 'h-12 max-w-36 sm:h-14', className)}
+      />
     );
   }
   return (

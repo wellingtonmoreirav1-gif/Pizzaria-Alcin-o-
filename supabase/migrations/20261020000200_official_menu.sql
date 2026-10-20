@@ -12,14 +12,14 @@
 
 -- Identificadores estáveis (derivados do slug): reinstalar o banco gera os mesmos ids,
 -- então links e carrinhos guardados continuam válidos. Linhas já existentes mantêm o id.
-create function pg_temp.uid(p_key text)
+create or replace function pg_temp.uid(p_key text)
 returns uuid language sql immutable as $$
   -- md5 com os bits de versão (4) e variante (RFC 9562) ajustados: é um UUID válido.
   select (substr(h, 1, 12) || '4' || substr(h, 14, 3) || '8' || substr(h, 18, 15))::uuid
   from (select md5('alcinao-cardapio:' || p_key) as h) s
 $$;
 
-create function pg_temp.cat(p_slug text, p_name text, p_sort integer, p_description text default null)
+create or replace function pg_temp.cat(p_slug text, p_name text, p_sort integer, p_description text default null)
 returns uuid language plpgsql as $$
 declare v_id uuid;
 begin
@@ -31,7 +31,7 @@ begin
   return v_id;
 end $$;
 
-create function pg_temp.product(
+create or replace function pg_temp.product(
   p_category text, p_slug text, p_name text, p_kind public.product_kind, p_description text,
   p_base_price numeric, p_sort integer, p_price_confirmed boolean default true,
   p_serves text default null, p_tags text[] default '{}', p_featured boolean default false, p_featured_order integer default null
@@ -49,7 +49,9 @@ begin
   on conflict (slug) do update set
     category_id = excluded.category_id, kind = excluded.kind, name = excluded.name,
     short_description = excluded.short_description, description = excluded.description,
-    base_price = excluded.base_price, sort_order = excluded.sort_order, price_confirmed = excluded.price_confirmed,
+    -- Reaplicar nunca desfaz uma conferência: preço já conferido não volta a ser "referência".
+    base_price = case when public.products.price_confirmed and not excluded.price_confirmed then public.products.base_price else excluded.base_price end,
+    sort_order = excluded.sort_order, price_confirmed = public.products.price_confirmed or excluded.price_confirmed,
     serves = excluded.serves, tags = excluded.tags, is_featured = excluded.is_featured,
     featured_order = excluded.featured_order,
     image_url = coalesce(public.products.image_url, excluded.image_url),
@@ -59,26 +61,34 @@ begin
   return v_id;
 end $$;
 
-create function pg_temp.size(p_product uuid, p_code text, p_name text, p_price numeric, p_sort integer)
+create or replace function pg_temp.size(p_product uuid, p_code text, p_name text, p_price numeric, p_sort integer, p_reference boolean default false)
 returns void language plpgsql as $$
 begin
+  -- Valor de referência não sobrescreve o preço de um produto já conferido pela equipe.
+  if p_reference and exists (select 1 from public.products where id = p_product and price_confirmed) then
+    insert into public.product_variants (id, product_id, size_code, name, price, sort_order, max_flavors, flavor_price_rule)
+    values (pg_temp.uid('tamanho:' || p_product || ':' || p_code), p_product, p_code, p_name, p_price, p_sort, 1, 'fixed')
+    on conflict (product_id, size_code) where size_code is not null and deleted_at is null
+    do update set name = excluded.name, sort_order = excluded.sort_order;
+    return;
+  end if;
   insert into public.product_variants (id, product_id, size_code, name, price, sort_order, max_flavors, flavor_price_rule)
   values (pg_temp.uid('tamanho:' || p_product || ':' || p_code), p_product, p_code, p_name, p_price, p_sort, 1, 'fixed')
   on conflict (product_id, size_code) where size_code is not null and deleted_at is null
   do update set name = excluded.name, price = excluded.price, sort_order = excluded.sort_order;
 end $$;
 
-create function pg_temp.pizza_sizes(p_product uuid, p_prices numeric[])
+create or replace function pg_temp.pizza_sizes(p_product uuid, p_prices numeric[], p_reference boolean default false)
 returns void language plpgsql as $$
 begin
-  perform pg_temp.size(p_product, 'P', 'Pequena (P)', p_prices[1], 1);
-  perform pg_temp.size(p_product, 'M', 'Média (M)', p_prices[2], 2);
-  perform pg_temp.size(p_product, 'G', 'Grande (G)', p_prices[3], 3);
-  perform pg_temp.size(p_product, 'GG', 'Gigante (GG)', p_prices[4], 4);
-  perform pg_temp.size(p_product, 'F', 'Família (F)', p_prices[5], 5);
+  perform pg_temp.size(p_product, 'P', 'Pequena (P)', p_prices[1], 1, p_reference);
+  perform pg_temp.size(p_product, 'M', 'Média (M)', p_prices[2], 2, p_reference);
+  perform pg_temp.size(p_product, 'G', 'Grande (G)', p_prices[3], 3, p_reference);
+  perform pg_temp.size(p_product, 'GG', 'Gigante (GG)', p_prices[4], 4, p_reference);
+  perform pg_temp.size(p_product, 'F', 'Família (F)', p_prices[5], 5, p_reference);
 end $$;
 
-create function pg_temp.shared_group(p_key text, p_kind public.option_group_kind, p_name text, p_min integer, p_max integer, p_description text)
+create or replace function pg_temp.shared_group(p_key text, p_kind public.option_group_kind, p_name text, p_min integer, p_max integer, p_description text)
 returns uuid language plpgsql as $$
 declare v_id uuid;
 begin
@@ -90,7 +100,7 @@ begin
   return v_id;
 end $$;
 
-create function pg_temp.option(p_group uuid, p_name text, p_sort integer, p_price numeric, p_confirmed boolean)
+create or replace function pg_temp.option(p_group uuid, p_name text, p_sort integer, p_price numeric, p_confirmed boolean)
 returns uuid language plpgsql as $$
 declare v_id uuid;
 begin
@@ -99,12 +109,17 @@ begin
     insert into public.option_values (id, group_id, name, sort_order, price, price_confirmed)
     values (pg_temp.uid('opcao:' || p_group || ':' || lower(p_name)), p_group, p_name, p_sort, p_price, p_confirmed) returning id into v_id;
   else
-    update public.option_values set sort_order = p_sort, price = p_price, price_confirmed = p_confirmed where id = v_id;
+    -- Valor já conferido pela equipe (ex.: molho) não volta a ficar "a definir".
+    update public.option_values
+    set sort_order = p_sort,
+        price = case when price_confirmed and not p_confirmed then price else p_price end,
+        price_confirmed = price_confirmed or p_confirmed
+    where id = v_id;
   end if;
   return v_id;
 end $$;
 
-create function pg_temp.option_sizes(p_value uuid, p_prices numeric[])
+create or replace function pg_temp.option_sizes(p_value uuid, p_prices numeric[])
 returns void language plpgsql as $$
 declare
   codes text[] := array['P', 'M', 'G', 'GG', 'F'];
@@ -116,7 +131,7 @@ begin
   end loop;
 end $$;
 
-create function pg_temp.link(p_product uuid, p_group uuid, p_sort integer)
+create or replace function pg_temp.link(p_product uuid, p_group uuid, p_sort integer)
 returns void language sql as $$
   insert into public.product_shared_groups (product_id, group_id, sort_order) values (p_product, p_group, p_sort)
   on conflict (product_id, group_id) do update set sort_order = excluded.sort_order
@@ -195,7 +210,8 @@ begin
     ) as t(category, slug, name, description, sort, confirmed, tags)
   loop
     v_id := pg_temp.product(r.category, r.slug, r.name, 'pizza', r.description, null, r.sort, r.confirmed, null, r.tags);
-    perform pg_temp.pizza_sizes(v_id, case when r.category in ('pizzas-especiais', 'pizzas-premium') then especial else trad end);
+    perform pg_temp.pizza_sizes(v_id, case when r.category in ('pizzas-especiais', 'pizzas-premium') then especial else trad end,
+      r.category in ('pizzas-especiais', 'pizzas-premium'));
     perform pg_temp.link(v_id, g_bordas, 10);
   end loop;
 

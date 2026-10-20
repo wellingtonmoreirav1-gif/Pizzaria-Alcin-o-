@@ -33,7 +33,9 @@ export function ProductCard({
   const orderable = isProductOrderable(product, now);
   const reason = unavailableReason(product, now);
   const houseSpecial = product.tags.includes('especial-da-casa');
-  const price = startingPrice(product, now);
+  const starting = startingPrice(product, now);
+  // Sem valor cadastrado e ainda em conferência (ex.: bebida nova): "Preço a definir", nunca "R$ 0,00".
+  const price = starting && !product.priceConfirmed && starting.current === 0 ? null : starting;
   const onSale = price !== null && price.current < price.regular;
   const promo = hasActivePromotion(product, now);
   const fav = favorites.isFavorite(product.id);

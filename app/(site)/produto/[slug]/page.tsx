@@ -56,7 +56,8 @@ async function ProductContent({ params }: { params: Promise<{ slug: string }> })
     description: product.description ?? product.shortDescription ?? undefined,
     image: product.imageUrl ?? undefined,
     url: `${SITE_URL}/produto/${product.slug}`,
-    offers: price
+    // Só publica oferta (Google) quando o preço foi conferido pelo restaurante.
+    offers: price && product.priceConfirmed
       ? { '@type': 'Offer', price: centsToDecimal(price.current), priceCurrency: 'BRL', availability: product.isAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }
       : undefined,
   };

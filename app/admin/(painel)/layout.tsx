@@ -14,6 +14,7 @@ const ITEMS: (NavItem & { area: keyof typeof PERMISSIONS })[] = [
   { href: '/admin/operacao', label: 'Operação do dia', icon: 'operation', area: 'operation' },
   { href: '/admin/cardapio', label: 'Cardápio', icon: 'catalog', area: 'catalog' },
   { href: '/admin/categorias', label: 'Categorias', icon: 'categories', area: 'catalog' },
+  { href: '/admin/fotos', label: 'Fotos e logo', icon: 'photos', area: 'catalog' },
   { href: '/admin/opcoes', label: 'Bordas e molhos', icon: 'options', area: 'catalog' },
   { href: '/admin/precos', label: 'Conferência de preços', icon: 'prices', area: 'catalog' },
   { href: '/admin/promocoes', label: 'Promoções', icon: 'promotions', area: 'catalog' },

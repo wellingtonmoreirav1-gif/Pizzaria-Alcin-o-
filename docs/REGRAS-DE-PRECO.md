@@ -48,7 +48,7 @@ Combinações inválidas são bloqueadas na tela e recusadas no servidor: sabor 
     | Cheddar | 4,00 | 6,00 | 8,00 | 8,00 | 10,00 |
 
     Exemplo: Pizza Grande tradicional (50,00) + Catupiry (16,00) = **66,00** por pizza; 2 unidades = **132,00**.
-  - **Molhos** (opcional, até 4) — ligados a lanches, Beirute e petiscos. Sem valor definido: ficam visíveis, porém **não selecionáveis** (“Valor a definir pelo restaurante”) até o administrador informar o valor (0,00 = grátis).
+  - **Molhos** (opcional, até 4) — ligados a lanches, Beirute e petiscos. **Grátis** (definido pelo restaurante). Uma opção sem valor definido fica visível, porém **não selecionável** (“Valor a definir pelo restaurante”) até o administrador informar o valor (0,00 = grátis).
 - **Prioridade do valor de uma opção:** valor cadastrado para aquele tamanho específico do produto (`option_value_variant_prices`) → valor pelo código do tamanho (`option_value_size_prices`) → valor padrão da opção. Um tamanho **sem código** usa o valor padrão — por isso, ao criar uma pizza nova, preencha o “Código do tamanho”.
 
 ## Conferência de preços
@@ -57,6 +57,9 @@ Combinações inválidas são bloqueadas na tela e recusadas no servidor: sabor 
 - Confirmação em **Painel → Conferência de preços** (é possível corrigir os valores e confirmar no mesmo passo), no editor do produto ou em Bordas e molhos. Somente gerente/administrador.
 - Quem confirmou e quando (`price_confirmed_by`, `price_confirmed_at`) são preenchidos **pelo banco** (gatilho), não pelo navegador; toda alteração também vai para a Auditoria.
 - Produtos novos criados pelo painel começam “em conferência”.
+- Item **sem valor cadastrado** (ex.: bebidas novas) mostra “Preço a definir” — nunca “R$ 0,00” — e não entra nos dados do Google. Ao confirmar, valor zero é recusado; a confirmação em lote só vale para itens que já têm valor em todos os tamanhos.
+- Reaplicar as migrations do cardápio **nunca desfaz** uma conferência nem troca um valor conferido pelo valor de referência.
+- Definições do restaurante em 21/10/2026: pizzas especiais e premium confirmadas (30/45/55/65/80) e molhos grátis (`20261021000100_menu_confirmations_and_drinks.sql`).
 
 ## Combo
 

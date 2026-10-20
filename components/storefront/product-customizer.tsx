@@ -137,6 +137,8 @@ export function ProductCustomizer({
   }
 
   const variantPriceLabel = (v: CatalogVariant) => {
+    // Item sem valor cadastrado (ex.: bebida nova): nunca mostrar "R$ 0,00".
+    if (!product.priceConfirmed && v.price === 0) return 'a definir';
     if (product.kind === 'pizza' && v.flavorPriceRule !== 'fixed' && flavorGroup) {
       const prices = flavorGroup.values.filter((f) => f.isAvailable && isOptionOfferedFor(f, v)).map((f) => flavorPriceFor(f, v));
       return prices.length ? `a partir de ${formatBRL(Math.min(...prices))}` : '';
@@ -310,9 +312,9 @@ export function ProductCustomizer({
                       : variant
                         ? (() => {
                             const p = optionPriceFor(value, variant);
-                            return p > 0 ? `+ ${formatBRL(p)}` : null;
+                            return p > 0 ? `+ ${formatBRL(p)}` : group.kind === 'extra' ? 'Grátis' : null;
                           })()
-                        : optionPriceRange(value, product.variants);
+                        : (optionPriceRange(value, product.variants) ?? (group.kind === 'extra' ? 'Grátis' : null));
                   const reason = !value.priceConfirmed
                     ? 'Valor a definir pelo restaurante'
                     : !value.isAvailable

@@ -6,14 +6,16 @@ Tudo abaixo é preenchido **pelo painel**, sem mexer no código.
 
 | Informação | Onde cadastrar | Situação |
 |---|---|---|
-| Logo oficial | Configurações → Logo oficial | **pendente** — não há arquivo de logo no projeto; o site usa o nome “Alcinão” em texto até a logo ser enviada |
-| Foto principal da página inicial | Configurações → Foto principal | pendente |
-| Cardápio oficial | Cardápio | **cadastrado** (40 produtos em 12 categorias — migration `20261020000200_official_menu.sql`) |
-| **Preços das pizzas especiais e premium** | **Conferência de preços** | **a confirmar** (ver abaixo) |
-| **Valor dos molhos** | **Conferência de preços** ou Bordas e molhos | **a definir** (grátis ou pago) |
+| Logo oficial | **Painel → Fotos e logo** | **upload manual pela equipe** — arquivo recebido em 21/10/2026; não foi colocado no código. Envie de preferência a versão com fundo transparente (PNG) |
+| Foto principal da página inicial | Painel → Fotos e logo | upload manual pela equipe (opcional) |
+| Fotos dos produtos | **Painel → Fotos e logo** (lista de todos os produtos, com filtro “Sem foto real”) | **upload manual pela equipe** — até lá aparecem **ilustrações provisórias** identificadas como tal |
+| Cardápio oficial | Cardápio | **cadastrado** (40 produtos em 12 categorias + 6 bebidas) |
+| Preços das pizzas especiais e premium | — | **confirmados** em 21/10/2026: P 30,00 · M 45,00 · G 55,00 · GG 65,00 · F 80,00 |
+| Molhos | — | **confirmados como grátis** (R$ 0,00) em 21/10/2026 |
+| **Preços das bebidas** | **Conferência de preços** | **a definir** (ver abaixo) |
+| **Marcas/tamanhos de cerveja** | Cardápio → Cerveja → Tamanhos/variantes | **não informados** |
 | Pizza meio a meio (2+ sabores) | Cardápio → pizza → tamanhos | não informado: hoje todas as pizzas são de 1 sabor |
-| Bebidas, sobremesas, almoço, churrasco, combos | Cardápio | não informados no cardápio oficial (categorias antigas ficaram ocultas) |
-| Fotos dos produtos | Cardápio → produto (ver LOGO-E-IMAGENS.md) | pendente — hoje há **ilustrações provisórias** identificadas como tal |
+| Sobremesas, almoço, churrasco, combos | Cardápio | não informados (categorias antigas ficaram ocultas, não apagadas) |
 | Taxas de entrega / bairros atendidos | Entrega e pagamento | pendente (opcional; senão a taxa é sempre confirmada pela equipe) |
 | Horários por dia da semana | Horários | hoje todos os dias ativos com 10h30 (almoço até encerrar) e 18h30–23h |
 | Formas de pagamento por modalidade | Entrega e pagamento | configuradas com as formas informadas; revisar |
@@ -25,17 +27,24 @@ Tudo abaixo é preenchido **pelo painel**, sem mexer no código.
 
 ## Preços que precisam ser confirmados
 
-Esses itens **aparecem no site**, com o aviso “Preço em conferência” ou “Valor a definir”, e **não podem ser pedidos** (nem pela tela nem pela API) até alguém com papel de gerente/administrador confirmar em **Painel → Conferência de preços**. Quem confirmou e quando fica gravado pelo banco e na Auditoria.
+Esses itens **aparecem no site** com “Preço a definir” e **não podem ser pedidos** (nem pela tela nem pela API) até alguém com papel de gerente/administrador informar o valor em **Painel → Conferência de preços** → **Salvar e confirmar valores**. Valor 0,00 não é aceito para produto (evita liberar um item de graça por engano). Quem confirmou e quando fica gravado pelo banco e na Auditoria.
 
-| Item | Valor cadastrado (referência) | Situação |
+| Bebida | Tamanhos cadastrados | Situação |
 |---|---|---|
-| 8 pizzas especiais (Frango com Catupiry, Calabresa com Catupiry, Carne de Sol, Carne de Sol com Queijo Coalho, Quatro Queijos, Frango com Cheddar, Pepperoni, Costela) | P 30,00 · M 45,00 · G 55,00 · GG 65,00 · F 80,00 | a confirmar |
-| 2 pizzas premium (Camarão com Catupiry, Camarão aos Quatro Queijos) | P 30,00 · M 45,00 · G 55,00 · GG 65,00 · F 80,00 | a confirmar |
-| Molhos: maionese verde, de alho, de bacon, de calabresa | nenhum valor | a definir (0,00 = grátis) |
+| Coca-Cola | Lata · 600 ml · 1 litro · 2 litros | sem preço (não havia preço antigo no banco) |
+| Fanta Laranja | Lata · 600 ml · 1 litro · 2 litros | sem preço — **tamanhos supostos iguais aos da Coca-Cola**; remova no editor do produto o que não for vendido |
+| Cajuína | Lata · 600 ml · 1 litro · 2 litros | sem preço — **tamanhos supostos iguais aos da Coca-Cola**; ajuste no editor |
+| Cerveja | nenhum (marcas não informadas) | cadastre as marcas como tamanhos/variantes (ex.: “Lata 350 ml”) e confirme os preços |
+| H2OH! 500 ml | — | sem preço |
+| Água mineral 500 ml | — | sem preço |
 
-Confirmados conforme o cardápio enviado: pizzas tradicionais e doces (25/39/50/60/75), bordas por tamanho, lanches, Beirute, petiscos, pratos da casa e lasanhas.
+Já confirmados: todas as pizzas (tradicionais, doces, especiais e premium), bordas por tamanho, lanches, Beirute, petiscos, pratos da casa, lasanhas e molhos (grátis).
 
 Produtos **novos** criados pelo painel também entram “em conferência” até a confirmação.
+
+## Dados de exemplo
+
+A limpeza dos itens “[EXEMPLO]” foi autorizada em 21/10/2026 e está na migration `20261021000200_remove_demo.sql` (mesmo conteúdo de `supabase/remove-demo.sql`): ao aplicar as migrations no Supabase, os produtos de demonstração são removidos (ou arquivados, se algum pedido os usou). Só afeta itens marcados como demonstração. **Não rode `seed-demo.sql` no banco de produção.**
 
 ## Verificação final antes de divulgar
 

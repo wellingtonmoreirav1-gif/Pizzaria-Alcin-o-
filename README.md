@@ -48,6 +48,7 @@ O cliente monta o pedido no site (celular ou computador), o pedido é **registra
 - Cardápio: produtos, tamanhos (com código P/M/G/GG/F), sabores, adicionais com **preço por tamanho**, combos, fotos (envio direto pelo painel), rascunho, prévia, arquivamento sem perder histórico e **pedidos que incluem o produto**.
 - **Bordas e molhos**: grupos cadastrados uma vez e usados por vários produtos (tabela de valores por tamanho, produtos ligados, disponível/esgotado).
 - **Conferência de preços**: lista o que está “a confirmar”, permite corrigir e confirmar; quem confirmou e quando fica registrado.
+- **Fotos e logo**: página só para envio da logo, da foto principal e das fotos de cada produto, com a situação de cada um e filtro “Sem foto real”.
 - Categorias, promoções com período, banners com período, horários (turnos, feriados, horários especiais, tolerância), entrega e pagamento por modalidade, bairros com taxa prevista.
 - Relatórios com dados reais (faturamento, vendas, ticket médio, produtos e categorias, sem vendas, vendidos juntos, recorrentes, modalidades, pagamentos, cancelamentos) e exportação CSV.
 - Clientes (consulta por telefone, recorrentes, anonimização LGPD), avaliações (moderação), equipe (papéis) e auditoria das alterações.
@@ -187,7 +188,8 @@ Veja [Criar o primeiro administrador](#criar-o-primeiro-administrador). Depois, 
 1. **Configurações**: confira nome, WhatsApp, endereço; envie a **logo oficial** e a foto principal; textos e SEO.
 2. **Horários**: ajuste os dias da semana (hoje todos os dias estão ativos, pois os dias não foram informados), feriados e tolerância.
 3. **Entrega e pagamento**: formas de pagamento por modalidade, bairros atendidos e taxas previstas (opcional), pedido mínimo.
-4. **Conferência de preços**: confirme (ou corrija) os valores das pizzas especiais e premium e defina o valor dos molhos (0,00 = grátis). Até isso ser feito, esses itens aparecem no site mas não podem ser pedidos. Veja [docs/PENDENCIAS.md](docs/PENDENCIAS.md#preços-que-precisam-ser-confirmados).
+4. **Conferência de preços**: informe os preços das bebidas (pizzas e molhos já foram confirmados). Até isso ser feito, as bebidas aparecem com “Preço a definir” e não podem ser pedidas. Veja [docs/PENDENCIAS.md](docs/PENDENCIAS.md#preços-que-precisam-ser-confirmados).
+   **Fotos e logo**: envie a logo oficial e as fotos dos produtos.
    **Cardápio**: o cardápio oficial já vem cadastrado pelas migrations; use o painel para fotos, ajustes, novos produtos e a **Prévia** antes de publicar.
 5. **Equipe**: libere o acesso de gerentes e atendentes.
 6. Remova os [dados de exemplo](#remover-os-dados-de-exemplo) se tiver rodado o `seed-demo.sql`.
@@ -233,7 +235,7 @@ bash scripts/local-supabase/apply-migrations.sh && npm run build && npm run test
 
 Resultado da última execução (detalhes e o que cada teste cobre em [docs/TESTES.md](docs/TESTES.md)):
 
-- **Unidade + banco (Vitest):** 93 testes, todos passando.
+- **Unidade + banco (Vitest):** 95 testes, todos passando.
 - **Ponta a ponta (Playwright, celular Pixel 7, build de produção):** 31 testes, todos passando — incluindo acessibilidade (axe) e ausência de rolagem horizontal no celular.
 
 O que **não** foi testado aqui e precisa ser conferido no ambiente publicado: envio real de imagens ao Supabase Storage (o ambiente local não tem o serviço Storage; as regras de acesso do Storage foram testadas no banco), imagens do mapa (o ambiente de testes não acessa a internet) e e-mails do Supabase Auth.

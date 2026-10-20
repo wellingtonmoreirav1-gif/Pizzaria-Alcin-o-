@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef, type ReactNode } from 'react';
+import { startTransition, useActionState, useEffect, useRef, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
@@ -51,7 +51,9 @@ export function ActionForm({
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
     if (!state) return;
-    if (state.ok && resetOnSuccess) ref.current?.reset();
+    // Após salvar, os campos voltam a mostrar os valores gravados (ou ficam vazios
+    // em formulários de inclusão). Em caso de erro, o que foi digitado é mantido.
+    if (state.ok && (resetOnSuccess || !redirectTo)) ref.current?.reset();
     if (state.ok && redirectTo) router.push(redirectTo.replace('{id}', state.id ?? ''));
   }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
@@ -61,7 +63,12 @@ export function ActionForm({
       action={formAction}
       className={cn(inline ? 'inline-flex items-end gap-2' : 'space-y-4', className)}
       onSubmit={(e) => {
-        if (confirm && !window.confirm(confirm)) e.preventDefault();
+        // Envio manual: o envio automático do React limparia os campos mesmo quando a
+        // ação devolve erro, e a pessoa perderia o que digitou.
+        e.preventDefault();
+        if (confirm && !window.confirm(confirm)) return;
+        const data = new FormData(e.currentTarget, (e.nativeEvent as SubmitEvent).submitter);
+        startTransition(() => formAction(data));
       }}
     >
       {children}

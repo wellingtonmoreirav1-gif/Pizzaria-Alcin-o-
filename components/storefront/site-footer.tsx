@@ -14,7 +14,7 @@ export async function SiteFooter() {
       <div className="grain">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.3fr_1fr_1fr]">
           <div className="space-y-4">
-            <BrandLogo logoUrl={s.logoUrl} name={s.businessName} tone="light" />
+            <BrandLogo logoUrl={s.logoUrl} name={s.businessName} tone="light" size="lg" />
             <p className="max-w-sm text-sm leading-relaxed text-white/70">
               {s.businessName}. Pizzas, lanches, petiscos e pratos da casa em {s.city ?? 'São Bento'}
               {s.state ? `/${s.state}` : ''}.

@@ -19,6 +19,7 @@ const CATEGORIES: Record<string, string[]> = {
   petiscos: ['Batata Frita 400 g', 'Batata Frita com Cheddar e Bacon', 'Isca de Frango Crocante', 'Calabresa do Chef'],
   'pratos-da-casa': ['Picanha na Chapa', 'Filé Mignon na Chapa', 'Filé à Parmegiana de Frango', 'Peixe Frito'],
   lasanhas: ['Lasanha de Carne', 'Lasanha de Frango', 'Lasanha Mista'],
+  bebidas: ['Coca-Cola', 'Fanta Laranja', 'Cajuína', 'Cerveja', 'H2OH! 500 ml', 'Água mineral 500 ml'],
 };
 
 const addButton = (page: Page) => page.getByTestId('add-to-cart').filter({ visible: true });
@@ -58,7 +59,10 @@ test('todas as categorias e produtos aparecem no cardápio, na ordem e sem dupli
   await page.waitForLoadState('networkidle');
   for (const [slug, names] of Object.entries(CATEGORIES)) {
     const section = page.locator(`section#${slug}`);
-    await expect(section.getByTestId('product-card').locator('h3'), slug).toHaveText(names);
+    await expect(section.getByTestId('product-card').first()).toBeVisible();
+    // Ignora os itens criados só para os testes ("[EXEMPLO]" e o produto do teste do painel).
+    const shown = (await section.getByTestId('product-card').locator('h3').allTextContents()).map((t) => t.trim()).filter((t) => !t.startsWith('[EXEMPLO]') && t !== 'Suco Teste E2E');
+    expect(shown, slug).toEqual(names);
   }
   // Bordas e molhos aparecem como seções informativas.
   await expect(page.getByTestId('info-bordas-recheadas')).toContainText('Catupiry Original');
@@ -133,16 +137,32 @@ test('lasanha exige a escolha de um dos 3 tamanhos', async ({ page }) => {
   await expect(addButton(page)).toContainText('R$ 57,00');
 });
 
-test('preço em conferência e molho sem valor não podem ser pedidos (nem pela API)', async ({ page, request }) => {
+test('pizzas especiais liberadas, molhos grátis e bebida sem preço não pode ser pedida (nem pela API)', async ({ page, request }) => {
+  // Especiais/premium confirmadas: G (55,00) + borda de Catupiry (16,00).
   await openProduct(page, 'pizza-quatro-queijos');
-  await expect(page.getByText('Preço em conferência').first()).toBeVisible();
-  await expect(addButton(page)).toBeDisabled();
+  await expect(page.getByText('Preço em conferência')).toHaveCount(0);
+  await page.getByText('Grande (G)').click();
+  await page.getByText('Catupiry Original').click();
+  await expect(addButton(page)).toBeEnabled();
+  await expect(addButton(page)).toContainText('R$ 71,00');
+  // Molhos grátis: selecionáveis sem alterar o valor.
   await openProduct(page, 'x-bacon');
-  await expect(page.getByText('Valor a definir pelo restaurante').first()).toBeVisible();
-  await expect(page.getByRole('checkbox', { name: 'Maionese verde' })).toBeDisabled();
+  await expect(page.getByText('Valor a definir pelo restaurante')).toHaveCount(0);
+  await page.getByText('Maionese verde').click();
+  await page.getByText('Maionese de alho').click();
+  await expect(addButton(page)).toContainText('R$ 19,00');
+  // Bebida nova: aparece com "Preço a definir" e não pode ser pedida.
+  await page.goto('/cardapio?categoria=bebidas');
+  await page.waitForLoadState('networkidle');
+  const coca = page.getByTestId('product-card').filter({ hasText: 'Coca-Cola', visible: true });
+  await expect(coca).toContainText('Preço a definir');
+  await expect(coca).not.toContainText('R$ 0,00');
+  await openProduct(page, 'coca-cola');
+  await expect(page.getByText('a definir').first()).toBeVisible();
+  await expect(addButton(page)).toBeDisabled();
 
   const [row] = await sql<{ product: string; variant: string }>(
-    `select p.id as product, v.id as variant from public.products p join public.product_variants v on v.product_id = p.id where p.slug = 'pizza-quatro-queijos' and v.size_code = 'G'`,
+    `select p.id as product, v.id as variant from public.products p join public.product_variants v on v.product_id = p.id where p.slug = 'coca-cola' and v.name = 'Lata'`,
   );
   const res = await request.post('/api/orders', {
     data: {
@@ -151,7 +171,7 @@ test('preço em conferência e molho sem valor não podem ser pedidos (nem pela 
       customer: { name: 'Conferência', phone: '83911112222' },
       payment: { method: 'pix' },
       items: [{ productId: row!.product, variantId: row!.variant, options: {}, quantity: 1 }],
-      expectedItemsTotalCents: 5500,
+      expectedItemsTotalCents: 0,
       confirmed: true,
     },
   });
@@ -197,37 +217,53 @@ test('telas pequenas (320 px): cardápio, produto e carrinho sem rolagem horizon
   }
 });
 
-test('administrador altera e confirma preços pelo painel, sem mexer no código', async ({ page }) => {
+test('administrador define preços e fotos pelo painel, sem mexer no código', async ({ page }) => {
   await login(page, USERS.manager);
   await page.goto('/admin/precos');
-  const pending = page.getByTestId('pending-product').filter({ hasText: 'Pizza Quatro Queijos' });
-  await pending.getByLabel('Grande (G)').fill('56,00');
-  await pending.getByRole('button', { name: 'Salvar e confirmar valores' }).click();
+  // Confirmar em lote não libera item sem valor (nunca R$ 0,00 por engano).
+  await page.getByLabel('Selecionar Fanta Laranja').check();
+  page.once('dialog', (d) => void d.accept());
+  await page.getByRole('button', { name: 'Confirmar os selecionados sem alterar valores' }).click();
+  await expect(page.getByText(/Sem valor cadastrado: Fanta Laranja/).first()).toBeVisible();
+  // Valor zero é recusado; valores reais liberam o item.
+  const coca = page.getByTestId('pending-product').filter({ hasText: 'Coca-Cola' });
+  const values: [string, string][] = [['Lata', '0,00'], ['600 ml', '8,00'], ['1 litro', '10,00'], ['2 litros', '14,00']];
+  for (const [size, price] of values) {
+    await coca.getByLabel(size, { exact: true }).fill(price);
+  }
+  await coca.getByRole('button', { name: 'Salvar e confirmar valores' }).click();
+  await expect(page.getByText('O valor precisa ser maior que zero.').first()).toBeVisible();
+  await coca.getByLabel('Lata', { exact: true }).fill('6,00');
+  await coca.getByRole('button', { name: 'Salvar e confirmar valores' }).click();
   await expect(page.getByText('Valores conferidos e liberados para pedido.')).toBeVisible();
-  // Molho: o administrador define que é grátis.
-  const sauce = page.getByTestId('pending-option').filter({ hasText: 'Maionese verde' });
-  await sauce.getByLabel('Valor de Maionese verde').fill('0,00');
-  await sauce.getByRole('button', { name: 'Confirmar valor' }).click();
-  await expect(page.getByText('Opção liberada como grátis.')).toBeVisible();
   // Borda: novo valor na tabela única vale para todas as pizzas.
   await page.goto('/admin/opcoes');
   await page.getByLabel('Valor de Cheddar no tamanho Grande (G)').fill('9,00');
   await page.getByRole('button', { name: 'Salvar valores por tamanho' }).first().click();
   await expect(page.getByText('Valores por tamanho salvos.')).toBeVisible();
+  // Fotos: página própria, com a situação de cada produto.
+  await page.goto('/admin/fotos');
+  await expect(page.getByRole('heading', { name: /Fotos dos produtos \(0 de \d+ com foto real\)/ })).toBeVisible();
+  const item = page.getByTestId('photo-item').filter({ hasText: 'Beirute' });
+  await expect(item).toContainText('Ilustração provisória');
+  await item.getByRole('button', { name: 'Salvar foto' }).click();
+  await expect(page.getByText('Foto de Beirute salva.')).toBeVisible();
 
   const [audit] = await sql<{ actor_role: string; by: string | null }>(
     `select a.actor_role, p.price_confirmed_by::text as by from public.audit_logs a join public.products p on p.id = a.record_id::uuid
-      where a.table_name = 'products' and p.slug = 'pizza-quatro-queijos' order by a.id desc limit 1`,
+      where a.table_name = 'products' and p.slug = 'coca-cola' order by a.id desc limit 1`,
   );
   expect(audit?.actor_role).toBe('manager');
   expect(audit?.by).not.toBeNull();
+  const [beirute] = await sql<{ image_url: string; image_alt: string }>(`select image_url, image_alt from public.products where slug = 'beirute'`);
+  expect(beirute).toEqual({ image_url: '/images/products/beirute.svg', image_alt: 'Imagem ilustrativa provisória de Beirute (foto oficial em breve)' });
 
+  await openProduct(page, 'coca-cola');
+  await page.getByText('2 litros', { exact: true }).click();
+  await expect(addButton(page)).toBeEnabled();
+  await expect(addButton(page)).toContainText('R$ 14,00');
   await openProduct(page, 'pizza-quatro-queijos');
   await page.getByText('Grande (G)').click();
   await page.getByText('Cheddar').click();
-  await expect(addButton(page)).toBeEnabled();
-  await expect(addButton(page)).toContainText('R$ 65,00');
-  await openProduct(page, 'x-bacon');
-  await page.getByText('Maionese verde').click();
-  await expect(addButton(page)).toContainText('R$ 19,00');
+  await expect(addButton(page)).toContainText('R$ 64,00');
 });
