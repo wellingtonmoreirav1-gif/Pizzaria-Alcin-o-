@@ -1,0 +1,123 @@
+# Migrations do Supabase de produção, executadas MANUALMENTE pelo GitHub
+# (Actions → Supabase migrations → Run workflow), inclusive pelo celular.
+#
+#   simular → mostra o que seria aplicado. Não altera nada.
+#   aplicar → aplica as migrations pendentes. Exige digitar APLICAR.
+#   incluir_seed → inclui supabase/seed.sql (dados iniciais). Nunca usa seed-demo.sql.
+#
+# Segredos (Settings → Secrets and variables → Actions):
+#   SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD, SUPABASE_PROJECT_REF
+#   SUPABASE_DB_URL (opcional): conexão "Session pooler"; se existir, é usada no lugar do link.
+# Os valores ficam criptografados pelo GitHub e aparecem como *** nos registros.
+name: Supabase migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: 'simular = só mostra o que seria feito; aplicar = altera o banco de produção'
+        type: choice
+        options: [simular, aplicar]
+        default: simular
+        required: true
+      incluir_seed:
+        description: 'Incluir supabase/seed.sql (nome, WhatsApp, endereço e horários). Nunca inclui seed-demo.sql.'
+        type: boolean
+        default: false
+      confirmacao:
+        description: 'Somente para aplicar: digite APLICAR'
+        type: string
+        default: ''
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrations:
+    name: ${{ inputs.modo }}${{ inputs.incluir_seed && ' + seed' || '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      MODO: ${{ inputs.modo }}
+      INCLUIR_SEED: ${{ inputs.incluir_seed }}
+      CONFIRMACAO: ${{ inputs.confirmacao }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Conferir a confirmação
+        run: |
+          if [ "$MODO" = "aplicar" ] && [ "$CONFIRMACAO" != "APLICAR" ]; then
+            echo "::error::Para aplicar, digite APLICAR no campo de confirmação. Nada foi alterado."
+            exit 1
+          fi
+          echo "Modo: $MODO | incluir seed.sql: $INCLUIR_SEED"
+
+      - name: Baixar o código
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Conferir segredos e migrations
+        run: |
+          faltando=0
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            for v in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF; do
+              if [ -z "${!v}" ]; then echo "::error::Segredo $v não configurado."; faltando=1; fi
+            done
+            if [ -n "$SUPABASE_PROJECT_REF" ] && ! [[ "$SUPABASE_PROJECT_REF" =~ ^[a-z0-9]{20}$ ]]; then
+              echo "::error::SUPABASE_PROJECT_REF deve ser o Reference ID (20 letras/números) de Project Settings → General."
+              faltando=1
+            fi
+          fi
+          [ "$faltando" = 0 ] || exit 1
+          echo "Commit: $GITHUB_SHA"
+          echo "Migrations no repositório ($(ls supabase/migrations/*.sql | wc -l)):"
+          ls -1 supabase/migrations
+          if [ "$INCLUIR_SEED" = "true" ]; then echo "Seed que pode ser aplicado: supabase/seed.sql"; fi
+
+      - name: Instalar o Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+
+      - name: Conectar ao projeto
+        run: |
+          # Configuração mínima só nesta máquina temporária (não é enviada ao repositório).
+          [ -f supabase/config.toml ] || supabase init > /dev/null
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            echo "Usando a conexão do segredo SUPABASE_DB_URL."
+          else
+            supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          fi
+
+      - name: Situação atual (Local × Remote)
+        run: |
+          if [ -n "$SUPABASE_DB_URL" ]; then supabase migration list --db-url "$SUPABASE_DB_URL"; else supabase migration list --linked; fi
+
+      - name: Simulação (não altera nada)
+        run: |
+          args=(db push --dry-run)
+          [ "$INCLUIR_SEED" = "true" ] && args+=(--include-seed)
+          if [ -n "$SUPABASE_DB_URL" ]; then supabase "${args[@]}" --db-url "$SUPABASE_DB_URL"; else supabase "${args[@]}" --linked; fi
+
+      - name: Aplicar no banco de produção
+        if: inputs.modo == 'aplicar'
+        run: |
+          args=(db push --yes)
+          [ "$INCLUIR_SEED" = "true" ] && args+=(--include-seed)
+          if [ -n "$SUPABASE_DB_URL" ]; then supabase "${args[@]}" --db-url "$SUPABASE_DB_URL"; else supabase "${args[@]}" --linked; fi
+
+      - name: Situação depois de aplicar
+        if: inputs.modo == 'aplicar'
+        run: |
+          if [ -n "$SUPABASE_DB_URL" ]; then supabase migration list --db-url "$SUPABASE_DB_URL"; else supabase migration list --linked; fi
