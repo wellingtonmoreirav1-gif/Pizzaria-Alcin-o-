@@ -27,10 +27,12 @@ O cliente monta o pedido no site (celular ou computador), o pedido é **registra
 
 **Para o cliente (site público)**
 
-- Página inicial de vendas: chamada principal, “Em alta no Alcinão” (destaques da equipe + mais vendidos reais), promoções ativas, vitrines por categoria, avaliações aprovadas, entrega/retirada, localização e horários.
-- Cardápio com busca (inclusive por sabor), filtros por categoria, “Promoções”, “Mais vendidos”, “somente disponíveis” e características.
-- **Montagem visual da pizza**: tamanho, 1 ou mais sabores (conforme o tamanho), regra de preço configurada, borda, adicionais, observações; combinações inválidas ficam bloqueadas; resumo e preço antes de adicionar.
-- Produtos de almoço/churrasco com acompanhamentos, porções e horário de oferta; combos com itens incluídos.
+- **Cardápio oficial cadastrado** (40 produtos): pizzas tradicionais, especiais, premium e doces (P/M/G/GG/F), bordas recheadas com valor por tamanho, lanches tradicionais e especiais, Beirute, petiscos, pratos da casa (servem 2), lasanhas (P/M/G) e molhos. Identidade visual: fundo preto, superfícies cinza, preços em dourado, ações e promoções em vermelho.
+- Página inicial de vendas: chamada principal, atalhos por categoria, “Destaques do Alcinão” (escolhidos pela equipe + mais vendidos reais), promoções ativas, vitrines por categoria, avaliações aprovadas, entrega/retirada, localização e horários.
+- Cardápio com busca (inclusive por ingrediente), abas de categoria, tabela de bordas, “Promoções” e “Mais vendidos” (só quando existem), “somente disponíveis” e características.
+- **Montagem da pizza**: tamanho, borda opcional com o valor do tamanho, observações; combinações inválidas ficam bloqueadas; preço unitário e total antes de adicionar. (Pizza com 2+ sabores também é suportada, se configurada no painel.)
+- Itens com **preço em conferência** ou opção sem valor definido aparecem, mas não podem ser pedidos até a equipe confirmar.
+- Produtos com acompanhamentos, porções e horário de oferta; combos com itens incluídos.
 - Carrinho salvo no aparelho, edição de itens, sugestões de complementos (sem adicionar nada sozinho) e **conferência de preços no servidor**.
 - Checkout em etapas: modalidade (entrega, retirada, consumo no local) → dados → endereço + **localização opcional por GPS/mapa** → pagamento (Pix, dinheiro com troco, crédito, débito, pagamento na entrega) → revisão e confirmação.
 - “Taxa de entrega **a confirmar**” enquanto a equipe não confirma; nada é apresentado como total definitivo antes disso.
@@ -43,7 +45,9 @@ O cliente monta o pedido no site (celular ou computador), o pedido é **registra
 - Início com indicadores do dia (pedidos por status, taxas pendentes, aprovações pendentes; vendas só para gerente/admin).
 - Pedidos: filtros, detalhes, avanço de status com histórico (quem e quando), **taxa de entrega auditável**, aprovação do cliente quando o total muda, cancelamento com motivo (inclusive “fora da área”), link para conversar no WhatsApp e ver a localização.
 - Operação do dia: suspender/pausar pedidos, **encerrar o almoço com um toque** (sem afetar a noite), marcar itens/tamanhos/opções como esgotados.
-- Cardápio: produtos, tamanhos, sabores, bordas, adicionais com **preço por tamanho**, combos, fotos (envio direto pelo painel), rascunho, prévia e arquivamento sem perder histórico.
+- Cardápio: produtos, tamanhos (com código P/M/G/GG/F), sabores, adicionais com **preço por tamanho**, combos, fotos (envio direto pelo painel), rascunho, prévia, arquivamento sem perder histórico e **pedidos que incluem o produto**.
+- **Bordas e molhos**: grupos cadastrados uma vez e usados por vários produtos (tabela de valores por tamanho, produtos ligados, disponível/esgotado).
+- **Conferência de preços**: lista o que está “a confirmar”, permite corrigir e confirmar; quem confirmou e quando fica registrado.
 - Categorias, promoções com período, banners com período, horários (turnos, feriados, horários especiais, tolerância), entrega e pagamento por modalidade, bairros com taxa prevista.
 - Relatórios com dados reais (faturamento, vendas, ticket médio, produtos e categorias, sem vendas, vendidos juntos, recorrentes, modalidades, pagamentos, cancelamentos) e exportação CSV.
 - Clientes (consulta por telefone, recorrentes, anonimização LGPD), avaliações (moderação), equipe (papéis) e auditoria das alterações.
@@ -183,7 +187,8 @@ Veja [Criar o primeiro administrador](#criar-o-primeiro-administrador). Depois, 
 1. **Configurações**: confira nome, WhatsApp, endereço; envie a **logo oficial** e a foto principal; textos e SEO.
 2. **Horários**: ajuste os dias da semana (hoje todos os dias estão ativos, pois os dias não foram informados), feriados e tolerância.
 3. **Entrega e pagamento**: formas de pagamento por modalidade, bairros atendidos e taxas previstas (opcional), pedido mínimo.
-4. **Cardápio**: cadastre categorias, produtos, tamanhos, sabores, bordas, adicionais e combos; use a **Prévia** antes de publicar.
+4. **Conferência de preços**: confirme (ou corrija) os valores das pizzas especiais e premium e defina o valor dos molhos (0,00 = grátis). Até isso ser feito, esses itens aparecem no site mas não podem ser pedidos. Veja [docs/PENDENCIAS.md](docs/PENDENCIAS.md#preços-que-precisam-ser-confirmados).
+   **Cardápio**: o cardápio oficial já vem cadastrado pelas migrations; use o painel para fotos, ajustes, novos produtos e a **Prévia** antes de publicar.
 5. **Equipe**: libere o acesso de gerentes e atendentes.
 6. Remova os [dados de exemplo](#remover-os-dados-de-exemplo) se tiver rodado o `seed-demo.sql`.
 
@@ -223,13 +228,13 @@ O arquivo `supabase/seed-demo.sql` (opcional, usado nos testes) cria produtos **
 npm test            # testes de unidade (preços, horários, WhatsApp, validações, uploads, CSV)
 npm run db:local    # sobe o ambiente local (Postgres + Supabase Auth + PostgREST)
 npm run test:db     # testes de banco: RLS, permissões, pedidos, idempotência, relatórios
-npm run build && npm run test:e2e   # ponta a ponta no build de produção (Playwright)
+bash scripts/local-supabase/apply-migrations.sh && npm run build && npm run test:e2e   # ponta a ponta no build de produção (Playwright)
 ```
 
 Resultado da última execução (detalhes e o que cada teste cobre em [docs/TESTES.md](docs/TESTES.md)):
 
-- **Unidade + banco (Vitest):** 80 testes, todos passando.
-- **Ponta a ponta (Playwright, celular Pixel 7, build de produção):** 22 testes, todos passando — incluindo acessibilidade (axe) e ausência de rolagem horizontal no celular.
+- **Unidade + banco (Vitest):** 93 testes, todos passando.
+- **Ponta a ponta (Playwright, celular Pixel 7, build de produção):** 31 testes, todos passando — incluindo acessibilidade (axe) e ausência de rolagem horizontal no celular.
 
 O que **não** foi testado aqui e precisa ser conferido no ambiente publicado: envio real de imagens ao Supabase Storage (o ambiente local não tem o serviço Storage; as regras de acesso do Storage foram testadas no banco), imagens do mapa (o ambiente de testes não acessa a internet) e e-mails do Supabase Auth.
 

@@ -10,12 +10,21 @@
 --   pelo painel). Não são fotos dos produtos.
 -- =============================================================================
 
+-- Identificadores estáveis (derivados do slug): reinstalar o banco gera os mesmos ids,
+-- então links e carrinhos guardados continuam válidos. Linhas já existentes mantêm o id.
+create function pg_temp.uid(p_key text)
+returns uuid language sql immutable as $$
+  -- md5 com os bits de versão (4) e variante (RFC 9562) ajustados: é um UUID válido.
+  select (substr(h, 1, 12) || '4' || substr(h, 14, 3) || '8' || substr(h, 18, 15))::uuid
+  from (select md5('alcinao-cardapio:' || p_key) as h) s
+$$;
+
 create function pg_temp.cat(p_slug text, p_name text, p_sort integer, p_description text default null)
 returns uuid language plpgsql as $$
 declare v_id uuid;
 begin
-  insert into public.categories (slug, name, sort_order, description, is_active, show_on_home)
-  values (p_slug, p_name, p_sort, p_description, true, true)
+  insert into public.categories (id, slug, name, sort_order, description, is_active, show_on_home)
+  values (pg_temp.uid('categoria:' || p_slug), p_slug, p_name, p_sort, p_description, true, true)
   on conflict (slug) do update set name = excluded.name, sort_order = excluded.sort_order,
     description = coalesce(excluded.description, public.categories.description), is_active = true, deleted_at = null
   returning id into v_id;
@@ -30,10 +39,10 @@ create function pg_temp.product(
 declare v_id uuid;
 begin
   insert into public.products (
-    category_id, kind, slug, name, short_description, description, base_price, sort_order, price_confirmed,
+    id, category_id, kind, slug, name, short_description, description, base_price, sort_order, price_confirmed,
     serves, tags, is_featured, featured_order, image_url, image_alt, is_active, is_available
   ) values (
-    (select id from public.categories where slug = p_category), p_kind, p_slug, p_name, left(p_description, 200), p_description,
+    pg_temp.uid('produto:' || p_slug), (select id from public.categories where slug = p_category), p_kind, p_slug, p_name, left(p_description, 200), p_description,
     p_base_price, p_sort, p_price_confirmed, p_serves, p_tags, p_featured, p_featured_order,
     '/images/products/' || p_slug || '.svg', 'Imagem ilustrativa provisória de ' || p_name || ' (foto oficial em breve)', true, true
   )
@@ -53,8 +62,8 @@ end $$;
 create function pg_temp.size(p_product uuid, p_code text, p_name text, p_price numeric, p_sort integer)
 returns void language plpgsql as $$
 begin
-  insert into public.product_variants (product_id, size_code, name, price, sort_order, max_flavors, flavor_price_rule)
-  values (p_product, p_code, p_name, p_price, p_sort, 1, 'fixed')
+  insert into public.product_variants (id, product_id, size_code, name, price, sort_order, max_flavors, flavor_price_rule)
+  values (pg_temp.uid('tamanho:' || p_product || ':' || p_code), p_product, p_code, p_name, p_price, p_sort, 1, 'fixed')
   on conflict (product_id, size_code) where size_code is not null and deleted_at is null
   do update set name = excluded.name, price = excluded.price, sort_order = excluded.sort_order;
 end $$;
@@ -73,8 +82,8 @@ create function pg_temp.shared_group(p_key text, p_kind public.option_group_kind
 returns uuid language plpgsql as $$
 declare v_id uuid;
 begin
-  insert into public.option_groups (shared_key, kind, name, min_select, max_select, description, sort_order)
-  values (p_key, p_kind, p_name, p_min, p_max, p_description, 50)
+  insert into public.option_groups (id, shared_key, kind, name, min_select, max_select, description, sort_order)
+  values (pg_temp.uid('grupo:' || p_key), p_key, p_kind, p_name, p_min, p_max, p_description, 50)
   on conflict (shared_key) do update set kind = excluded.kind, name = excluded.name, min_select = excluded.min_select,
     max_select = excluded.max_select, description = excluded.description, is_active = true, deleted_at = null
   returning id into v_id;
@@ -87,8 +96,8 @@ declare v_id uuid;
 begin
   select id into v_id from public.option_values where group_id = p_group and lower(name) = lower(p_name) and deleted_at is null;
   if v_id is null then
-    insert into public.option_values (group_id, name, sort_order, price, price_confirmed)
-    values (p_group, p_name, p_sort, p_price, p_confirmed) returning id into v_id;
+    insert into public.option_values (id, group_id, name, sort_order, price, price_confirmed)
+    values (pg_temp.uid('opcao:' || p_group || ':' || lower(p_name)), p_group, p_name, p_sort, p_price, p_confirmed) returning id into v_id;
   else
     update public.option_values set sort_order = p_sort, price = p_price, price_confirmed = p_confirmed where id = v_id;
   end if;
@@ -239,3 +248,9 @@ begin
   end loop;
 end;
 $$;
+
+-- Texto padrão da página inicial alinhado ao cardápio oficial (só troca o texto de
+-- instalação; textos editados no painel são mantidos).
+update public.business_settings
+set hero_subtitle = 'Pizzas, lanches, petiscos e pratos da casa do Alcinão, em São Bento (PB). Monte seu pedido e envie pelo WhatsApp.'
+where hero_subtitle = 'Pizzas, almoço e churrasco do Alcinão, em São Bento (PB). Monte seu pedido e envie pelo WhatsApp.';

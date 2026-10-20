@@ -10,10 +10,10 @@ const dmSans = DM_Sans({ variable: '--font-dm-sans', subsets: ['latin'] });
 export async function generateMetadata(): Promise<Metadata> {
   const { data } = await getOperation();
   const s = data.settings;
-  const title = s.seoTitle ?? `${s.businessName} — Pizzas, almoço e churrasco em São Bento (PB)`;
+  const title = s.seoTitle ?? `${s.businessName} — Pizzas, lanches e pratos da casa em São Bento (PB)`;
   const description =
     s.seoDescription ??
-    `Peça online na ${s.businessName}: pizzas, almoço, churrasco, bebidas e mais em São Bento, Paraíba. Monte seu pedido e envie pelo WhatsApp.`;
+    `Peça online na ${s.businessName}: pizzas, lanches, Beirute, petiscos, pratos da casa e lasanhas em São Bento, Paraíba. Monte seu pedido e envie pelo WhatsApp.`;
   return {
     metadataBase: new URL(SITE_URL),
     title: { default: title, template: `%s | ${s.businessName.replace('Pizzaria e Churrascaria ', '')}` },

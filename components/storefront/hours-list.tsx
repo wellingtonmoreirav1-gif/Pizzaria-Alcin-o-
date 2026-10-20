@@ -25,7 +25,7 @@ export function HoursList({ hours, tone = 'dark' }: { hours: BusinessHourRow[]; 
   const dayName = (d: number) => (WEEKDAY_LABELS[d] ?? '').replace('-feira', '');
   if (hours.length === 0) return <p className={cn('mt-3 text-sm', tone === 'light' ? 'text-white/60' : 'text-muted')}>Horários em atualização.</p>;
   return (
-    <dl className={cn('mt-3 space-y-2 text-sm', tone === 'light' ? 'text-white/80' : 'text-ink-800')}>
+    <dl className={cn('mt-3 space-y-2 text-sm', tone === 'light' ? 'text-white/80' : 'text-fg')}>
       {groups.map((g) => (
         <div key={g.days.join()} className="flex flex-col">
           <dt className="font-semibold capitalize">

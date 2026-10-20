@@ -15,16 +15,23 @@ export default async function OperationPage() {
   await requireStaff([...PERMISSIONS.operation]);
   await connection();
   const supabase = await createSessionClient();
-  const [operation, settingsRow, products] = await Promise.all([
+  const [operation, settingsRow, products, shared] = await Promise.all([
     getOperationFresh(),
     supabase.from('business_settings').select('accepting_orders, paused_until, lunch_closed_on, pause_message').eq('id', 1).single(),
     supabase
       .from('products')
-      .select('id, name, is_available, is_active, categories(name, sort_order), product_variants(id, name, is_available, deleted_at), option_groups(id, name, kind, deleted_at, option_values(id, name, is_available, deleted_at))')
+      .select('id, name, is_available, is_active, categories(name, sort_order), product_variants(id, name, is_available, deleted_at), option_groups!option_groups_product_id_fkey(id, name, kind, deleted_at, option_values(id, name, is_available, deleted_at))')
       .is('deleted_at', null)
       .eq('is_active', true)
       .order('sort_order')
       .order('name'),
+    supabase
+      .from('option_groups')
+      .select('id, name, option_values(id, name, is_available, deleted_at, sort_order)')
+      .not('shared_key', 'is', null)
+      .is('deleted_at', null)
+      .eq('is_active', true)
+      .order('sort_order'),
   ]);
   const status = computeStoreStatus(operation.hours, new Date());
   const s = settingsRow.data;
@@ -62,6 +69,29 @@ export default async function OperationPage() {
           )}
         </Card>
       </div>
+
+      {(shared.data ?? []).length ? (
+        <Card title="Bordas e molhos" description="Valem para todos os produtos que oferecem a opção. Marque como esgotado quando acabar.">
+          <div className="space-y-4">
+            {(shared.data ?? []).map((g) => (
+              <div key={g.id}>
+                <p className="mb-2 text-sm font-semibold">{g.name}</p>
+                <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {(g.option_values ?? [])
+                    .filter((v) => !v.deleted_at)
+                    .sort((a, b) => a.sort_order - b.sort_order)
+                    .map((v) => (
+                      <li key={v.id} className="flex items-center justify-between gap-2 rounded-xl bg-mist px-3 py-2 text-sm">
+                        <span>{v.name}</span>
+                        <AvailabilityToggle entity="option_value" id={v.id} available={v.is_available} label={`${g.name} ${v.name}`} />
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : null}
 
       <Card title="Disponibilidade dos itens" description="Marque como esgotado para impedir novos pedidos do item. Vale imediatamente no site.">
         <ul className="divide-y divide-line">

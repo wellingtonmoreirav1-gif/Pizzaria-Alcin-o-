@@ -262,7 +262,7 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
         <ol className="flex gap-2 overflow-x-auto scrollbar-none" aria-label="Etapas do pedido">
           {steps.map((s, i) => (
             <li key={s} className="flex shrink-0 items-center gap-2 text-sm" aria-current={i === step ? 'step' : undefined}>
-              <span className={cn('grid size-7 place-items-center rounded-full text-xs font-bold', i < step ? 'bg-ink-900 text-white' : i === step ? 'bg-brand-600 text-white' : 'bg-mist text-muted')}>
+              <span className={cn('grid size-7 place-items-center rounded-full text-xs font-bold', i < step ? 'bg-gold text-ink-950' : i === step ? 'bg-brand-600 text-white' : 'bg-mist text-muted')}>
                 {i < step ? <Check className="size-4" aria-hidden /> : i + 1}
               </span>
               <span className={cn(i === step ? 'font-semibold' : 'text-muted')}>{s}</span>
@@ -302,7 +302,7 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                     key={mode}
                     className={cn(
                       'flex cursor-pointer flex-col gap-2 rounded-2xl border-2 p-4 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-brand-500',
-                      fulfillment === mode ? 'border-ink-900 bg-mist' : 'border-line hover:border-ink-600',
+                      fulfillment === mode ? 'border-fg bg-mist' : 'border-line hover:border-muted',
                       !config.enabled[mode] && 'cursor-not-allowed opacity-40',
                     )}
                   >
@@ -316,7 +316,7 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                   </label>
                 ))}
               </div>
-              {errors.fulfillment ? <p className="mt-3 text-sm font-medium text-brand-700" role="alert">{errors.fulfillment}</p> : null}
+              {errors.fulfillment ? <p className="mt-3 text-sm font-medium text-danger" role="alert">{errors.fulfillment}</p> : null}
             </fieldset>
           ) : null}
 
@@ -335,7 +335,7 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
               ) : null}
               {!prefill ? (
                 <p className="text-sm text-muted sm:col-span-2">
-                  Não precisa criar conta. Quer salvar seus dados para a próxima? <Link href="/conta" className="font-semibold text-ink-900 underline">Entre ou cadastre-se</Link>.
+                  Não precisa criar conta. Quer salvar seus dados para a próxima? <Link href="/conta" className="font-semibold text-fg underline">Entre ou cadastre-se</Link>.
                 </p>
               ) : null}
             </div>
@@ -430,16 +430,16 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                 <legend className="sr-only">Forma de pagamento</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {methods.map((m) => (
-                    <label key={m} className={cn('flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-brand-500', payment === m ? 'border-ink-900 bg-mist' : 'border-line hover:border-ink-600')}>
+                    <label key={m} className={cn('flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-brand-500', payment === m ? 'border-fg bg-mist' : 'border-line hover:border-muted')}>
                       <input type="radio" name="payment" className="sr-only" checked={payment === m} onChange={() => setPayment(m)} />
                       <span className={cn('grid size-5 place-items-center rounded-full border-2', payment === m ? 'border-brand-600 bg-brand-600' : 'border-line')}>
-                        {payment === m ? <span className="size-2 rounded-full bg-white" /> : null}
+                        {payment === m ? <span className="size-2 rounded-full bg-surface" /> : null}
                       </span>
                       <span className="font-medium">{PAYMENT_LABEL[m]}</span>
                     </label>
                   ))}
                 </div>
-                {errors.payment ? <p className="mt-3 text-sm font-medium text-brand-700" role="alert">{errors.payment}</p> : null}
+                {errors.payment ? <p className="mt-3 text-sm font-medium text-danger" role="alert">{errors.payment}</p> : null}
               </fieldset>
               <p className="text-sm text-muted">O pagamento é feito diretamente com a equipe — o site não faz cobranças.</p>
               {payment === 'cash' ? (
@@ -507,7 +507,7 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                   </span>
                 </span>
               </label>
-              {errors.confirmed ? <p className="text-sm font-medium text-brand-700" role="alert">{errors.confirmed}</p> : null}
+              {errors.confirmed ? <p className="text-sm font-medium text-danger" role="alert">{errors.confirmed}</p> : null}
               {submitError ? (
                 <Notice tone="danger" title={submitError.title} live>
                   {submitError.message}
@@ -539,40 +539,40 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
         </section>
       </div>
 
-      <aside className="h-fit space-y-4 rounded-[var(--radius-card)] bg-ink-900 p-6 text-white lg:sticky lg:top-24" aria-label="Resumo dos valores">
+      <aside className="h-fit space-y-4 rounded-[var(--radius-card)] bg-surface p-6 ring-1 ring-line lg:sticky lg:top-24" aria-label="Resumo dos valores">
         <h2 className="font-display text-xl font-semibold">Resumo</h2>
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <dt className="text-white/70">Itens ({cart.count})</dt>
+            <dt className="text-muted">Itens ({cart.count})</dt>
             <dd className="tabular-nums">{formatBRL(quote.totals?.grossSubtotal ?? itemsTotal)}</dd>
           </div>
           {quote.totals && quote.totals.discountTotal > 0 ? (
-            <div className="flex justify-between text-[#86efac]">
+            <div className="flex justify-between text-success-600">
               <dt>Descontos</dt>
               <dd className="tabular-nums">-{formatBRL(quote.totals.discountTotal)}</dd>
             </div>
           ) : null}
           {fulfillment === 'delivery' ? (
             <div className="flex justify-between">
-              <dt className="text-white/70">Taxa de entrega</dt>
+              <dt className="text-muted">Taxa de entrega</dt>
               <dd>{estimatedFee !== null ? `${formatBRL(estimatedFee)} (prevista)` : 'A confirmar'}</dd>
             </div>
           ) : null}
-          <div className="flex justify-between border-t border-white/15 pt-3 text-base">
+          <div className="flex justify-between border-t border-line pt-3 text-base">
             <dt className="font-semibold">{fulfillment === 'delivery' ? (estimatedFee !== null ? 'Total estimado' : 'Total dos itens') : 'Total'}</dt>
-            <dd className="font-bold tabular-nums" data-testid="checkout-total">
+            <dd className="font-bold tabular-nums text-gold" data-testid="checkout-total">
               {formatBRL(itemsTotal + (estimatedFee ?? 0))}
             </dd>
           </div>
         </dl>
         {fulfillment === 'delivery' ? (
-          <p className="text-xs text-white/60">O total definitivo inclui a taxa de entrega confirmada pela equipe no WhatsApp.</p>
+          <p className="text-xs text-muted">O total definitivo inclui a taxa de entrega confirmada pela equipe no WhatsApp.</p>
         ) : null}
         {config.minOrderValue && itemsTotal < config.minOrderValue ? (
-          <p className="text-xs text-[#fca5a5]">Pedido mínimo: {formatBRL(config.minOrderValue)}.</p>
+          <p className="text-xs text-danger">Pedido mínimo: {formatBRL(config.minOrderValue)}.</p>
         ) : null}
         {quote.loading ? (
-          <p className="flex items-center gap-2 text-xs text-white/60">
+          <p className="flex items-center gap-2 text-xs text-muted">
             <Clock className="size-3.5" aria-hidden /> Conferindo preços…
           </p>
         ) : null}

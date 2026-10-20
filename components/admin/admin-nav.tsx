@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import {
-  BarChart3, CalendarClock, ClipboardList, Gauge, Image as ImageIcon, LayoutGrid, Menu, MessageSquareQuote,
+  BadgeCheck, BarChart3, CalendarClock, ClipboardList, Gauge, Image as ImageIcon, Layers, LayoutGrid, Menu, MessageSquareQuote,
   Power, ScrollText, Settings, ShieldCheck, Tag, Tags, Truck, Users, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 const ICONS = {
   dashboard: Gauge, orders: ClipboardList, operation: Power, catalog: LayoutGrid, categories: Tags, promotions: Tag,
   banners: ImageIcon, hours: CalendarClock, delivery: Truck, reports: BarChart3, customers: Users, reviews: MessageSquareQuote,
-  settings: Settings, team: ShieldCheck, audit: ScrollText,
+  settings: Settings, team: ShieldCheck, audit: ScrollText, options: Layers, prices: BadgeCheck,
 } as const;
 
 export interface NavItem {

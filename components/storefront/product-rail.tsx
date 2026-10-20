@@ -32,7 +32,7 @@ export function ProductRail({
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            {eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-600">{eyebrow}</p> : null}
+            {eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">{eyebrow}</p> : null}
             <h2 id={`${id ?? title}-titulo`} className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
               {title}
             </h2>
@@ -54,7 +54,7 @@ export function ProductRail({
       </ul>
       {href ? (
         <div className="mt-2 px-4 sm:hidden">
-          <Link href={href} className="inline-flex items-center gap-1 text-sm font-semibold text-brand-700">
+          <Link href={href} className="inline-flex items-center gap-1 text-sm font-semibold text-danger">
             Ver todos <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>

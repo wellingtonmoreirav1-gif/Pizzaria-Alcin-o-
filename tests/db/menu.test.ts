@@ -148,4 +148,23 @@ describe('cardápio oficial', () => {
       client.query(`insert into public.product_shared_groups (product_id, group_id) select p.id, g.id from public.products p, public.option_groups g where p.slug = 'beirute' and g.shared_key is null limit 1`),
     ).rejects.toThrow(/group_not_shared/);
   });
+
+  it('quem confirmou e quando é gravado pelo banco, sem aceitar valores enviados pelo navegador', async () => {
+    const manager = await createUser(client, 'gerente-precos@teste.local', 'manager');
+    const other = await createUser(client, 'outro-precos@teste.local', 'manager');
+    await as(client, { role: 'authenticated', userId: manager }, (c) =>
+      c.query(`update public.products set price_confirmed = true, price_confirmed_at = '2000-01-01', price_confirmed_by = $1 where slug = 'pizza-costela'`, [other]),
+    );
+    const confirmed = await client.query(`select price_confirmed_by, price_confirmed_at > now() - interval '1 minute' as recent from public.products where slug = 'pizza-costela'`);
+    expect(confirmed.rows[0]).toEqual({ price_confirmed_by: manager, recent: true });
+    // Editar outro campo não troca o registro da conferência.
+    await as(client, { role: 'authenticated', userId: other }, (c) => c.query(`update public.products set price_confirmed_by = $1, sort_order = 99 where slug = 'pizza-costela'`, [other]));
+    expect((await client.query(`select price_confirmed_by from public.products where slug = 'pizza-costela'`)).rows[0].price_confirmed_by).toBe(manager);
+    // Voltar para "em conferência" limpa o registro; o molho só é liberado com conferência explícita.
+    await as(client, { role: 'authenticated', userId: manager }, (c) => c.query(`update public.products set price_confirmed = false where slug = 'pizza-costela'`));
+    expect((await client.query(`select price_confirmed_at, price_confirmed_by from public.products where slug = 'pizza-costela'`)).rows[0]).toEqual({ price_confirmed_at: null, price_confirmed_by: null });
+    await as(client, { role: 'authenticated', userId: manager }, (c) => c.query(`update public.option_values set price = 0, price_confirmed = true where name = 'Maionese verde'`));
+    const sauce = await client.query(`select price_confirmed_by from public.option_values where name = 'Maionese verde'`);
+    expect(sauce.rows[0].price_confirmed_by).toBe(manager);
+  });
 });

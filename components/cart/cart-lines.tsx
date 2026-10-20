@@ -31,16 +31,19 @@ export function CartLines({ lineErrors, onNavigate, compact }: { lineErrors: Rec
                 ) : null}
                 {line.notes ? <p className="mt-1 text-xs italic text-muted">Obs.: {line.notes}</p> : null}
                 {error ? (
-                  <p className="mt-2 text-sm font-medium text-brand-700" role="alert">
+                  <p className="mt-2 text-sm font-medium text-danger" role="alert">
                     {error.message}
                   </p>
                 ) : null}
               </div>
-              <p className="shrink-0 text-right font-semibold tabular-nums">
+              <p className="shrink-0 text-right tabular-nums">
                 {line.unitRegular > line.unitPrice ? (
-                  <s className="block text-xs font-normal text-muted">{formatBRL(line.unitRegular * line.quantity)}</s>
+                  <s className="block text-xs text-muted">{formatBRL(line.unitRegular * line.quantity)}</s>
                 ) : null}
-                {formatBRL(line.unitPrice * line.quantity)}
+                <span className="block font-semibold text-gold" data-testid="line-subtotal">{formatBRL(line.unitPrice * line.quantity)}</span>
+                <span className="block text-xs text-muted" data-testid="line-unit">
+                  {line.quantity > 1 ? `${formatBRL(line.unitPrice)} cada` : 'preço unitário'}
+                </span>
               </p>
             </div>
             <div className="mt-3 flex items-center justify-between gap-2">
@@ -59,7 +62,7 @@ export function CartLines({ lineErrors, onNavigate, compact }: { lineErrors: Rec
                 <button
                   type="button"
                   onClick={() => remove(line.lineId)}
-                  className="inline-flex h-9 items-center gap-1 rounded-xl px-3 text-sm font-medium text-brand-700 hover:bg-brand-50"
+                  className="inline-flex h-9 items-center gap-1 rounded-xl px-3 text-sm font-medium text-danger hover:bg-brand-50"
                   aria-label={`Remover ${line.name}`}
                 >
                   <Trash2 className="size-4" aria-hidden /> Remover

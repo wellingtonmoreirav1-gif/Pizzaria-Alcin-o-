@@ -38,7 +38,7 @@ export function CartDrawer({ suggestions, fetchedAt }: { suggestions: CatalogPro
           <div className="space-y-3">
             <div className="flex items-baseline justify-between">
               <span className="text-sm text-muted">Subtotal dos itens</span>
-              <span className="text-xl font-bold tabular-nums" data-testid="cart-subtotal">
+              <span className="text-xl font-bold tabular-nums text-gold" data-testid="cart-subtotal">
                 {formatBRL(total)}
               </span>
             </div>

@@ -28,7 +28,7 @@ export function CartPageView() {
         {quote.status && !quote.status.acceptingOrders ? <Notice tone="warning" title="Fora do horário">{quote.status.message}</Notice> : null}
         <CartLines lineErrors={quote.lineErrors} />
       </div>
-      <aside className="h-fit space-y-3 rounded-[var(--radius-card)] bg-mist p-6">
+      <aside className="h-fit space-y-3 rounded-[var(--radius-card)] bg-surface p-6 ring-1 ring-line">
         <div className="flex justify-between text-sm">
           <span className="text-muted">Subtotal</span>
           <span className="tabular-nums">{formatBRL(quote.totals?.grossSubtotal ?? cart.estimatedTotal)}</span>
@@ -41,7 +41,7 @@ export function CartPageView() {
         ) : null}
         <div className="flex justify-between border-t border-line pt-3 text-lg font-bold">
           <span>Total dos itens</span>
-          <span className="tabular-nums">{formatBRL(quote.totals?.itemsSubtotal ?? cart.estimatedTotal)}</span>
+          <span className="tabular-nums text-gold" data-testid="cart-page-total">{formatBRL(quote.totals?.itemsSubtotal ?? cart.estimatedTotal)}</span>
         </div>
         <p className="text-xs text-muted">Taxa de entrega, quando houver, é confirmada pela equipe.</p>
         <ButtonLink href="/checkout" size="lg" className="w-full" aria-disabled={hasErrors} onClick={(e) => hasErrors && e.preventDefault()}>

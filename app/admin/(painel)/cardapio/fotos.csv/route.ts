@@ -9,7 +9,7 @@ export async function GET() {
   const supabase = await createSessionClient();
   const { data, error } = await supabase
     .from('products')
-    .select('name, slug, description, short_description, image_url, categories(slug, name), option_groups(kind, deleted_at, option_values(name, description, deleted_at))')
+    .select('name, slug, description, short_description, image_url, categories(slug, name), option_groups!option_groups_product_id_fkey(kind, deleted_at, option_values(name, description, deleted_at))')
     .is('deleted_at', null)
     .order('name');
   if (error) return new Response('Erro ao gerar a lista', { status: 500 });

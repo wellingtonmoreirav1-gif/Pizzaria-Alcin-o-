@@ -6,14 +6,14 @@ Tudo abaixo é preenchido **pelo painel**, sem mexer no código.
 
 | Informação | Onde cadastrar | Situação |
 |---|---|---|
-| Logo oficial | Configurações → Logo oficial | pendente |
+| Logo oficial | Configurações → Logo oficial | **pendente** — não há arquivo de logo no projeto; o site usa o nome “Alcinão” em texto até a logo ser enviada |
 | Foto principal da página inicial | Configurações → Foto principal | pendente |
-| Lista completa de produtos | Cardápio | pendente (o cardápio será enviado) |
-| Categorias definitivas | Categorias | criadas as do briefing; revisar |
-| Sabores, tamanhos, preços, bordas, adicionais | Cardápio → produto | pendente |
-| Regra de preço de pizza com 2+ sabores (por tamanho) | Cardápio → pizza → tamanhos | pendente (definir com a equipe) |
-| Combos | Cardápio (tipo Combo) | pendente |
-| Fotos dos produtos | Cardápio → produto (ver LOGO-E-IMAGENS.md) | pendente |
+| Cardápio oficial | Cardápio | **cadastrado** (40 produtos em 12 categorias — migration `20261020000200_official_menu.sql`) |
+| **Preços das pizzas especiais e premium** | **Conferência de preços** | **a confirmar** (ver abaixo) |
+| **Valor dos molhos** | **Conferência de preços** ou Bordas e molhos | **a definir** (grátis ou pago) |
+| Pizza meio a meio (2+ sabores) | Cardápio → pizza → tamanhos | não informado: hoje todas as pizzas são de 1 sabor |
+| Bebidas, sobremesas, almoço, churrasco, combos | Cardápio | não informados no cardápio oficial (categorias antigas ficaram ocultas) |
+| Fotos dos produtos | Cardápio → produto (ver LOGO-E-IMAGENS.md) | pendente — hoje há **ilustrações provisórias** identificadas como tal |
 | Taxas de entrega / bairros atendidos | Entrega e pagamento | pendente (opcional; senão a taxa é sempre confirmada pela equipe) |
 | Horários por dia da semana | Horários | hoje todos os dias ativos com 10h30 (almoço até encerrar) e 18h30–23h |
 | Formas de pagamento por modalidade | Entrega e pagamento | configuradas com as formas informadas; revisar |
@@ -22,6 +22,20 @@ Tudo abaixo é preenchido **pelo painel**, sem mexer no código.
 | Número no endereço / coordenadas do restaurante | Configurações | não informado (opcional) |
 | Instagram e outros contatos | Configurações | opcional |
 | Revisão jurídica dos textos de privacidade e termos | `/privacidade`, `/termos` | pendente |
+
+## Preços que precisam ser confirmados
+
+Esses itens **aparecem no site**, com o aviso “Preço em conferência” ou “Valor a definir”, e **não podem ser pedidos** (nem pela tela nem pela API) até alguém com papel de gerente/administrador confirmar em **Painel → Conferência de preços**. Quem confirmou e quando fica gravado pelo banco e na Auditoria.
+
+| Item | Valor cadastrado (referência) | Situação |
+|---|---|---|
+| 8 pizzas especiais (Frango com Catupiry, Calabresa com Catupiry, Carne de Sol, Carne de Sol com Queijo Coalho, Quatro Queijos, Frango com Cheddar, Pepperoni, Costela) | P 30,00 · M 45,00 · G 55,00 · GG 65,00 · F 80,00 | a confirmar |
+| 2 pizzas premium (Camarão com Catupiry, Camarão aos Quatro Queijos) | P 30,00 · M 45,00 · G 55,00 · GG 65,00 · F 80,00 | a confirmar |
+| Molhos: maionese verde, de alho, de bacon, de calabresa | nenhum valor | a definir (0,00 = grátis) |
+
+Confirmados conforme o cardápio enviado: pizzas tradicionais e doces (25/39/50/60/75), bordas por tamanho, lanches, Beirute, petiscos, pratos da casa e lasanhas.
+
+Produtos **novos** criados pelo painel também entram “em conferência” até a confirmação.
 
 ## Verificação final antes de divulgar
 
@@ -33,6 +47,7 @@ Marque somente depois de conferir no **site publicado**.
 - [ ] Produtos cadastrados e publicados
 - [ ] Imagens corretas e fiéis aos produtos (sem foto trocada)
 - [ ] Preços revisados (inclusive por tamanho, bordas, adicionais e regra de pizza meio a meio)
+- [ ] **Conferência de preços** vazia (painel sem o aviso “preço(s) aguardando conferência”)
 - [ ] Horários configurados e status “aberto/fechado” correto no celular
 - [ ] Encerrar almoço e pausar pedidos testados
 - [ ] WhatsApp correto: fazer um pedido de teste e conferir que abre o número **(83) 99921-6691** com a mensagem completa

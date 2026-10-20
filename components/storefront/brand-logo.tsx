@@ -18,7 +18,7 @@ export function BrandLogo({ logoUrl, name, tone = 'dark', className }: { logoUrl
       <span className={cn('text-[0.58rem] font-semibold uppercase tracking-[0.22em]', tone === 'dark' ? 'text-muted' : 'text-white/60')}>
         Pizzaria &amp; Churrascaria
       </span>
-      <span className={cn('font-display text-[1.6rem] font-bold italic tracking-tight', tone === 'dark' ? 'text-ink-950' : 'text-white')}>
+      <span className={cn('font-display text-[1.6rem] font-bold italic tracking-tight', tone === 'dark' ? 'text-fg' : 'text-white')}>
         Alcinão<span className="text-brand-600">.</span>
       </span>
     </span>

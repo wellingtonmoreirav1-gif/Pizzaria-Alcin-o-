@@ -58,7 +58,7 @@ export function Dialog({
         if (e.target === ref.current) onClose();
       }}
       aria-labelledby="dialog-title"
-      className={cn('p-0 text-ink-900 shadow-[var(--shadow-float)] open:flex open:animate-[var(--animate-sheet)] open:flex-col', position, className)}
+      className={cn('p-0 text-fg shadow-[var(--shadow-float)] open:flex open:animate-[var(--animate-sheet)] open:flex-col', position, className)}
     >
       <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
         <div>
@@ -72,7 +72,7 @@ export function Dialog({
         </button>
       </header>
       <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
-      {footer ? <footer className="border-t border-line bg-white px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">{footer}</footer> : null}
+      {footer ? <footer className="border-t border-line bg-surface px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">{footer}</footer> : null}
     </dialog>
   );
 }

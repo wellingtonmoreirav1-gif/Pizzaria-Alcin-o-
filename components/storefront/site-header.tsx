@@ -7,9 +7,11 @@ import { StoreStatusFallback, StoreStatusPill } from './store-status';
 
 export async function SiteHeader() {
   const [{ data: catalog }, { data: operation }] = await Promise.all([getCatalog(), getOperation()]);
-  const categories = catalog.categories.filter((c) => catalog.products.some((p) => p.categoryId === c.id));
+  const categories = catalog.categories.filter(
+    (c) => catalog.products.some((p) => p.categoryId === c.id) || (c.sectionType === 'options' && c.sharedGroupId),
+  );
   return (
-    <header className="sticky top-0 z-40 border-b border-line/80 bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-line/80 bg-canvas/90 backdrop-blur-md">
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-white">
         Pular para o conteúdo
       </a>
@@ -29,9 +31,9 @@ export async function SiteHeader() {
                 Cardápio
               </Link>
             </li>
-            {categories.slice(0, 5).map((c) => (
+            {categories.filter((c) => c.sectionType === 'products').slice(0, 4).map((c) => (
               <li key={c.id} className="hidden xl:block">
-                <Link href={`/cardapio?categoria=${c.slug}`} className="rounded-full px-3 py-2 text-muted-strong hover:bg-mist hover:text-ink-900">
+                <Link href={`/cardapio?categoria=${c.slug}`} className="rounded-full px-3 py-2 text-muted-strong hover:bg-mist hover:text-fg">
                   {c.name}
                 </Link>
               </li>

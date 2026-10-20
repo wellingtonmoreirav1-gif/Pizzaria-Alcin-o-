@@ -29,11 +29,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={t.id}
             role="status"
             className={cn(
-              'pointer-events-auto flex max-w-sm animate-[var(--animate-rise)] items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-white shadow-[var(--shadow-float)]',
-              t.tone === 'success' ? 'bg-ink-900' : 'bg-brand-700',
+              'pointer-events-auto flex max-w-sm animate-[var(--animate-rise)] items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium shadow-[var(--shadow-float)]',
+              t.tone === 'success' ? 'bg-fg text-canvas' : 'bg-brand-700 text-white',
             )}
           >
-            {t.tone === 'success' ? <CheckCircle2 className="size-5 text-[#4ade80]" aria-hidden /> : <XCircle className="size-5" aria-hidden />}
+            {t.tone === 'success' ? <CheckCircle2 className="size-5 text-success-600" aria-hidden /> : <XCircle className="size-5" aria-hidden />}
             {t.message}
           </div>
         ))}

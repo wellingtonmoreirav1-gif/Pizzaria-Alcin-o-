@@ -9,6 +9,7 @@ import { normalizeSearch, cn } from '@/lib/utils';
 import { useNow } from '@/lib/use-now';
 import { EmptyState } from '@/components/ui/feedback';
 import { ProductCard } from './product-card';
+import { OptionInfoSection } from './option-info-section';
 
 type Collection = 'promocoes' | 'mais-vendidos' | null;
 
@@ -37,16 +38,21 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
     router.replace(`/cardapio${next.size ? `?${next}` : ''}`, { scroll: false });
   }
 
-  const categories = catalog.categories.filter((c) => catalog.products.some((p) => p.categoryId === c.id));
+  const groupsById = new Map(catalog.sharedGroups.map((g) => [g.id, g]));
+  const categories = catalog.categories.filter((c) =>
+    c.sectionType === 'options'
+      ? Boolean(c.sharedGroupId && groupsById.get(c.sharedGroupId)?.values.length)
+      : catalog.products.some((p) => p.categoryId === c.id),
+  );
+  const hasPromos = catalog.products.some((p) => hasActivePromotion(p, now));
   const tags = [...new Set(catalog.products.flatMap((p) => p.tags))].sort();
   const best = useMemo(() => new Set(bestSellerIds), [bestSellerIds]);
 
   const filtered = useMemo(() => {
     const q = normalizeSearch(query);
     return catalog.products.filter((p) => {
-      if (category && p.categorySlug !== category) return false;
       if (collection === 'promocoes' && !hasActivePromotion(p, now)) return false;
-      if (collection === 'mais-vendidos' && !best.has(p.id) && !p.isFeatured) return false;
+      if (collection === 'mais-vendidos' && !best.has(p.id)) return false;
       if (onlyAvailable && !isProductOrderable(p, now)) return false;
       if (tag && !p.tags.includes(tag)) return false;
       if (q) {
@@ -61,16 +67,23 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
     });
   }, [catalog.products, category, collection, onlyAvailable, tag, query, now, best]);
 
+  const plainView = !normalizeSearch(query) && !collection && !onlyAvailable && !tag;
   const grouped = categories
-    .map((c) => ({ category: c, products: filtered.filter((p) => p.categoryId === c.id).sort((a, b) => Number(isProductOrderable(b, now)) - Number(isProductOrderable(a, now)) || a.sortOrder - b.sortOrder) }))
-    .filter((g) => g.products.length > 0);
+    .filter((c) => !category || c.slug === category)
+    .map((c) => ({
+      category: c,
+      group: c.sectionType === 'options' && plainView && c.sharedGroupId ? groupsById.get(c.sharedGroupId) ?? null : null,
+      products: filtered.filter((p) => p.categoryId === c.id).sort((a, b) => Number(isProductOrderable(b, now)) - Number(isProductOrderable(a, now)) || a.sortOrder - b.sortOrder),
+    }))
+    .filter((g) => g.products.length > 0 || g.group);
+  const shownCount = grouped.reduce((n, g) => n + g.products.length, 0);
 
   const chip = (active: boolean) =>
-    cn('shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-ink-900 text-white' : 'bg-mist text-ink-800 hover:bg-line');
+    cn('shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-gold text-ink-950' : 'bg-mist text-fg hover:bg-line');
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-      <div className="sticky top-[6.6rem] z-20 -mx-4 bg-white/95 px-4 pb-3 pt-4 backdrop-blur sm:top-[4.5rem] sm:-mx-6 sm:px-6 md:top-[4.5rem]">
+      <div className="sticky top-[6.6rem] z-20 -mx-4 bg-canvas/95 px-4 pb-3 pt-4 backdrop-blur sm:top-[4.5rem] sm:-mx-6 sm:px-6 md:top-[4.5rem]">
         <form role="search" onSubmit={(e) => { e.preventDefault(); setParam({ q: query }); }} className="relative">
           <label htmlFor="busca" className="sr-only">
             Buscar no cardápio
@@ -84,7 +97,7 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
             onChange={(e) => setQuery(e.target.value)}
             onBlur={() => setParam({ q: query })}
             placeholder="Buscar pizza, prato, bebida, sabor…"
-            className="h-13 w-full rounded-2xl border border-line bg-white pl-12 pr-12 text-base focus:border-ink-900 focus:outline-none"
+            className="h-13 w-full rounded-2xl border border-line bg-surface pl-12 pr-12 text-base focus:border-fg focus:outline-none"
             autoComplete="off"
           />
           {query ? (
@@ -97,12 +110,16 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
           <button type="button" className={chip(!category && !collection)} aria-pressed={!category && !collection} onClick={() => setParam({ categoria: null, colecao: null })}>
             Tudo
           </button>
-          <button type="button" className={chip(collection === 'promocoes')} aria-pressed={collection === 'promocoes'} onClick={() => setParam({ colecao: collection === 'promocoes' ? null : 'promocoes', categoria: null })}>
-            Promoções
-          </button>
-          <button type="button" className={chip(collection === 'mais-vendidos')} aria-pressed={collection === 'mais-vendidos'} onClick={() => setParam({ colecao: collection === 'mais-vendidos' ? null : 'mais-vendidos', categoria: null })}>
-            Mais vendidos
-          </button>
+          {hasPromos ? (
+            <button type="button" className={chip(collection === 'promocoes')} aria-pressed={collection === 'promocoes'} onClick={() => setParam({ colecao: collection === 'promocoes' ? null : 'promocoes', categoria: null })}>
+              Promoções
+            </button>
+          ) : null}
+          {bestSellerIds.length > 0 ? (
+            <button type="button" className={chip(collection === 'mais-vendidos')} aria-pressed={collection === 'mais-vendidos'} onClick={() => setParam({ colecao: collection === 'mais-vendidos' ? null : 'mais-vendidos', categoria: null })}>
+              Mais vendidos
+            </button>
+          ) : null}
           {categories.map((c) => (
             <button key={c.id} type="button" className={chip(category === c.slug)} aria-pressed={category === c.slug} onClick={() => setParam({ categoria: category === c.slug ? null : c.slug, colecao: null })}>
               {c.name}
@@ -130,7 +147,7 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
                 setTag(e.target.value || null);
                 setParam({ tag: e.target.value || null });
               }}
-              className="h-9 rounded-full border border-line bg-white px-3"
+              className="h-9 rounded-full border border-line bg-surface px-3"
               aria-label="Filtrar por característica"
             >
               <option value="">Todas as características</option>
@@ -142,7 +159,7 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
             </select>
           ) : null}
           <span className="ml-auto text-muted" aria-live="polite">
-            {filtered.length} {filtered.length === 1 ? 'item' : 'itens'}
+            {shownCount} {shownCount === 1 ? 'item' : 'itens'}
           </span>
         </div>
       </div>
@@ -154,7 +171,10 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
           </EmptyState>
         </div>
       ) : (
-        grouped.map(({ category: c, products }) => (
+        grouped.map(({ category: c, products, group }) =>
+          group ? (
+            <OptionInfoSection key={c.id} category={c} group={group} />
+          ) : (
           <section key={c.id} id={c.slug} aria-labelledby={`cat-${c.slug}`} className="mt-8 scroll-mt-48">
             <h2 id={`cat-${c.slug}`} className="font-display text-2xl font-semibold sm:text-3xl">
               {c.name}
@@ -168,7 +188,8 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
               ))}
             </ul>
           </section>
-        ))
+          ),
+        )
       )}
     </div>
   );

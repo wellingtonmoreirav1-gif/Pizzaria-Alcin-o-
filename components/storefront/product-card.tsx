@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Heart, Plus } from 'lucide-react';
 import type { CatalogProduct } from '@/types/catalog';
-import { hasActivePromotion, isProductOrderable, startingPrice } from '@/lib/pricing';
+import { hasActivePromotion, isProductOrderable, startingPrice, unavailableReason } from '@/lib/pricing';
 import { formatBRL } from '@/lib/money';
 import { useNow } from '@/lib/use-now';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,8 @@ export function ProductCard({
   const favorites = useFavorites();
   const toast = useToast();
   const orderable = isProductOrderable(product, now);
+  const reason = unavailableReason(product, now);
+  const houseSpecial = product.tags.includes('especial-da-casa');
   const price = startingPrice(product, now);
   const onSale = price !== null && price.current < price.regular;
   const promo = hasActivePromotion(product, now);
@@ -40,7 +42,8 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-white shadow-[var(--shadow-card)] ring-1 ring-line/70 transition-shadow hover:shadow-[var(--shadow-float)]',
+        'group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-surface shadow-[var(--shadow-card)] ring-1 ring-line transition-shadow hover:shadow-[var(--shadow-float)]',
+        houseSpecial && 'ring-2 ring-gold/70',
         className,
       )}
       data-testid="product-card"
@@ -48,7 +51,10 @@ export function ProductCard({
       <div className="relative">
         <ProductImage src={product.imageUrl} alt={product.imageAlt} name={product.name} priority={priority} />
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-          {!orderable ? <Badge tone="dark">Esgotado</Badge> : null}
+          {reason === 'soldout' ? <Badge tone="dark">Esgotado</Badge> : null}
+          {reason === 'period' ? <Badge tone="dark">Fora do período</Badge> : null}
+          {reason === 'price' ? <Badge className="bg-ink-950/90 text-gold ring-1 ring-gold/40">Preço em conferência</Badge> : null}
+          {houseSpecial ? <Badge className="bg-gold text-ink-950">Especial da casa</Badge> : null}
           {orderable && promo ? <Badge tone="brand">Promoção</Badge> : null}
           {badge && orderable ? <Badge className="bg-white/95 text-ink-900">{badge}</Badge> : null}
         </div>
@@ -71,14 +77,16 @@ export function ProductCard({
             {product.name}
           </Link>
         </h3>
-        {product.shortDescription ? <p className="line-clamp-2 text-sm text-muted">{product.shortDescription}</p> : null}
+        {product.shortDescription ? <p className="line-clamp-3 text-sm text-muted">{product.shortDescription}</p> : null}
+        {product.serves ? <p className="text-xs font-semibold text-gold">{product.serves}</p> : null}
         <div className="mt-auto flex items-end justify-between gap-2 pt-3">
           <div className="leading-tight">
             {price ? (
               <>
                 {fromLabel ? <span className="block text-[0.7rem] uppercase tracking-wide text-muted">{fromLabel}</span> : null}
                 {onSale ? <s className="mr-1.5 text-sm text-muted">{formatBRL(price.regular)}</s> : null}
-                <span className={cn('text-lg font-bold tabular-nums', onSale && 'text-brand-700')}>{formatBRL(price.current)}</span>
+                <span className="text-lg font-bold tabular-nums text-gold">{formatBRL(price.current)}</span>
+                {reason === 'price' ? <span className="block text-[0.7rem] text-muted">valor de referência</span> : null}
               </>
             ) : (
               <span className="text-sm text-muted">Preço a definir</span>
@@ -92,7 +100,7 @@ export function ProductCard({
             aria-label={`${needsCustomization(product) ? 'Escolher opções de' : 'Adicionar'} ${product.name}`}
           >
             <Plus className="size-4" aria-hidden />
-            {needsCustomization(product) ? 'Escolher' : 'Adicionar'}
+            {reason === 'price' ? 'Em breve' : needsCustomization(product) ? 'Escolher' : 'Adicionar'}
           </button>
         </div>
       </div>

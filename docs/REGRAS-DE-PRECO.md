@@ -2,7 +2,7 @@
 
 Implementadas em `lib/pricing/index.ts` (mesmo código no navegador e no servidor). O servidor sempre recalcula a partir do banco; nenhum valor enviado pelo navegador é aceito como verdade. Valores são somados em **centavos inteiros**.
 
-## Produto simples (bebidas, almoço, churrasco, porções, sobremesas)
+## Produto simples (lanches, petiscos, pratos da casa, lasanhas, bebidas…)
 
 - **Sem tamanhos:** preço = `Preço (R$)` do produto.
 - **Com tamanhos/variantes:** o cliente escolhe um; preço = preço do tamanho.
@@ -32,6 +32,31 @@ Depois somam-se a **borda** (uma, opcional ou obrigatória conforme o grupo; pre
 > Nenhuma regra é presumida: cada tamanho de cada pizza usa a regra escolhida no painel. Se o restaurante usar outra fórmula (ex.: preço específico para uma combinação), ela precisa ser definida antes de ser implementada.
 
 Combinações inválidas são bloqueadas na tela e recusadas no servidor: sabor indisponível ou não oferecido no tamanho, sabores acima do limite, mistura de tipos proibida, mais de uma borda, grupo obrigatório sem escolha.
+
+## Cardápio oficial: tamanhos, bordas e molhos
+
+- **Código de tamanho** (`P`, `M`, `G`, `GG`, `F`) em cada tamanho (`product_variants.size_code`). As pizzas usam Pequena (P), Média (M), Grande (G), Gigante (GG) e Família (F); as lasanhas, Pequena (P), Média (M) e Grande (G). Nas pizzas do cardápio oficial cada tamanho tem **1 sabor** e **preço fixo**.
+- **Grupos compartilhados** (`option_groups.shared_key`), cadastrados uma única vez em **Painel → Bordas e molhos** e ligados aos produtos (`product_shared_groups`):
+  - **Borda recheada** (opcional, no máximo 1) — ligada às 20 pizzas. O valor depende do **código do tamanho** (`option_value_size_prices`):
+
+    | Borda | P | M | G | GG | F |
+    |---|---|---|---|---|---|
+    | Requeijão | 4,00 | 6,00 | 8,00 | 8,00 | 10,00 |
+    | Catupiry Original | 8,00 | 10,00 | 16,00 | 18,00 | 20,00 |
+    | Cream Cheese | 8,00 | 10,00 | 16,00 | 18,00 | 20,00 |
+    | Quatro Queijos | 8,00 | 10,00 | 16,00 | 18,00 | 20,00 |
+    | Cheddar | 4,00 | 6,00 | 8,00 | 8,00 | 10,00 |
+
+    Exemplo: Pizza Grande tradicional (50,00) + Catupiry (16,00) = **66,00** por pizza; 2 unidades = **132,00**.
+  - **Molhos** (opcional, até 4) — ligados a lanches, Beirute e petiscos. Sem valor definido: ficam visíveis, porém **não selecionáveis** (“Valor a definir pelo restaurante”) até o administrador informar o valor (0,00 = grátis).
+- **Prioridade do valor de uma opção:** valor cadastrado para aquele tamanho específico do produto (`option_value_variant_prices`) → valor pelo código do tamanho (`option_value_size_prices`) → valor padrão da opção. Um tamanho **sem código** usa o valor padrão — por isso, ao criar uma pizza nova, preencha o “Código do tamanho”.
+
+## Conferência de preços
+
+- `products.price_confirmed` e `option_values.price_confirmed`. Quando falso, o item aparece com “Preço em conferência”/“Valor a definir” e o cálculo recusa o pedido (`PRICE_NOT_CONFIRMED`, `OPTION_PRICE_PENDING`), na tela **e no servidor**.
+- Confirmação em **Painel → Conferência de preços** (é possível corrigir os valores e confirmar no mesmo passo), no editor do produto ou em Bordas e molhos. Somente gerente/administrador.
+- Quem confirmou e quando (`price_confirmed_by`, `price_confirmed_at`) são preenchidos **pelo banco** (gatilho), não pelo navegador; toda alteração também vai para a Auditoria.
+- Produtos novos criados pelo painel começam “em conferência”.
 
 ## Combo
 

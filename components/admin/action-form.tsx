@@ -23,6 +23,7 @@ export function ActionForm({
   variant = 'primary',
   size = 'md',
   inline,
+  id,
 }: {
   action: FormAction;
   children?: ReactNode;
@@ -35,6 +36,8 @@ export function ActionForm({
   variant?: 'primary' | 'dark' | 'outline' | 'danger' | 'ghost' | 'secondary';
   size?: 'sm' | 'md';
   inline?: boolean;
+  /** Permite ligar campos de fora do formulário (atributo `form`). */
+  id?: string;
 }) {
   const toast = useToast();
   // O aviso é disparado aqui (e não num efeito) para aparecer mesmo quando o
@@ -54,6 +57,7 @@ export function ActionForm({
   return (
     <form
       ref={ref}
+      id={id}
       action={formAction}
       className={cn(inline ? 'inline-flex items-end gap-2' : 'space-y-4', className)}
       onSubmit={(e) => {

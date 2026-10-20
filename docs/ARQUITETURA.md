@@ -84,6 +84,7 @@ Migrations em `supabase/migrations/` (aplicar em ordem). Principais tabelas:
 | `categories`, `products`, `product_images` | catálogo (exclusão lógica por `deleted_at`) |
 | `product_variants` | tamanhos/porções; para pizza: preço-base, máx. de sabores, regra de preço, mistura de tipos |
 | `option_groups`, `option_values`, `option_value_variant_prices` | sabores, bordas, adicionais, escolhas; preço e oferta por tamanho |
+| `product_shared_groups`, `option_value_size_prices` | grupos compartilhados (bordas, molhos) ligados a vários produtos; valor por código de tamanho (P/M/G/GG/F) |
 | `combo_items`, `promotions`, `banners` | combos, promoções e banners com período |
 | `business_settings`, `business_hours`, `business_hour_exceptions`, `delivery_zones` | operação, horários, feriados, bairros |
 | `customer_addresses`, `favorites`, `reviews` | dados do cliente e avaliações moderadas |
@@ -96,8 +97,11 @@ Regras técnicas aplicadas: chaves estrangeiras, índices nas consultas frequent
 Diagrama simplificado:
 
 ```
-categories 1─N products 1─N product_variants
+categories 1─N products 1─N product_variants (size_code)
                    │ 1─N option_groups 1─N option_values N─N(product_variants) via option_value_variant_prices
+                   │ N─N option_groups compartilhados (shared_key) via product_shared_groups
+option_values 1─N option_value_size_prices (valor por código de tamanho)
+categories ── section_type 'options' + shared_group_id → seção informativa (ex.: tabela de bordas)
                    │ 1─N promotions, combo_items
 orders 1─N order_items 1─N order_item_options
 orders 1─N order_status_history, order_adjustments ; orders N─1 auth.users (opcional)

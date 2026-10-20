@@ -1,20 +1,24 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { ChevronLeft, Eye } from 'lucide-react';
+import { BadgeCheck, ChevronLeft, Eye } from 'lucide-react';
 import { z } from 'zod';
 import { requireStaff, PERMISSIONS } from '@/lib/auth/session';
 import { createSessionClient } from '@/lib/supabase/server';
 import { buildImageBrief } from '@/lib/images/prompts';
+import { SIZE_CODES, SIZE_LABEL } from '@/lib/catalog/sizes';
+import { formatBRL, toCents } from '@/lib/money';
+import { ORDER_STATUS_LABEL, type OrderStatus } from '@/lib/orders/labels';
 import { Card, CheckboxField, PageHeader, SelectField, TextField, centsInput } from '@/components/admin/fields';
 import { ActionForm } from '@/components/admin/action-form';
 import { ProductFields } from '@/components/admin/product-fields';
 import { ButtonLink } from '@/components/ui/button';
-import { Notice } from '@/components/ui/feedback';
+import { Badge, Notice } from '@/components/ui/feedback';
 import {
   addComboItem, archiveGroup, archiveOptionValue, archiveProduct, archiveVariant, removeComboItem,
-  saveGroup, saveOptionValue, saveSizeMatrix, saveVariant, updateProduct,
+  linkSharedGroup, saveGroup, saveOptionValue, saveSizeMatrix, saveVariant, unlinkSharedGroup, updateProduct,
 } from '../actions';
+import { confirmProductPrices, unconfirmProductPrices } from '../../precos/actions';
 
 export const metadata = { title: 'Editar produto' };
 
@@ -27,28 +31,42 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
   const supabase = await createSessionClient();
-  const [productRes, categories, allProducts] = await Promise.all([
+  const [productRes, categories, allProducts, sharedRes, ordersRes] = await Promise.all([
     supabase
       .from('products')
       .select(
         `*, categories(slug, name),
          product_variants(*),
-         option_groups(*, option_values(*, option_value_variant_prices(*))),
+         option_groups!option_groups_product_id_fkey(*, option_values(*, option_value_variant_prices(*))),
+         product_shared_groups(sort_order, option_groups(id, name, shared_key, kind, option_values(id, deleted_at))),
          combo_items!combo_items_combo_product_id_fkey(id, item_product_id, item_variant_id, quantity, description, sort_order, item:products!combo_items_item_product_id_fkey(name), variant:product_variants(name))`,
       )
       .eq('id', id)
       .maybeSingle(),
     supabase.from('categories').select('id, name').is('deleted_at', null).order('sort_order'),
     supabase.from('products').select('id, name, kind, product_variants(id, name, deleted_at)').is('deleted_at', null).neq('id', id).order('name'),
+    supabase.from('option_groups').select('id, name').not('shared_key', 'is', null).is('deleted_at', null).order('sort_order'),
+    supabase
+      .from('orders')
+      .select('id, code, created_at, status, order_items!inner(quantity, variant_name, line_total)')
+      .eq('order_items.product_id', id)
+      .order('created_at', { ascending: false })
+      .limit(15),
   ]);
   const p = productRes.data;
   if (!p) notFound();
-  type Variant = { id: string; name: string; description: string | null; price: number; max_flavors: number; flavor_price_rule: keyof typeof RULE_LABEL; allow_mixed_flavor_tags: boolean; sort_order: number; is_active: boolean; deleted_at: string | null };
-  type Value = { id: string; name: string; description: string | null; price: number; combination_tag: string | null; sort_order: number; is_active: boolean; deleted_at: string | null; option_value_variant_prices: { variant_id: string; price: number | null; is_offered: boolean }[] };
+  type Variant = { id: string; name: string; size_code: string | null; description: string | null; price: number; max_flavors: number; flavor_price_rule: keyof typeof RULE_LABEL; allow_mixed_flavor_tags: boolean; sort_order: number; is_active: boolean; deleted_at: string | null };
+  type Value = { id: string; name: string; description: string | null; price: number; price_confirmed: boolean; combination_tag: string | null; sort_order: number; is_active: boolean; deleted_at: string | null; option_value_variant_prices: { variant_id: string; price: number | null; is_offered: boolean }[] };
   type Group = { id: string; kind: keyof typeof GROUP_KIND_LABEL; name: string; description: string | null; min_select: number; max_select: number; sort_order: number; is_active: boolean; deleted_at: string | null; option_values: Value[] };
   const variants = ((p.product_variants ?? []) as Variant[]).filter((v) => !v.deleted_at).sort((a, b) => a.sort_order - b.sort_order);
   const groups = ((p.option_groups ?? []) as Group[]).filter((g) => !g.deleted_at).sort((a, b) => a.sort_order - b.sort_order);
   const flavorGroup = groups.find((g) => g.kind === 'flavor');
+  type SharedLink = { sort_order: number; option_groups: { id: string; name: string; shared_key: string; kind: string; option_values: { id: string; deleted_at: string | null }[] } | null };
+  const sharedLinks = ((p.product_shared_groups ?? []) as SharedLink[]).filter((l) => l.option_groups).sort((a, b) => a.sort_order - b.sort_order);
+  const linkedIds = new Set(sharedLinks.map((l) => l.option_groups!.id));
+  const availableShared = (sharedRes.data ?? []).filter((g) => !linkedIds.has(g.id));
+  type OrderRow = { id: string; code: string; created_at: string; status: OrderStatus; order_items: { quantity: number; variant_name: string | null; line_total: number }[] };
+  const orders = (ordersRes.data ?? []) as unknown as OrderRow[];
   const brief = buildImageBrief({
     name: p.name,
     slug: p.slug,
@@ -59,7 +77,11 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
 
   const problems: string[] = [];
   if (p.kind === 'pizza' && variants.length === 0) problems.push('Pizza sem tamanhos: cadastre pelo menos um tamanho.');
-  if (p.kind === 'pizza' && (!flavorGroup || flavorGroup.option_values.filter((v) => !v.deleted_at).length === 0)) problems.push('Pizza sem sabores cadastrados.');
+  // Sabores só são necessários quando algum tamanho permite montar a pizza com mais de um sabor.
+  if (p.kind === 'pizza' && variants.some((v) => v.max_flavors > 1) && (!flavorGroup || flavorGroup.option_values.filter((v) => !v.deleted_at).length === 0)) {
+    problems.push('Tamanho com mais de um sabor, mas nenhum sabor cadastrado.');
+  }
+  if (!p.price_confirmed) problems.push('Preço em conferência: o produto aparece no site, mas não pode ser pedido até você confirmar os valores.');
   if (p.kind !== 'pizza' && variants.length === 0 && p.base_price === null) problems.push('Produto sem preço: informe o preço ou cadastre tamanhos.');
   if (p.kind === 'combo' && (p.combo_items ?? []).length === 0) problems.push('Combo sem itens incluídos.');
 
@@ -113,6 +135,68 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
             </div>
           </details>
         </div>
+      </Card>
+
+      <Card
+        title="Conferência de preço"
+        actions={p.price_confirmed ? <Badge tone="success">Conferido</Badge> : <Badge tone="warning">Em conferência</Badge>}
+        description={
+          p.price_confirmed
+            ? `Valores liberados para pedido${p.price_confirmed_at ? ` desde ${new Date(p.price_confirmed_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Fortaleza' })}` : ''}.`
+            : 'O cliente vê “Preço em conferência” e não consegue pedir. Revise os valores e confirme.'
+        }
+      >
+        {p.price_confirmed ? (
+          <ActionForm action={unconfirmProductPrices.bind(null, p.id)} submitLabel="Voltar para “preço em conferência”" size="sm" variant="outline" confirm="O produto deixará de poder ser pedido até nova confirmação. Continuar?" />
+        ) : (
+          <ActionForm action={confirmProductPrices.bind(null, p.id)} submitLabel={<><BadgeCheck className="size-4" aria-hidden /> Salvar e confirmar valores</>} size="sm" className="space-y-3">
+            <div className="flex flex-wrap gap-3">
+              {variants.length ? (
+                variants.map((v) => (
+                  <label key={v.id} className="text-xs font-medium">
+                    {v.name}
+                    <input name={`variant:${v.id}`} defaultValue={centsInput(v.price)} inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
+                  </label>
+                ))
+              ) : (
+                <label className="text-xs font-medium">
+                  Preço
+                  <input name="basePrice" defaultValue={centsInput(p.base_price)} inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
+                </label>
+              )}
+            </div>
+          </ActionForm>
+        )}
+      </Card>
+
+      <Card title="Bordas, molhos e outros grupos compartilhados" description="Grupos cadastrados uma vez em “Bordas e molhos” e usados por vários produtos. Os valores são editados lá.">
+        {sharedLinks.length ? (
+          <ul className="mb-4 divide-y divide-line">
+            {sharedLinks.map((l) => {
+              const g = l.option_groups!;
+              return (
+                <li key={g.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                  <span>
+                    <Link href={`/admin/opcoes#${g.shared_key}`} className="font-semibold underline-offset-2 hover:underline">{g.name}</Link>{' '}
+                    <span className="text-muted">· {g.option_values.filter((v) => !v.deleted_at).length} opções · ordem {l.sort_order}</span>
+                  </span>
+                  <ActionForm action={unlinkSharedGroup.bind(null, p.id, g.id)} submitLabel="Desligar" size="sm" variant="ghost" inline confirm={`Deixar de oferecer “${g.name}” neste produto?`} />
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="mb-4 text-sm text-muted">Nenhum grupo compartilhado ligado.</p>
+        )}
+        {availableShared.length ? (
+          <ActionForm action={linkSharedGroup.bind(null, p.id)} submitLabel="Ligar grupo" size="sm" inline>
+            <SelectField label="Grupo" name="groupId" required defaultValue="">
+              <option value="" disabled>Selecione…</option>
+              {availableShared.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </SelectField>
+            <TextField label="Ordem" name="sortOrder" type="number" defaultValue={10} className="w-24" />
+          </ActionForm>
+        ) : null}
       </Card>
 
       <Card title="Opções de personalização" description="Sabores, borda, adicionais e escolhas (ex.: acompanhamentos). Cada opção pode ter preço diferente por tamanho.">
@@ -233,6 +317,28 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
         </Card>
       ) : null}
 
+      <Card
+        title="Pedidos com este produto"
+        description="Últimos pedidos que incluem este produto (os pedidos guardam o nome e o valor da época)."
+        actions={<ButtonLink href={`/admin/pedidos?produto=${p.id}`} variant="outline" size="sm">Ver todos</ButtonLink>}
+      >
+        {orders.length ? (
+          <ul className="divide-y divide-line text-sm" data-testid="product-orders">
+            {orders.map((o) => (
+              <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <Link href={`/admin/pedidos/${o.id}`} className="font-mono font-semibold underline-offset-2 hover:underline">#{o.code}</Link>
+                <span className="text-muted">{new Date(o.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Fortaleza' })}</span>
+                <span>{o.order_items.map((i) => `${i.quantity}x${i.variant_name ? ` ${i.variant_name}` : ''}`).join(', ')}</span>
+                <span>{formatBRL(o.order_items.reduce((sum, i) => sum + toCents(i.line_total), 0))}</span>
+                <span className="text-muted">{ORDER_STATUS_LABEL[o.status]}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted">Nenhum pedido com este produto ainda.</p>
+        )}
+      </Card>
+
       <Card title="Foto: briefing e prompt" description="Use para produzir uma foto fiel ao produto (ver docs/LOGO-E-IMAGENS.md). Revise antes de publicar.">
         <dl className="grid gap-2 text-sm md:grid-cols-2">
           <div><dt className="text-muted">Composição</dt><dd>{brief.composition}</dd></div>
@@ -252,11 +358,15 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
   );
 }
 
-function VariantFields({ v, isPizza }: { v: { name: string; description: string | null; price: number; max_flavors: number; flavor_price_rule: string; allow_mixed_flavor_tags: boolean; sort_order: number; is_active: boolean } | null; isPizza: boolean }) {
+function VariantFields({ v, isPizza }: { v: { name: string; size_code: string | null; description: string | null; price: number; max_flavors: number; flavor_price_rule: string; allow_mixed_flavor_tags: boolean; sort_order: number; is_active: boolean } | null; isPizza: boolean }) {
   return (
     <div className="grid gap-3 md:grid-cols-6">
       <TextField label="Nome" name="name" required defaultValue={v?.name} className="md:col-span-2" placeholder="Ex.: Grande" />
-      <TextField label="Descrição" name="description" defaultValue={v?.description ?? ''} className="md:col-span-2" placeholder="Ex.: 8 fatias" />
+      <SelectField label="Código do tamanho" name="sizeCode" defaultValue={v?.size_code ?? ''} hint="Liga o tamanho aos valores das bordas.">
+        <option value="">—</option>
+        {SIZE_CODES.map((c) => <option key={c} value={c}>{SIZE_LABEL[c]}</option>)}
+      </SelectField>
+      <TextField label="Descrição" name="description" defaultValue={v?.description ?? ''} placeholder="Ex.: 8 fatias" />
       <TextField label={isPizza ? 'Preço-base (R$)' : 'Preço (R$)'} name="price" required inputMode="decimal" defaultValue={centsInput(v?.price ?? null)} />
       <TextField label="Ordem" name="sortOrder" type="number" defaultValue={v?.sort_order ?? 0} />
       {isPizza ? (
@@ -291,7 +401,7 @@ function GroupFields({ g }: { g: { kind: string; name: string; description: stri
   );
 }
 
-function ValueFields({ v, kind }: { v: { name: string; description: string | null; price: number; combination_tag: string | null; sort_order: number; is_active: boolean } | null; kind: string }) {
+function ValueFields({ v, kind }: { v: { name: string; description: string | null; price: number; price_confirmed: boolean; combination_tag: string | null; sort_order: number; is_active: boolean } | null; kind: string }) {
   return (
     <div className="grid gap-2 md:grid-cols-6">
       <TextField label="Nome" name="name" required defaultValue={v?.name} className="md:col-span-2" />
@@ -308,6 +418,11 @@ function ValueFields({ v, kind }: { v: { name: string; description: string | nul
         </>
       )}
       <TextField label="Ordem" name="sortOrder" type="number" defaultValue={v?.sort_order ?? 0} />
+      {kind === 'flavor' ? (
+        <input type="hidden" name="priceConfirmed" value="on" />
+      ) : (
+        <CheckboxField label="Valor conferido" name="priceConfirmed" defaultChecked={v?.price_confirmed ?? true} />
+      )}
       <CheckboxField label="Ativa" name="isActive" defaultChecked={v?.is_active ?? true} />
     </div>
   );

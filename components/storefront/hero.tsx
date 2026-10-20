@@ -9,8 +9,9 @@ import type { SiteSettings } from '@/types/settings';
  */
 export function Hero({ settings }: { settings: SiteSettings }) {
   const title = settings.heroTitle ?? 'Seu próximo sabor favorito está aqui.';
+  const accent = 'Pizzas, lanches, petiscos e pratos da casa';
   const subtitle =
-    settings.heroSubtitle ?? `Pizzas, almoço e churrasco do Alcinão em ${settings.city ?? 'São Bento'}. Monte seu pedido em poucos toques e envie pelo WhatsApp.`;
+    settings.heroSubtitle ?? `${accent} do Alcinão em ${settings.city ?? 'São Bento'}. Monte seu pedido em poucos toques e envie pelo WhatsApp.`;
   return (
     <section className="relative isolate overflow-hidden bg-ink-950 text-white">
       {settings.heroImageUrl ? (
@@ -24,14 +25,14 @@ export function Hero({ settings }: { settings: SiteSettings }) {
       <div className="grain absolute inset-0 -z-10" aria-hidden />
       <div className="mx-auto flex min-h-[min(78svh,44rem)] max-w-7xl flex-col justify-center gap-7 px-4 py-16 sm:px-6 md:py-24">
         <p className="inline-flex w-fit animate-[var(--animate-rise)] items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
-          <UtensilsCrossed className="size-3.5 text-brand-500" aria-hidden /> {settings.city ?? 'São Bento'} · {settings.state ?? 'PB'}
+          <UtensilsCrossed className="size-3.5 text-gold" aria-hidden /> {settings.city ?? 'São Bento'} · {settings.state ?? 'PB'}
         </p>
         <h1 className="max-w-2xl animate-[var(--animate-rise)] text-balance font-display text-[2.6rem] font-semibold leading-[1.02] tracking-tight [animation-delay:80ms] sm:text-6xl lg:text-7xl">
           {title}
         </h1>
         <p className="max-w-xl animate-[var(--animate-rise)] text-pretty text-lg leading-relaxed text-white/75 [animation-delay:160ms]">{subtitle}</p>
         <div className="flex animate-[var(--animate-rise)] flex-wrap gap-3 [animation-delay:240ms]">
-          <ButtonLink href="#em-alta" size="lg">
+          <ButtonLink href="/cardapio" size="lg">
             Pedir agora <ArrowRight className="size-5" aria-hidden />
           </ButtonLink>
           <ButtonLink href="/cardapio" size="lg" variant="outline" className="border-white/25 bg-white/5 text-white hover:border-white hover:bg-white/10">

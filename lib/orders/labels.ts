@@ -105,6 +105,7 @@ export function allowedNextStatuses(status: OrderStatus, fulfillment: Fulfillmen
 /** Mensagens amigáveis para erros lançados pelas funções do banco. */
 export const DB_ERROR_MESSAGES: Record<string, string> = {
   not_authorized: 'Você não tem permissão para esta ação.',
+  group_not_shared: 'Só grupos cadastrados em “Bordas e molhos” podem ser ligados a vários produtos.',
   order_not_found: 'Pedido não encontrado.',
   invalid_transition: 'Esta mudança de status não é permitida a partir do status atual.',
   delivery_fee_not_confirmed: 'Confirme a taxa de entrega antes de aceitar o pedido.',

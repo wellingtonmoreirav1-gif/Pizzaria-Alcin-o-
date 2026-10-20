@@ -25,7 +25,7 @@ export function RecentGuestOrders() {
               <strong>#{o.code}</strong>{' '}
               <span className="text-muted">{new Date(o.createdAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span>
             </span>
-            <Link href={`/pedido/${o.code}?t=${encodeURIComponent(o.token)}`} className="font-semibold text-brand-700 underline">
+            <Link href={`/pedido/${o.code}?t=${encodeURIComponent(o.token)}`} className="font-semibold text-danger underline">
               Acompanhar
             </Link>
           </li>

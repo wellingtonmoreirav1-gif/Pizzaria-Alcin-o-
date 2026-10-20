@@ -75,7 +75,7 @@ export function AuthForm({ next = '/conta', allowSignup = true, title }: { next?
               role="tab"
               aria-selected={mode === m}
               onClick={() => setMode(m)}
-              className={cn('h-10 rounded-xl text-sm font-semibold', mode === m ? 'bg-white shadow-sm' : 'text-muted')}
+              className={cn('h-10 rounded-xl text-sm font-semibold', mode === m ? 'bg-surface shadow-sm' : 'text-muted')}
             >
               {m === 'login' ? 'Entrar' : 'Criar conta'}
             </button>

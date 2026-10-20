@@ -10,13 +10,13 @@ export async function SiteFooter() {
   const s = data.settings;
   const phone = s.whatsappNumber.startsWith('55') ? s.whatsappNumber.slice(2) : s.whatsappNumber;
   return (
-    <footer className="mt-20 bg-ink-950 text-white">
+    <footer className="mt-20 border-t border-line bg-[#080706] text-white">
       <div className="grain">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.3fr_1fr_1fr]">
           <div className="space-y-4">
             <BrandLogo logoUrl={s.logoUrl} name={s.businessName} tone="light" />
             <p className="max-w-sm text-sm leading-relaxed text-white/70">
-              {s.businessName}. Pizzas, almoço e churrasco em {s.city ?? 'São Bento'}
+              {s.businessName}. Pizzas, lanches, petiscos e pratos da casa em {s.city ?? 'São Bento'}
               {s.state ? `/${s.state}` : ''}.
             </p>
             <p className="flex items-start gap-2 text-sm text-white/80">

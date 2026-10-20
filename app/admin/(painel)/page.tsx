@@ -47,12 +47,15 @@ export default async function AdminHome() {
   const ctx = await requireStaff();
   await connection();
   const supabase = await createSessionClient();
-  const [dash, operation, demo, hours] = await Promise.all([
+  const [dash, operation, demo, hours, pendingProducts, pendingValues] = await Promise.all([
     supabase.rpc('dashboard_today'),
     getOperationFresh(),
     supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_demo', true).is('deleted_at', null),
     supabase.from('business_hours').select('shift, closes_at, is_active').eq('shift', 'lunch').eq('is_active', true).is('closes_at', null).limit(1),
+    supabase.from('products').select('id', { count: 'exact', head: true }).eq('price_confirmed', false).is('deleted_at', null),
+    supabase.from('option_values').select('id', { count: 'exact', head: true }).eq('price_confirmed', false).is('deleted_at', null),
   ]);
+  const pendingPrices = (pendingProducts.count ?? 0) + (pendingValues.count ?? 0);
   const d = (dash.data ?? {}) as Dashboard;
   const status = computeStoreStatus(operation.hours, new Date());
   const m = (v: number | undefined) => formatBRL(toCents(v ?? 0));
@@ -67,6 +70,12 @@ export default async function AdminHome() {
       {(demo.count ?? 0) > 0 && ctx.role !== 'attendant' ? (
         <Notice tone="warning" title="Há produtos de demonstração publicados">
           Remova-os antes de divulgar o site (veja README → “Remover dados de exemplo”).
+        </Notice>
+      ) : null}
+      {pendingPrices > 0 && ctx.role !== 'attendant' ? (
+        <Notice tone="warning" title={`${pendingPrices} preço(s) aguardando conferência`}>
+          Esses itens aparecem no site, mas não podem ser pedidos até você confirmar o valor.{' '}
+          <Link href="/admin/precos" className="font-semibold underline">Conferir preços</Link>
         </Notice>
       ) : null}
       {hours.data?.length && status.openShifts.includes('lunch') ? (

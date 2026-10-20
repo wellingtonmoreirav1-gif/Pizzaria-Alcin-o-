@@ -4,10 +4,10 @@ import { cn } from '@/lib/utils';
 
 type Tone = 'info' | 'success' | 'warning' | 'danger';
 const tones: Record<Tone, { box: string; icon: ReactNode }> = {
-  info: { box: 'bg-mist text-ink-800 border-line', icon: <Info className="size-5 shrink-0" aria-hidden /> },
+  info: { box: 'bg-mist text-fg border-line', icon: <Info className="size-5 shrink-0" aria-hidden /> },
   success: { box: 'bg-success-50 text-success-600 border-success-600/20', icon: <CheckCircle2 className="size-5 shrink-0" aria-hidden /> },
   warning: { box: 'bg-warning-50 text-warning-600 border-warning-600/20', icon: <AlertTriangle className="size-5 shrink-0" aria-hidden /> },
-  danger: { box: 'bg-brand-50 text-brand-700 border-brand-200', icon: <XCircle className="size-5 shrink-0" aria-hidden /> },
+  danger: { box: 'bg-brand-50 text-danger border-brand-200', icon: <XCircle className="size-5 shrink-0" aria-hidden /> },
 };
 
 export function Notice({ tone = 'info', title, children, className, live }: { tone?: Tone; title?: string; children?: ReactNode; className?: string; live?: boolean }) {
@@ -24,7 +24,7 @@ export function Notice({ tone = 'info', title, children, className, live }: { to
 
 export function Badge({ children, tone = 'neutral', className }: { children: ReactNode; tone?: 'neutral' | 'brand' | 'dark' | 'success' | 'warning'; className?: string }) {
   const styles = {
-    neutral: 'bg-mist text-ink-700',
+    neutral: 'bg-mist text-muted-strong',
     brand: 'bg-brand-600 text-white',
     dark: 'bg-ink-900 text-white',
     success: 'bg-success-50 text-success-600',

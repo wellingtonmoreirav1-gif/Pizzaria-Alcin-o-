@@ -29,6 +29,8 @@ export function ProductImage({
           fill
           sizes={sizes}
           priority={priority}
+          // Ilustrações provisórias em SVG (public/images/products) não passam pela otimização.
+          unoptimized={src.endsWith('.svg')}
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
         />
       ) : (

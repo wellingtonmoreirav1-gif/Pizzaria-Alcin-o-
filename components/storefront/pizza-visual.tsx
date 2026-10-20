@@ -37,7 +37,7 @@ export function PizzaVisual({ flavors, maxFlavors, hasCrust }: { flavors: string
           flavors.length ? <circle key={i} cx={x} cy={y} r={5} fill="#fff" fillOpacity={0.55} /> : null,
         )}
       </svg>
-      <figcaption className="text-center text-xs text-white/75">
+      <figcaption className="text-center text-xs text-muted-strong">
         {flavors.length === 0
           ? `Escolha até ${maxFlavors} ${maxFlavors > 1 ? 'sabores' : 'sabor'}`
           : flavors.length > 1

@@ -73,7 +73,7 @@ async function AccountContent() {
                 </span>
                 <Badge>{ORDER_STATUS_LABEL[o.status as OrderStatus]}</Badge>
                 <span className="tabular-nums">{formatBRL(toCents(o.total))}{o.total_is_final ? '' : ' + taxa'}</span>
-                <Link href={`/pedido/${o.code}`} className="font-semibold text-brand-700 underline">
+                <Link href={`/pedido/${o.code}`} className="font-semibold text-danger underline">
                   Detalhes e pedir novamente
                 </Link>
               </li>

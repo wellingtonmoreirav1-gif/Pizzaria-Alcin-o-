@@ -38,7 +38,7 @@ export function OrderSummary({ order }: { order: OrderView }) {
         ) : null}
         <div className="flex justify-between border-t border-line pt-2 text-base font-bold">
           <dt>{t.totalIsFinal ? 'Total' : t.deliveryFeeStatus === 'estimated' ? 'Total estimado (a confirmar)' : 'Total dos itens (taxa a confirmar)'}</dt>
-          <dd className="tabular-nums" data-testid="order-total">{formatBRL(t.total)}</dd>
+          <dd className="tabular-nums text-gold" data-testid="order-total">{formatBRL(t.total)}</dd>
         </div>
       </dl>
       <dl className="grid gap-2 rounded-2xl bg-mist p-4 text-sm sm:grid-cols-2">

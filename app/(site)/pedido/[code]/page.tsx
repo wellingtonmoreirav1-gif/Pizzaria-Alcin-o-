@@ -72,13 +72,13 @@ async function OrderContent({ params, searchParams }: { params: Promise<{ code: 
     <div className="space-y-6">
       {!final ? <AutoRefresh /> : null}
       <header className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-600">Pedido #{order.code}</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Pedido #{order.code}</p>
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">{isNew && order.status === 'registered' ? 'Falta só enviar no WhatsApp!' : ORDER_STATUS_LABEL[order.status]}</h1>
         <p className="text-muted">{ORDER_STATUS_CUSTOMER_TEXT[order.status]}</p>
       </header>
 
       {order.status === 'registered' ? (
-        <section className="space-y-4 rounded-[var(--radius-card)] border-2 border-[#1f8f4e]/30 bg-[#effaf3] p-5 sm:p-6" aria-labelledby="enviar">
+        <section className="space-y-4 rounded-[var(--radius-card)] border-2 border-[#1f8f4e]/50 bg-success-50 p-5 sm:p-6" aria-labelledby="enviar">
           <h2 id="enviar" className="font-display text-xl font-semibold">
             1 passo para confirmar
           </h2>

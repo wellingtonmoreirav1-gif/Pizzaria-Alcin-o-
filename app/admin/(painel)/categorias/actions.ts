@@ -9,6 +9,14 @@ import { isAllowedImageUrl } from '@/lib/uploads';
 
 const roles = [...PERMISSIONS.catalog];
 
+/** Seção de produtos (padrão) ou seção informativa de um grupo compartilhado (ex.: bordas, molhos). */
+function sectionFields(form: FormData): { section_type: 'products' | 'options'; shared_group_id: string | null } {
+  const groupId = str(form, 'sharedGroupId');
+  if (!groupId) return { section_type: 'products', shared_group_id: null };
+  if (!z.uuid().safeParse(groupId).success) throw new ActionError('Grupo de opções inválido.');
+  return { section_type: 'options', shared_group_id: groupId };
+}
+
 export async function saveCategory(id: string | null, _prev: ActionResult | null, form: FormData): Promise<ActionResult> {
   return runAdminAction(
     roles,
@@ -25,6 +33,7 @@ export async function saveCategory(id: string | null, _prev: ActionResult | null
         sort_order: int(form, 'sortOrder'),
         is_active: bool(form, 'isActive'),
         show_on_home: bool(form, 'showOnHome'),
+        ...sectionFields(form),
       };
       if (id) {
         if (!z.uuid().safeParse(id).success) throw new ActionError('Registro inválido.');

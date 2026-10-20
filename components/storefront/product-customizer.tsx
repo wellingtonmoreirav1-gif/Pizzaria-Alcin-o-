@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Check, Clock, ShoppingBag } from 'lucide-react';
-import type { CatalogOptionGroup, CatalogProduct, CatalogVariant, LineSelection } from '@/types/catalog';
+import type { CatalogOptionGroup, CatalogOptionValue, CatalogProduct, CatalogVariant, LineSelection } from '@/types/catalog';
 import {
   flavorLimitsFor,
   flavorPriceFor,
@@ -25,8 +25,19 @@ import { PizzaVisual } from './pizza-visual';
 
 const SHIFT_NOTE = { lunch: 'Servido no horário do almoço', dinner: 'Servido no horário da noite' } as const;
 
+/** Pré-seleciona o tamanho só quando existe uma única opção; senão o cliente escolhe. */
 function defaultVariant(product: CatalogProduct): CatalogVariant | null {
-  return product.variants.find((v) => v.isAvailable) ?? null;
+  const available = product.variants.filter((v) => v.isAvailable);
+  return product.variants.length === 1 ? (available[0] ?? null) : null;
+}
+
+/** Faixa de preço de uma opção entre os tamanhos (ex.: borda "+ R$ 4,00 a R$ 10,00"). */
+function optionPriceRange(value: CatalogOptionValue, variants: CatalogVariant[]): string | null {
+  const prices = variants.map((v) => optionPriceFor(value, v)).filter((p) => p > 0);
+  if (prices.length === 0) return value.price > 0 ? `+ ${formatBRL(value.price)}` : null;
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  return min === max ? `+ ${formatBRL(min)}` : `+ ${formatBRL(min)} a ${formatBRL(max)}`;
 }
 
 /** Remove escolhas que deixam de valer quando o tamanho muda. */
@@ -134,7 +145,7 @@ export function ProductCustomizer({
     return promo ? (
       <>
         <s className="mr-1 text-muted">{formatBRL(v.price)}</s>
-        <span className="font-semibold text-brand-700">{formatBRL(promo.promoPrice)}</span>
+        <span className="font-semibold text-danger">{formatBRL(promo.promoPrice)}</span>
       </>
     ) : (
       formatBRL(v.price)
@@ -155,8 +166,8 @@ export function ProductCustomizer({
   return (
     <div className={cn('flex flex-col', layout === 'page' ? 'gap-8 lg:flex-row' : 'gap-5')}>
       <div className={cn(layout === 'page' ? 'lg:w-[44%]' : '', 'flex flex-col gap-4')}>
-        {product.kind === 'pizza' ? (
-          <div className="flex flex-col items-center gap-3 rounded-[var(--radius-card)] bg-ink-900 p-6 text-white">
+        {product.kind === 'pizza' && flavorGroup ? (
+          <div className="flex flex-col items-center gap-3 rounded-[var(--radius-card)] bg-surface p-6 ring-1 ring-line">
             <PizzaVisual flavors={chosenFlavorNames} maxFlavors={variant?.maxFlavors ?? 1} hasCrust={Boolean(crustGroup && (options[crustGroup.id] ?? []).length)} />
           </div>
         ) : (
@@ -164,7 +175,8 @@ export function ProductCustomizer({
         )}
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
-            {!orderable ? <Badge tone="dark">Esgotado</Badge> : null}
+            {!product.priceConfirmed ? <Badge className="bg-gold-soft text-gold">Preço em conferência</Badge> : !orderable ? <Badge tone="dark">Esgotado</Badge> : null}
+            {product.tags.includes('especial-da-casa') ? <Badge className="bg-gold text-ink-950">Especial da casa</Badge> : null}
             {result.ok && result.line.unitDiscount > 0 ? (
               <Badge tone="brand">Promoção</Badge>
             ) : null}
@@ -173,9 +185,12 @@ export function ProductCustomizer({
                 <Clock className="size-3" aria-hidden /> {SHIFT_NOTE[product.shiftRestriction]}
               </Badge>
             ) : null}
-            {product.serves ? <Badge>{product.serves}</Badge> : null}
+            {product.serves ? <Badge className="bg-gold-soft text-gold">{product.serves}</Badge> : null}
           </div>
           {layout === 'page' ? <h1 className="font-display text-3xl font-semibold leading-tight sm:text-4xl">{product.name}</h1> : null}
+          {!product.priceConfirmed ? (
+            <Notice tone="warning">Os valores deste item estão em conferência pelo restaurante. Ele poderá ser pedido assim que forem confirmados.</Notice>
+          ) : null}
           {product.description || product.shortDescription ? (
             <p className="text-[0.95rem] leading-relaxed text-muted-strong">{product.description ?? product.shortDescription}</p>
           ) : null}
@@ -183,9 +198,9 @@ export function ProductCustomizer({
             <ul className="space-y-1 rounded-2xl bg-mist p-4 text-sm">
               {product.comboItems.map((item) => (
                 <li key={`${item.productId}-${item.variantId}`} className="flex items-center gap-2">
-                  <Check className="size-4 text-brand-600" aria-hidden />
+                  <Check className="size-4 text-gold" aria-hidden />
                   {item.quantity}x {item.description ?? item.productName}
-                  {!item.isAvailable ? <span className="text-brand-700">(esgotado)</span> : null}
+                  {!item.isAvailable ? <span className="text-danger">(esgotado)</span> : null}
                 </li>
               ))}
             </ul>
@@ -203,7 +218,7 @@ export function ProductCustomizer({
         {product.variants.length > 0 ? (
           <fieldset className="space-y-2">
             <legend className="mb-2 flex w-full items-center justify-between">
-              <span className="font-display text-lg font-semibold">{product.kind === 'pizza' ? 'Tamanho' : 'Escolha uma opção'}</span>
+              <span className="font-display text-lg font-semibold">{product.kind === 'pizza' || product.variants.some((v) => v.sizeCode) ? 'Tamanho' : 'Escolha uma opção'}</span>
               <Badge tone="dark">Obrigatório</Badge>
             </legend>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -212,13 +227,13 @@ export function ProductCustomizer({
                   key={v.id}
                   className={cn(
                     'flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-3.5 transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-brand-500',
-                    variantId === v.id ? 'border-ink-900 bg-mist' : 'border-line hover:border-ink-600',
+                    variantId === v.id ? 'border-fg bg-mist' : 'border-line hover:border-muted',
                     !v.isAvailable && 'cursor-not-allowed opacity-50',
                   )}
                 >
                   <input type="radio" name="variant" className="sr-only" checked={variantId === v.id} disabled={!v.isAvailable} onChange={() => selectVariant(v.id)} />
                   <span className={cn('grid size-5 shrink-0 place-items-center rounded-full border-2', variantId === v.id ? 'border-brand-600 bg-brand-600' : 'border-line')}>
-                    {variantId === v.id ? <span className="size-2 rounded-full bg-white" /> : null}
+                    {variantId === v.id ? <span className="size-2 rounded-full bg-surface" /> : null}
                   </span>
                   <span className="flex-1">
                     <span className="block font-semibold">{v.name}</span>
@@ -227,7 +242,7 @@ export function ProductCustomizer({
                       {!v.isAvailable ? ' · esgotado' : ''}
                     </span>
                   </span>
-                  <span className="text-right text-sm tabular-nums">{variantPriceLabel(v)}</span>
+                  <span className="text-right text-sm font-semibold tabular-nums text-gold">{variantPriceLabel(v)}</span>
                 </label>
               ))}
             </div>
@@ -262,7 +277,10 @@ export function ProductCustomizer({
               <legend className="mb-2 flex w-full items-center justify-between gap-3">
                 <span>
                   <span className="block font-display text-lg font-semibold">{group.name}</span>
-                  <span className="block text-xs text-muted">{helper}</span>
+                  <span className="block text-xs text-muted">
+                    {helper}
+                    {!variant && product.variants.length > 1 && group.kind !== 'flavor' ? ' · o valor depende do tamanho' : ''}
+                  </span>
                 </span>
                 {limits.min > 0 ? <Badge tone="dark">Obrigatório</Badge> : null}
               </legend>
@@ -282,17 +300,28 @@ export function ProductCustomizer({
                   const tagBlocked =
                     group.kind === 'flavor' && variant && !variant.allowMixedFlavorTags && chosen.length > 0 && !isChosen && !chosenTags.has(value.combinationTag ?? '');
                   const full = !single && !isChosen && chosen.length >= limits.max;
-                  const disabled = !value.isAvailable || !offered || Boolean(tagBlocked) || full;
-                  const price =
-                    group.kind === 'flavor'
+                  const disabled = !value.priceConfirmed || !value.isAvailable || !offered || Boolean(tagBlocked) || full;
+                  const price = !value.priceConfirmed
+                    ? null
+                    : group.kind === 'flavor'
                       ? variant && variant.flavorPriceRule !== 'fixed'
                         ? formatBRL(flavorPriceFor(value, variant))
                         : null
-                      : (() => {
-                          const p = optionPriceFor(value, variant);
-                          return p > 0 ? `+ ${formatBRL(p)}` : null;
-                        })();
-                  const reason = !value.isAvailable ? 'Esgotado' : !offered ? 'Indisponível neste tamanho' : tagBlocked ? 'Não combina com o sabor escolhido' : null;
+                      : variant
+                        ? (() => {
+                            const p = optionPriceFor(value, variant);
+                            return p > 0 ? `+ ${formatBRL(p)}` : null;
+                          })()
+                        : optionPriceRange(value, product.variants);
+                  const reason = !value.priceConfirmed
+                    ? 'Valor a definir pelo restaurante'
+                    : !value.isAvailable
+                      ? 'Esgotado'
+                      : !offered
+                        ? 'Indisponível neste tamanho'
+                        : tagBlocked
+                          ? 'Não combina com o sabor escolhido'
+                          : null;
                   return (
                     <OptionRow
                       key={value.id}
@@ -323,7 +352,7 @@ export function ProductCustomizer({
             onChange={(e) => setNotes(e.target.value.slice(0, 200))}
             maxLength={200}
             placeholder="Ex.: sem cebola, carne bem passada…"
-            className="min-h-20 w-full rounded-xl border border-line px-3.5 py-3 text-[0.95rem] focus:border-ink-900 focus:outline-none"
+            className="min-h-20 w-full rounded-xl border border-line px-3.5 py-3 text-[0.95rem] focus:border-fg focus:outline-none"
           />
           <p className="text-right text-xs text-muted">{notes.length}/200</p>
         </div>
@@ -344,7 +373,7 @@ export function ProductCustomizer({
               <span>Preço unitário</span>
               <span className="tabular-nums">
                 {result.line.unitDiscount > 0 ? <s className="mr-2 text-muted">{formatBRL(result.line.unitRegular)}</s> : null}
-                <strong>{formatBRL(result.line.unitPrice)}</strong>
+                <strong className="text-gold">{formatBRL(result.line.unitPrice)}</strong>
               </span>
             </p>
           </div>
@@ -358,8 +387,8 @@ export function ProductCustomizer({
           </p>
         )}
 
-        {layout === 'page' ? <div className="sticky bottom-0 -mx-4 border-t border-line bg-white/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:p-0">{footer}</div> : null}
-        {layout === 'dialog' ? <div className="sticky bottom-0 -mx-5 -mb-4 border-t border-line bg-white px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">{footer}</div> : null}
+        {layout === 'page' ? <div className="sticky bottom-0 -mx-4 border-t border-line bg-canvas/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:p-0">{footer}</div> : null}
+        {layout === 'dialog' ? <div className="sticky bottom-0 -mx-5 -mb-4 border-t border-line bg-surface px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">{footer}</div> : null}
       </form>
     </div>
   );
@@ -389,7 +418,7 @@ function OptionRow({
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-center gap-3 bg-white px-4 py-3 transition-colors has-[:focus-visible]:bg-mist',
+        'flex cursor-pointer items-center gap-3 bg-surface px-4 py-3 transition-colors has-[:focus-visible]:bg-mist',
         checked && 'bg-brand-50/60',
         disabled && 'cursor-not-allowed',
       )}
@@ -404,11 +433,11 @@ function OptionRow({
           disabled && !checked && 'opacity-40',
         )}
       >
-        {checked ? type === 'radio' ? <span className="size-2 rounded-full bg-white" /> : <Check className="size-3.5" strokeWidth={3} /> : null}
+        {checked ? type === 'radio' ? <span className="size-2 rounded-full bg-surface" /> : <Check className="size-3.5" strokeWidth={3} /> : null}
       </span>
       <span className={cn('flex-1', disabled && !checked && 'opacity-50')}>
         <span className="block text-[0.95rem] font-medium">{title}</span>
-        {description ? <span className={cn('block text-xs', muted ? 'text-brand-700' : 'text-muted')}>{description}</span> : null}
+        {description ? <span className={cn('block text-xs', muted ? 'text-danger' : 'text-muted')}>{description}</span> : null}
       </span>
       {price ? <span className={cn('text-sm tabular-nums text-muted-strong', disabled && !checked && 'opacity-50')}>{price}</span> : null}
     </label>

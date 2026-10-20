@@ -20,10 +20,10 @@ export function QuantityStepper({
 }) {
   const btn = size === 'sm' ? 'size-8' : 'size-11';
   return (
-    <div className="inline-flex items-center rounded-full border border-line bg-white" role="group" aria-label={label}>
+    <div className="inline-flex items-center rounded-full border border-line bg-surface" role="group" aria-label={label}>
       <button
         type="button"
-        className={cn(btn, 'grid place-items-center rounded-full text-ink-900 hover:bg-mist disabled:opacity-30')}
+        className={cn(btn, 'grid place-items-center rounded-full text-fg hover:bg-mist disabled:opacity-30')}
         onClick={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
         aria-label="Diminuir quantidade"
@@ -35,7 +35,7 @@ export function QuantityStepper({
       </output>
       <button
         type="button"
-        className={cn(btn, 'grid place-items-center rounded-full text-ink-900 hover:bg-mist disabled:opacity-30')}
+        className={cn(btn, 'grid place-items-center rounded-full text-fg hover:bg-mist disabled:opacity-30')}
         onClick={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
         aria-label="Aumentar quantidade"

@@ -9,7 +9,7 @@ import { useFavorites } from './favorites-context';
 export function HeaderActions() {
   const { count, hydrated, setDrawerOpen, lastAddedAt } = useCart();
   const favorites = useFavorites();
-  const icon = 'grid size-11 place-items-center rounded-full text-ink-900 transition-colors hover:bg-mist';
+  const icon = 'grid size-11 place-items-center rounded-full text-fg transition-colors hover:bg-mist';
   return (
     <div className="flex items-center gap-0.5">
       <Link href="/cardapio?buscar=1" className={icon} aria-label="Buscar no cardápio">
@@ -25,7 +25,7 @@ export function HeaderActions() {
       <button
         type="button"
         onClick={() => setDrawerOpen(true)}
-        className="relative ml-1 inline-flex h-11 items-center gap-2 rounded-full bg-ink-900 pl-3.5 pr-4 text-sm font-semibold text-white transition-colors hover:bg-ink-700"
+        className="relative ml-1 inline-flex h-11 items-center gap-2 rounded-full bg-brand-600 pl-3.5 pr-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
         aria-label={`Abrir carrinho, ${hydrated ? count : 0} ${count === 1 ? 'item' : 'itens'}`}
         data-testid="cart-button"
       >

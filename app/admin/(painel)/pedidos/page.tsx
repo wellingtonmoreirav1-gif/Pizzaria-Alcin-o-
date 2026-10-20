@@ -12,6 +12,12 @@ import { EmptyState } from '@/components/ui/feedback';
 
 export const metadata = { title: 'Pedidos' };
 
+type OrderRow = {
+  id: string; code: string; created_at: string; customer_name: string; customer_phone: string; fulfillment: string; status: string;
+  total: number; total_is_final: boolean; delivery_fee_status: string; payment_method: string; needs_customer_approval: boolean;
+  whatsapp_opened_at: string | null; order_items: { quantity: number; product_name: string }[];
+};
+
 function todayLocal() {
   return new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
 }
@@ -21,30 +27,41 @@ export default async function OrdersPage({ searchParams }: PageProps<'/admin/ped
   await connection();
   const sp = await searchParams;
   const get = (k: string) => (typeof sp[k] === 'string' ? (sp[k] as string) : '');
-  const from = get('de') || todayLocal();
-  const to = get('ate') || from;
+  const productId = /^[0-9a-f-]{36}$/.test(get('produto')) ? get('produto') : '';
+  // Filtrando por produto, o período padrão passa a ser os últimos 90 dias.
+  const from = get('de') || (productId ? new Date(Date.now() - 3 * 3600 * 1000 - 90 * 86400000).toISOString().slice(0, 10) : todayLocal());
+  const to = get('ate') || (productId ? todayLocal() : from);
   const status = get('status');
   const fulfillment = get('modalidade');
   const q = get('q').replace(/[^\p{L}\p{N}\- ]/gu, '').trim().slice(0, 60);
 
   const supabase = await createSessionClient();
+  const productName = productId ? (await supabase.from('products').select('name').eq('id', productId).maybeSingle()).data?.name ?? null : null;
   let query = supabase
     .from('orders')
-    .select('id, code, created_at, customer_name, customer_phone, fulfillment, status, total, total_is_final, delivery_fee_status, payment_method, needs_customer_approval, whatsapp_opened_at, order_items(quantity, product_name)')
+    .select(
+      'id, code, created_at, customer_name, customer_phone, fulfillment, status, total, total_is_final, delivery_fee_status, payment_method, needs_customer_approval, whatsapp_opened_at, order_items(quantity, product_name)' +
+        (productId ? ', filtro:order_items!inner(product_id)' : ''),
+    )
     .gte('created_at', new Date(`${from}T00:00:00-03:00`).toISOString())
     .lt('created_at', new Date(new Date(`${to}T00:00:00-03:00`).getTime() + 86400000).toISOString())
     .order('created_at', { ascending: false })
     .limit(200);
+  if (productId) query = query.eq('filtro.product_id', productId);
   if (status && (ORDER_STATUSES as string[]).includes(status)) query = query.eq('status', status);
   if (status === 'abertos') query = query.not('status', 'in', '(completed,cancelled)');
   if (fulfillment && ['delivery', 'pickup', 'dine_in'].includes(fulfillment)) query = query.eq('fulfillment', fulfillment);
   if (q) query = /^ALC-/i.test(q) ? query.ilike('code', `${q}%`) : query.or(`customer_phone.ilike.%${q.replace(/\D/g, '') || '_'}%,customer_name.ilike.%${q}%`);
-  const { data: orders, error } = await query;
+  const { data, error } = await query;
+  const orders = data as unknown as OrderRow[] | null;
 
   return (
     <div>
       <AutoRefresh seconds={30} />
-      <PageHeader title="Pedidos" description="Atualiza automaticamente a cada 30 segundos." />
+      <PageHeader
+        title="Pedidos"
+        description={productName ? <>Pedidos com <strong>{productName}</strong> · <Link href="/admin/pedidos" className="underline">limpar filtro</Link></> : 'Atualiza automaticamente a cada 30 segundos.'}
+      />
       <form className="mb-5 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-6" role="search">
         <TextField label="De" name="de" type="date" defaultValue={from} />
         <TextField label="Até" name="ate" type="date" defaultValue={to} />
@@ -62,6 +79,7 @@ export default async function OrdersPage({ searchParams }: PageProps<'/admin/ped
           ))}
         </SelectField>
         <TextField label="Código, nome ou telefone" name="q" defaultValue={q} />
+        {productId ? <input type="hidden" name="produto" value={productId} /> : null}
         <button type="submit" className="h-10 self-end rounded-xl bg-ink-900 px-4 text-sm font-semibold text-white">Filtrar</button>
       </form>
       {error ? <p className="text-brand-700">Não foi possível carregar os pedidos.</p> : null}

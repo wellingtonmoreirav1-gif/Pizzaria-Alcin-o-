@@ -25,13 +25,13 @@ export function CartSuggestions({ products, fetchedAt }: { products: CatalogProd
         {items.map((p) => {
           const price = startingPrice(p, now);
           return (
-            <li key={p.id} className="w-40 shrink-0 rounded-xl bg-white p-3 shadow-sm">
+            <li key={p.id} className="w-40 shrink-0 rounded-xl bg-surface p-3 shadow-sm">
               <p className="line-clamp-2 text-sm font-semibold leading-snug">{p.name}</p>
               <p className="mt-1 text-xs text-muted">{price ? formatBRL(price.current) : ''}</p>
               <button
                 type="button"
                 onClick={() => dialog.quickAdd(p, fetchedAt)}
-                className="mt-2 inline-flex h-8 w-full items-center justify-center gap-1 rounded-lg bg-ink-900 text-xs font-semibold text-white hover:bg-ink-700"
+                className="mt-2 inline-flex h-8 w-full items-center justify-center gap-1 rounded-lg bg-fg text-xs font-semibold text-canvas hover:opacity-90"
                 aria-label={`Adicionar ${p.name}`}
               >
                 <Plus className="size-3.5" aria-hidden /> Adicionar

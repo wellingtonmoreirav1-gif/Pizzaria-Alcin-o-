@@ -35,7 +35,7 @@ function pizza(overrides: Partial<CatalogProduct> = {}): CatalogProduct {
   };
 }
 
-const sel = (variantId: string | null, crustId?: string, quantity = 1) => ({ productId: 'p-calabresa', variantId, options: crustId ? { 'g-bordas': [crustId] } : {}, quantity });
+const sel = (variantId: string | null, crustId?: string, quantity = 1) => ({ productId: 'p-calabresa', variantId, options: (crustId ? { 'g-bordas': [crustId] } : {}) as Record<string, string[]>, quantity });
 const ok = (r: ReturnType<typeof priceLine>): PricedLine => {
   if (!r.ok) throw new Error(r.error.message);
   return r.line;

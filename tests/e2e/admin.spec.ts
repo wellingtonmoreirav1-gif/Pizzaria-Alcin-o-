@@ -106,9 +106,21 @@ test('gerente cadastra produto, publica, vê no site e marca como esgotado', asy
   const [audit] = await sql<{ n: number }>(`select count(*)::int as n from public.audit_logs where table_name = 'products' and new_data->>'name' = 'Suco Teste E2E'`);
   expect(audit?.n).toBeGreaterThanOrEqual(2);
 
+  // Produto novo entra com "preço em conferência": aparece, mas não pode ser pedido.
   await page.goto('/cardapio?q=suco');
   await page.waitForLoadState('networkidle');
-  await expect(page.getByTestId('product-card').filter({ hasText: 'Suco Teste E2E', visible: true })).toContainText('R$ 8,50');
+  const card = page.getByTestId('product-card').filter({ hasText: 'Suco Teste E2E', visible: true });
+  await expect(card).toContainText('R$ 8,50');
+  await expect(card).toContainText('Preço em conferência');
+
+  await page.goto('/admin/precos');
+  const pending = page.getByTestId('pending-product').filter({ hasText: 'Suco Teste E2E' });
+  await pending.getByRole('button', { name: 'Salvar e confirmar valores' }).click();
+  await expect(page.getByText('Valores conferidos e liberados para pedido.')).toBeVisible();
+  await page.goto('/cardapio?q=suco');
+  await page.waitForLoadState('networkidle');
+  await expect(card).not.toContainText('Preço em conferência');
+  await expect(card.getByRole('button', { name: /Adicionar/ })).toBeEnabled();
 
   await page.goto('/admin/operacao');
   await page.getByRole('switch', { name: /Suco Teste E2E: disponível/ }).click();

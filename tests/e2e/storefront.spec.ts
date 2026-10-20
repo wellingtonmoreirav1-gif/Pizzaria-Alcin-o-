@@ -12,9 +12,10 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Seu próximo sabor favorito');
   await expect(page.getByTestId('store-status').first()).toContainText('Aberto');
-  await expect(page.getByRole('heading', { name: 'Em alta no Alcinão' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Destaques? do Alcinão/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'O que você quer hoje?' })).toBeVisible();
   await page.getByRole('link', { name: /Pedir agora/ }).click();
-  await expect(page).toHaveURL(/#em-alta/);
+  await expect(page).toHaveURL(/\/cardapio$/);
 });
 
 test('busca e filtros do cardápio funcionam', async ({ page }) => {
@@ -34,7 +35,8 @@ test('montagem da pizza aplica regras de sabores, borda e preço', async ({ page
   await page.goto('/produto/exemplo-pizza');
   await page.waitForLoadState('networkidle');
   await expect(page.getByTestId('add-to-cart').filter({ visible: true })).toBeVisible();
-  // Na pequena só cabe 1 sabor e o doce não é oferecido.
+  // Com vários tamanhos, nenhum vem pré-selecionado. Na pequena só cabe 1 sabor e o doce não é oferecido.
+  await page.getByText('Pequena (exemplo)').click();
   await page.getByText('Sabor exemplo A', { exact: true }).click();
   await expect(page.getByText('Indisponível neste tamanho')).toBeVisible();
   await expect(page.getByTestId('add-to-cart')).toContainText('R$ 30,00');

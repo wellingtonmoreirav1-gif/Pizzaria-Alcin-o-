@@ -6,6 +6,7 @@ import { ActionError, bool, check, int, localDateTime, money, runAdminAction, st
 import { PERMISSIONS } from '@/lib/auth/session';
 import { slugify } from '@/lib/utils';
 import { isAllowedImageUrl } from '@/lib/uploads';
+import { SIZE_CODE_PATTERN } from '@/lib/catalog/sizes';
 
 const roles = [...PERMISSIONS.catalog];
 const uuid = z.uuid();
@@ -65,17 +66,15 @@ export async function createProduct(_prev: ActionResult | null, form: FormData):
     roles,
     async (_ctx, db) => {
       const fields = productFields(form);
-      const { data } = check(await db.from('products').insert(fields).select('id').single());
+      // Produto novo entra com "preço em conferência": só pode ser pedido depois que o
+      // administrador conferir os valores (evita publicar preço digitado às pressas).
+      const { data } = check(await db.from('products').insert({ ...fields, price_confirmed: false }).select('id').single());
       if (fields.kind === 'pizza') {
-        check(
-          await db.from('option_groups').insert([
-            { product_id: data!.id, kind: 'flavor', name: 'Sabores', min_select: 1, max_select: 1, sort_order: 1 },
-            { product_id: data!.id, kind: 'crust', name: 'Borda', min_select: 0, max_select: 1, sort_order: 2 },
-            { product_id: data!.id, kind: 'extra', name: 'Adicionais', min_select: 0, max_select: 5, sort_order: 3 },
-          ]),
-        );
+        // Pizzas do cardápio usam a tabela única de bordas recheadas (grupo compartilhado).
+        const { data: bordas } = await db.from('option_groups').select('id').eq('shared_key', 'bordas-recheadas').is('deleted_at', null).maybeSingle();
+        if (bordas) check(await db.from('product_shared_groups').insert({ product_id: data!.id, group_id: bordas.id, sort_order: 10 }));
       }
-      return { ok: true, message: 'Produto criado. Complete tamanhos e opções.', id: data!.id };
+      return { ok: true, message: 'Produto criado. Cadastre os tamanhos e confirme os preços para liberar o pedido.', id: data!.id };
     },
     ['catalog'],
   );
@@ -128,8 +127,11 @@ function variantFields(form: FormData) {
   if (price === null) throw new ActionError('Informe o preço.');
   const rule = str(form, 'flavorPriceRule') ?? 'highest';
   if (!['fixed', 'highest', 'average'].includes(rule)) throw new ActionError('Regra de preço inválida.');
+  const sizeCode = str(form, 'sizeCode');
+  if (sizeCode && !SIZE_CODE_PATTERN.test(sizeCode)) throw new ActionError('Código de tamanho inválido.');
   return {
     name,
+    size_code: sizeCode,
     description: str(form, 'description'),
     price,
     max_flavors: Math.min(8, Math.max(1, int(form, 'maxFlavors', 1))),
@@ -226,6 +228,7 @@ export async function saveOptionValue(productId: string, groupId: string, valueI
         name,
         description: str(form, 'description'),
         price: money(form, 'price') ?? '0',
+        price_confirmed: bool(form, 'priceConfirmed'),
         combination_tag: str(form, 'combinationTag')?.toLowerCase() ?? null,
         sort_order: int(form, 'sortOrder'),
         is_active: bool(form, 'isActive'),
@@ -286,6 +289,39 @@ export async function saveSizeMatrix(productId: string, groupId: string, _prev: 
       }
       revalidatePath(`/admin/cardapio/${productId}`);
       return 'Preços por tamanho salvos.';
+    },
+    ['catalog'],
+  );
+}
+
+/* ------------------------------------------------------------ grupos compartilhados */
+export async function linkSharedGroup(productId: string, _prev: ActionResult | null, form: FormData): Promise<ActionResult> {
+  return runAdminAction(
+    roles,
+    async (_ctx, db) => {
+      requireId(productId);
+      const groupId = str(form, 'groupId');
+      if (!groupId) throw new ActionError('Escolha o grupo.');
+      requireId(groupId);
+      check(await db.from('product_shared_groups').upsert({ product_id: productId, group_id: groupId, sort_order: int(form, 'sortOrder', 10) }));
+      revalidatePath(`/admin/cardapio/${productId}`);
+      revalidatePath('/admin/opcoes');
+      return 'Grupo ligado ao produto.';
+    },
+    ['catalog'],
+  );
+}
+
+export async function unlinkSharedGroup(productId: string, groupId: string, _prev: ActionResult | null, _form: FormData): Promise<ActionResult> {
+  return runAdminAction(
+    roles,
+    async (_ctx, db) => {
+      requireId(productId);
+      requireId(groupId);
+      check(await db.from('product_shared_groups').delete().eq('product_id', productId).eq('group_id', groupId));
+      revalidatePath(`/admin/cardapio/${productId}`);
+      revalidatePath('/admin/opcoes');
+      return 'Grupo desligado do produto.';
     },
     ['catalog'],
   );

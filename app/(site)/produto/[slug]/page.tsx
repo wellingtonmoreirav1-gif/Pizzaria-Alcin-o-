@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps<'/produto/[slug]'>)
 export default function ProductPage({ params }: PageProps<'/produto/[slug]'>) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-      <Link href="/cardapio" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-muted-strong hover:text-ink-900">
+      <Link href="/cardapio" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-muted-strong hover:text-fg">
         <ChevronLeft className="size-4" aria-hidden /> Voltar ao cardápio
       </Link>
       <Suspense fallback={<ProductSkeleton />}>

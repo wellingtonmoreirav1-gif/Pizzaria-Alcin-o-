@@ -28,7 +28,7 @@ export default async function ProductPreviewPage({ params }: PageProps<'/admin/c
       <PageHeader title={`Prévia: ${product.name}`} description="Simulação da página do produto. Itens adicionados aqui vão para o carrinho deste navegador." />
       {!(data as unknown as ProductRow).is_active ? <Notice tone="warning">Este produto é um rascunho e ainda não aparece no site.</Notice> : null}
       <StoreProviders>
-        <div className="grid gap-6 rounded-2xl bg-white p-4 lg:grid-cols-[18rem_1fr]">
+        <div className="theme-dark grid gap-6 rounded-2xl p-4 lg:grid-cols-[18rem_1fr]">
           <div>
             <p className="mb-2 text-xs font-semibold uppercase text-muted">Cartão no cardápio</p>
             <ProductCard product={product} fetchedAt={fetchedAt} />

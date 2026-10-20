@@ -141,6 +141,14 @@ export function isWithinValidity(product: CatalogProduct, now: Date): boolean {
   return true;
 }
 
+/** Motivo de o produto não poder ser pedido agora (para o selo do cartão), ou null. */
+export function unavailableReason(product: CatalogProduct, now: Date): 'price' | 'soldout' | 'period' | null {
+  if (!product.priceConfirmed) return 'price';
+  if (!isWithinValidity(product, now)) return 'period';
+  if (!isProductOrderable(product, now)) return 'soldout';
+  return null;
+}
+
 export function isProductOrderable(product: CatalogProduct, now: Date): boolean {
   if (!product.priceConfirmed) return false;
   if (!product.isAvailable || !isWithinValidity(product, now)) return false;

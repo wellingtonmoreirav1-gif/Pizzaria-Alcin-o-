@@ -7,11 +7,11 @@ type Size = 'sm' | 'md' | 'lg';
 
 const variants: Record<Variant, string> = {
   primary: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm',
-  secondary: 'bg-mist text-ink-900 hover:bg-line',
-  dark: 'bg-ink-900 text-white hover:bg-ink-700',
-  ghost: 'text-ink-900 hover:bg-mist',
-  outline: 'border border-line bg-white text-ink-900 hover:border-ink-600',
-  danger: 'bg-white text-brand-700 border border-brand-200 hover:bg-brand-50',
+  secondary: 'bg-mist text-fg hover:bg-line',
+  dark: 'bg-fg text-canvas hover:opacity-90',
+  ghost: 'text-fg hover:bg-mist',
+  outline: 'border border-line bg-surface text-fg hover:border-muted',
+  danger: 'bg-surface text-danger border border-brand-200 hover:bg-brand-50',
   whatsapp: 'bg-[#1f8f4e] text-white hover:bg-[#18733e] shadow-sm',
 };
 const sizes: Record<Size, string> = {

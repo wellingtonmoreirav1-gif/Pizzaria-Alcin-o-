@@ -32,9 +32,9 @@ export async function ClosedBanner() {
   const status = computeStoreStatus(data.hours, new Date());
   if (status.acceptingOrders && !error) return null;
   return (
-    <div className="bg-ink-900 px-4 py-2.5 text-center text-sm text-white" role="status">
+    <div className="border-b border-line bg-mist px-4 py-2.5 text-center text-sm text-fg" role="status">
       <strong className="font-semibold">{status.reason === 'open' ? 'Aviso:' : 'Não estamos recebendo pedidos agora.'}</strong>{' '}
-      <span className="text-white/80">
+      <span className="text-muted-strong">
         {error ? 'Alguns dados podem estar desatualizados.' : status.message} Você pode montar o carrinho — ele fica salvo neste aparelho.
       </span>
     </div>

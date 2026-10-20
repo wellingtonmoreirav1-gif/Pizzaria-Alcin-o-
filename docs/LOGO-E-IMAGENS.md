@@ -2,7 +2,7 @@
 
 ## Logo oficial
 
-O site **não cria uma logo**. Enquanto a logo oficial não é enviada, o cabeçalho mostra apenas o nome “Alcinão” em texto.
+O site **não cria uma logo**. Não há arquivo de logo no repositório; enquanto a logo oficial não é enviada, o cabeçalho mostra apenas o nome “Alcinão” em texto (fonte do site), sem símbolo inventado.
 
 Para colocar a logo:
 
@@ -14,12 +14,20 @@ Para a imagem de compartilhamento (WhatsApp/redes), o arquivo `app/opengraph-ima
 
 ## Fotos dos produtos
 
-O ambiente de desenvolvimento usado **não tinha ferramenta de geração de imagens**, então **nenhuma foto foi gerada**. Enquanto um produto não tem foto, o site mostra uma arte neutra com “Foto em breve” — nunca a foto de outro produto.
+Nenhuma **foto** foi gerada ou inventada, e o site não chama serviços pagos de geração de imagens.
+
+### Ilustrações provisórias do cardápio oficial
+
+Cada um dos 40 produtos do cardápio oficial tem uma **ilustração vetorial provisória e única** (`public/images/products/<slug>.svg`), desenhada a partir dos ingredientes cadastrados (ex.: a pizza de calabresa mostra rodelas de calabresa; a de chocolate, massa escura com granulado). Todas trazem a legenda **“IMAGEM ILUSTRATIVA · FOTO OFICIAL EM BREVE”** e o texto alternativo diz “Imagem ilustrativa provisória de … (foto oficial em breve)”. Elas não são fotos e não devem ser divulgadas como tal.
+
+- São geradas por `node scripts/generate-menu-placeholders.mjs` (sem internet e sem custo; ~500 KB no total).
+- **Para trocar pela foto real:** Painel → Cardápio → produto → *Foto principal* → **Substituir** → **Salvar produto** (e atualize o texto alternativo). Reaplicar a migration do cardápio **não** sobrescreve uma foto já enviada.
+- Produto sem foto nem ilustração mostra uma arte neutra com “Foto em breve” — nunca a foto de outro produto.
 
 ### Direção de arte (todo o cardápio)
 
 - Fotografia gastronômica profissional e realista; ingredientes nítidos; queijo derretido natural; massa e borda realistas.
-- Fundo escuro (pedra/carvão fosco) com toques discretos de vermelho, coerente com a identidade preto/vermelho/branco.
+- Fundo escuro (pedra/carvão fosco) com toques discretos de vermelho e dourado, coerente com a identidade do site (fundo preto, cinza, dourado nos preços, vermelho nas ações).
 - Luz quente lateral (pizzas, churrasco) ou luz natural suave (almoço, sobremesas).
 - Proporção **4:3** (1600×1200 px), produto ocupando o quadro.
 - Sem marca d’água, sem texto, sem mãos/pessoas, sem ingredientes que o produto não tem.

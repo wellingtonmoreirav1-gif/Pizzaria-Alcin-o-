@@ -6,9 +6,12 @@
 npm test                 # unidade (Vitest)
 npm run db:local         # ambiente local: PostgreSQL + Supabase Auth + PostgREST (porta 54321)
 npm run test:db          # banco: RLS, papéis, pedidos, relatórios (recria o esquema local)
+bash scripts/local-supabase/apply-migrations.sh   # banco no estado inicial ANTES do build
 npm run build            # build de produção (com .env.local apontando para o ambiente local)
 npm run test:e2e         # ponta a ponta (Playwright) no build de produção, porta 3100
 ```
+
+> O build guarda o cardápio em cache por alguns minutos (como em produção). Por isso o banco deve estar no estado inicial **antes** do `npm run build`: o *global setup* recria o banco, e o cardápio oficial usa ids estáveis (derivados do slug), então o cache do build continua válido.
 
 ### Ambiente local que imita o Supabase
 
@@ -34,8 +37,8 @@ Limitações do ambiente local: não há serviço **Storage** (o envio real de i
 
 ## Resultado da última execução
 
-- Unidade + banco (Vitest): **80 testes, todos passando**.
-- Ponta a ponta (Playwright, perfil Pixel 7, build de produção): **22 testes, todos passando**.
+- Unidade + banco (Vitest): **93 testes, todos passando**.
+- Ponta a ponta (Playwright, perfil Pixel 7, build de produção): **31 testes, todos passando** (inclui os 9 do cardápio oficial).
 
 ## Cobertura dos itens exigidos
 
@@ -71,3 +74,25 @@ Limitações do ambiente local: não há serviço **Storage** (o envio real de i
 | 28 | Layout móvel | `e2e/storefront.spec.ts` (sem rolagem horizontal em 5 páginas, perfil Pixel 7) |
 | 29 | Acessibilidade essencial | `e2e/storefront.spec.ts` (axe WCAG 2 A/AA, sem violações graves) |
 | 30 | Erros de rede e banco | `e2e/storefront.spec.ts` (sem conexão e 503: mensagem clara, carrinho mantido, sem duplicar) |
+
+## Cardápio oficial (15 verificações obrigatórias)
+
+| # | Verificação | Onde é testado |
+|---|---|---|
+| 1 | Todos os produtos aparecem | `db/menu.test.ts` (40 produtos, 12 categorias, ordem), `e2e/menu.spec.ts` (cada seção do cardápio) |
+| 2 | Preços corretos | `db/menu.test.ts` (todos os valores), `e2e/menu.spec.ts` (tamanhos da pizza) |
+| 3 | Tamanhos alteram o preço | `unit/menu-pricing.test.ts`, `e2e/menu.spec.ts` (P, F, lasanha M/G) |
+| 4 | Borda soma o valor do tamanho | `unit/menu-pricing.test.ts` (G + Catupiry = 66,00; P + Requeijão = 29,00; F + Catupiry = 95,00), `e2e/menu.spec.ts` |
+| 5 | Carrinho calcula certo | `unit/menu-pricing.test.ts` ((50 + 16) × 2 = 132,00), `e2e/menu.spec.ts` (unitário, subtotal e total) |
+| 6 | Alterar quantidade | `e2e/menu.spec.ts` |
+| 7 | Remover item | `e2e/menu.spec.ts` |
+| 8 | Beirute serve até 3 pessoas | `db/menu.test.ts`, `e2e/menu.spec.ts` |
+| 9 | Pratos servem 2 pessoas | `db/menu.test.ts`, `e2e/menu.spec.ts` |
+| 10 | Lasanha com 3 tamanhos e escolha obrigatória | `db/menu.test.ts`, `unit/menu-pricing.test.ts` (VARIANT_REQUIRED), `e2e/menu.spec.ts` |
+| 11 | Carrinho mantido ao recarregar | `e2e/menu.spec.ts` |
+| 12 | Telas pequenas | `e2e/menu.spec.ts` (320 px sem rolagem horizontal) |
+| 13 | Pedido continua funcionando e resumo do WhatsApp correto | `e2e/menu.spec.ts` (retirada com pizza G + borda, total 132,00, texto da mensagem, opção gravada) |
+| 14 | Sem duplicações | `db/menu.test.ts` (reaplicar o cardápio não duplica), `e2e/menu.spec.ts` (nomes únicos; clique duplo gera 1 pedido) |
+| 15 | Administrador altera preço sem mexer no código | `e2e/menu.spec.ts` (Conferência de preços, molho grátis, tabela de bordas), `db/menu.test.ts` (só gerente/admin; auditoria; quem confirmou gravado pelo banco) |
+
+Também: preço em conferência e molho sem valor não podem ser pedidos — nem pela tela nem pela API (`e2e/menu.spec.ts`, `unit/menu-pricing.test.ts`).

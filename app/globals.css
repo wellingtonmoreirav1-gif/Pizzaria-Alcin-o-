@@ -21,6 +21,13 @@
   --color-brand-800: #840b20;
 
   --color-paper: #ffffff;
+  /* Tokens semânticos (claros por padrão; a loja usa o escopo .theme-dark). */
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-fg: #151211;
+  --color-danger: #a50d26;
+  --color-gold: #8a6416;
+  --color-gold-soft: #fbf3dc;
   --color-mist: #f6f4f2;
   --color-line: #e7e3df;
   --color-muted: #6b6560;
@@ -67,6 +74,39 @@
   }
 }
 
+/*
+ * Identidade da loja: fundo preto, superfícies em cinza escuro, dourado para preços
+ * e destaques, vermelho da marca para ações e promoções, texto claro.
+ */
+.theme-dark {
+  --color-canvas: #0b0a09;
+  --color-surface: #161312;
+  --color-mist: #1f1b19;
+  --color-line: #332d2a;
+  --color-muted: #aaa29b;
+  --color-muted-strong: #d6cfc8;
+  --color-fg: #f6f2ee;
+  --color-danger: #ff8593;
+  --color-gold: #dcb64e;
+  --color-gold-soft: #2a2210;
+  --color-brand-50: #2b1015;
+  --color-brand-100: #3b141b;
+  --color-brand-200: #6a1f2a;
+  --color-success-50: #0f2418;
+  --color-success-600: #74dd9c;
+  --color-warning-50: #2a1f0b;
+  --color-warning-600: #f3c46a;
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d6cfc8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 10px 30px -18px rgb(0 0 0 / 0.9);
+  color-scheme: dark;
+  background: var(--color-canvas);
+  color: var(--color-fg);
+}
+
+body:has(.theme-dark) {
+  background: #0b0a09;
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
@@ -94,7 +134,7 @@
 
 @layer components {
   .skeleton {
-    background: linear-gradient(90deg, var(--color-mist) 25%, #ece8e4 37%, var(--color-mist) 63%);
+    background: linear-gradient(90deg, var(--color-mist) 25%, var(--color-line) 37%, var(--color-mist) 63%);
     background-size: 400% 100%;
     animation: var(--animate-shimmer);
   }

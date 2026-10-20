@@ -17,7 +17,7 @@ insert into public.business_settings (
   'Ao lado do Hospital Dr. Jarques',
   'America/Fortaleza',
   'Seu próximo sabor favorito está aqui.',
-  'Pizzas, almoço e churrasco do Alcinão, em São Bento (PB). Monte seu pedido e envie pelo WhatsApp.'
+  'Pizzas, lanches, petiscos e pratos da casa do Alcinão, em São Bento (PB). Monte seu pedido e envie pelo WhatsApp.'
 )
 on conflict (id) do nothing;
 

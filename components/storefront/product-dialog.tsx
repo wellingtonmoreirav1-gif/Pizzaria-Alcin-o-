@@ -22,10 +22,11 @@ interface ProductDialogValue {
 
 const ProductDialogContext = createContext<ProductDialogValue | null>(null);
 
+/** Abre o montador quando há escolhas a fazer (tamanho, opções disponíveis ou obrigatórias). */
 export function needsCustomization(product: CatalogProduct): boolean {
   if (product.kind === 'pizza') return true;
   if (product.variants.length > 1) return true;
-  return product.groups.some((g) => g.values.length > 0);
+  return product.groups.some((g) => g.minSelect > 0 || g.values.some((v) => v.isAvailable && v.priceConfirmed));
 }
 
 export function ProductDialogProvider({ children }: { children: ReactNode }) {
