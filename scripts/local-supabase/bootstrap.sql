@@ -16,9 +16,9 @@ create schema if not exists extensions;
 grant usage on schema extensions to anon, authenticated, service_role;
 
 grant usage on schema public to anon, authenticated, service_role;
-alter default privileges in schema public grant all on tables to service_role;
-alter default privileges in schema public grant all on sequences to service_role;
-alter default privileges in schema public grant all on functions to service_role;
+alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 
 -- Esquema mínimo de Storage (o Supabase real cria isso com o serviço Storage).
 create schema if not exists storage authorization supabase_storage_admin;

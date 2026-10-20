@@ -3,7 +3,7 @@ import { connection } from 'next/server';
 import { Download } from 'lucide-react';
 import { requireStaff, PERMISSIONS } from '@/lib/auth/session';
 import { createSessionClient } from '@/lib/supabase/server';
-import { reportRange } from '@/lib/admin/reports';
+import { fillBuckets, reportRange } from '@/lib/admin/reports';
 import { formatBRL, toCents } from '@/lib/money';
 import { CANCEL_REASON_LABEL, FULFILLMENT_LABEL, PAYMENT_LABEL, type CancelReason, type Fulfillment, type PaymentMethod } from '@/lib/orders/labels';
 import { Card, PageHeader, SelectField, TextField } from '@/components/admin/fields';
@@ -93,7 +93,7 @@ export default async function ReportsPage({ searchParams }: PageProps<'/admin/re
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumo">
         <Tile label="Faturamento (concluídos)" value={formatBRL(c(o.revenue))} hint="Itens após descontos + taxas" />
         <Tile label="Vendas concluídas" value={String(o.orders_completed)} />
-        <Tile label="Ticket médio" value={formatBRL(c(o.average_ticket))} hint="Faturamento ÷ vendas concluídas" />
+        <Tile label="Ticket médio" value={formatBRL(c(o.average_ticket))} hint="Faturamento dividido pelas vendas concluídas" />
         <Tile label="Pedidos registrados" value={String(o.orders_registered)} hint={`${formatBRL(c(o.registered_value))} · inclui ${o.orders_open} em aberto`} />
         <Tile label="Itens a preço de tabela" value={formatBRL(c(o.gross_items))} hint="Somente concluídos" />
         <Tile label="Descontos concedidos" value={formatBRL(c(o.discounts))} />
@@ -104,7 +104,13 @@ export default async function ReportsPage({ searchParams }: PageProps<'/admin/re
       <Card title="Faturamento por período" actions={<ExportLink href={exportLink('vendas')} />}>
         <ColumnChart
           title="Faturamento de pedidos concluídos por período"
-          data={((series.data ?? []) as { bucket: string; revenue: number; orders_completed: number; orders_registered: number; orders_cancelled: number }[]).map((s) => ({
+          data={fillBuckets(
+            (series.data ?? []) as { bucket: string; revenue: number; orders_completed: number; orders_registered: number; orders_cancelled: number }[],
+            range.fromDate,
+            range.toDate,
+            range.bucket,
+            (bucket) => ({ bucket, revenue: 0, orders_completed: 0, orders_registered: 0, orders_cancelled: 0 }),
+          ).map((s) => ({
             label: bucketLabel(s.bucket),
             value: c(s.revenue),
             detail: `${s.orders_completed} concluído(s), ${s.orders_registered} registrado(s), ${s.orders_cancelled} cancelado(s)`,

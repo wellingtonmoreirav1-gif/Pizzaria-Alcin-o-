@@ -267,3 +267,37 @@ test('acessibilidade essencial (axe) sem violações graves', async ({ page }) =
     expect(serious.map((v) => `${path}: ${v.id} — ${v.nodes.slice(0, 3).map((n) => `${n.target.join(' ')} ${n.failureSummary ?? ''}`).join(' | ')}`)).toEqual([]);
   }
 });
+
+test('falha de rede ou do servidor no envio: mensagem clara e carrinho preservado, sem duplicar', async ({ page }) => {
+  await addDrink(page);
+  await page.goto('/checkout');
+  await page.waitForLoadState('networkidle');
+  await page.getByText('Retirada no local').click();
+  await page.getByTestId('next-step').click();
+  await fillCustomer(page, 'Rede Instavel', '83911110000');
+  await page.getByTestId('next-step').click();
+  await page.getByText('Pix').click();
+  await page.getByTestId('next-step').click();
+  await page.getByText('Confirmo que os itens').click();
+
+  // 1) Sem conexão.
+  await page.route('**/api/orders', (route) => route.abort('internetdisconnected'));
+  await page.getByTestId('submit-order').click();
+  await expect(page.getByText('Sem conexão')).toBeVisible();
+  // 2) Banco indisponível (resposta 503 do servidor).
+  await page.unroute('**/api/orders');
+  await page.route('**/api/orders', (route) =>
+    route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'ORDER_NOT_SAVED', message: 'Não conseguimos registrar seu pedido agora. Seu carrinho foi mantido; tente novamente.' }) }),
+  );
+  await page.getByTestId('submit-order').click();
+  await expect(page.getByText('Não conseguimos registrar seu pedido agora.')).toBeVisible();
+  await expect(page.locator('#conteudo').getByTestId('cart-lines')).toContainText('Refrigerante');
+  // 3) Conexão volta: o mesmo pedido é enviado uma única vez.
+  await page.unroute('**/api/orders');
+  await expect(page.getByTestId('submit-order')).toBeEnabled();
+  const response = page.waitForResponse('**/api/orders');
+  await page.getByTestId('submit-order').click();
+  expect((await response).status()).toBe(201);
+  await expect(page).toHaveURL(/\/pedido\/ALC-/);
+  expect(await sql(`select id from public.orders where customer_name = 'Rede Instavel'`)).toHaveLength(1);
+});

@@ -15,7 +15,7 @@ const SERIES = 'var(--color-brand-600)';
 function compact(cents: number, money: boolean) {
   const v = money ? cents / 100 : cents;
   if (Math.abs(v) >= 1000) return `${money ? 'R$ ' : ''}${(v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mil`;
-  return money ? `R$ ${Math.round(v)}` : String(Math.round(v));
+  return money ? `R$ ${v.toLocaleString('pt-BR', { maximumFractionDigits: v < 10 ? 2 : 0 })}` : String(Math.round(v));
 }
 
 function niceMax(max: number) {
@@ -47,7 +47,9 @@ export function ColumnChart({ data, money = true, title }: { data: ColumnDatum[]
   const labelEvery = Math.ceil(data.length / 10);
   const fmt = (v: number) => (money ? formatBRL(v) : v.toLocaleString('pt-BR'));
 
-  if (data.length === 0) return <p className="text-sm text-muted">Sem dados no período.</p>;
+  if (data.length === 0 || data.every((d) => d.value === 0)) {
+    return <p className="rounded-xl bg-mist p-6 text-center text-sm text-muted">Nenhuma venda concluída no período.</p>;
+  }
 
   return (
     <figure className="space-y-2">

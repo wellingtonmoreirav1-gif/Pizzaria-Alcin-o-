@@ -231,7 +231,7 @@ as $$
 declare
   v_count integer;
 begin
-  if auth.role() <> 'service_role' and not public.has_role('admin') then
+  if coalesce(auth.jwt() ->> 'role', '') <> 'service_role' and not public.has_role('admin') then
     raise exception 'not_authorized' using errcode = '42501';
   end if;
   if p_user_id is null and coalesce(p_phone, '') = '' then

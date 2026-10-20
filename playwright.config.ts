@@ -35,6 +35,7 @@ export default defineConfig({
     url: `http://localhost:${port}`,
     reuseExistingServer: true,
     timeout: 120_000,
-    env: { NEXT_PUBLIC_SITE_URL: `http://localhost:${port}` },
+    // Todos os testes saem do mesmo IP: eleva o limite anti-abuso só no servidor de testes.
+    env: { NEXT_PUBLIC_SITE_URL: `http://localhost:${port}`, ORDER_RATE_LIMIT: '1000' },
   },
 });

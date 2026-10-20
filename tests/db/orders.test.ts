@@ -154,6 +154,16 @@ describe('status e taxa de entrega', () => {
   });
 });
 
+describe('limite anti-abuso', () => {
+  it('conta pedidos recentes do mesmo IP (hash) e só pode ser chamado pelo servidor', async () => {
+    await createOrder(client, { ip_hash: 'ip-teste-limite' });
+    await createOrder(client, { ip_hash: 'ip-teste-limite' });
+    const { rows } = await as(client, { role: 'service_role' }, (c) => c.query(`select public.recent_orders_from_ip('ip-teste-limite', 10) as n`));
+    expect(rows[0].n).toBe(2);
+    await expect(as(client, { role: 'anon' }, (c) => c.query(`select public.recent_orders_from_ip('x', 10)`))).rejects.toThrow(/permission denied/);
+  });
+});
+
 describe('operação', () => {
   it('encerra o almoço de hoje e pausa pedidos', async () => {
     await as(client, { role: 'authenticated', userId: attendant }, (c) =>

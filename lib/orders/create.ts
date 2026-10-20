@@ -15,7 +15,8 @@ import type { DeliveryFeeStatus } from '@/lib/orders/labels';
 import { SITE_URL } from '@/config/business';
 import { getOrderSnapshot } from './snapshot';
 
-export const MAX_ORDERS_PER_IP_WINDOW = 8;
+/** Pedidos por IP a cada RATE_WINDOW_MINUTES (variável ORDER_RATE_LIMIT, padrão 8). */
+export const MAX_ORDERS_PER_IP_WINDOW = Math.max(1, Number(process.env.ORDER_RATE_LIMIT) || 8);
 export const RATE_WINDOW_MINUTES = 10;
 
 export class OrderError extends Error {

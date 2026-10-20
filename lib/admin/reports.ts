@@ -32,3 +32,21 @@ export function reportRange(sp: Record<string, string | string[] | undefined>) {
   const bucket = (['day', 'week', 'month'] as const).find((b) => b === get('agrupar')) ?? (spanDays > 120 ? 'month' : spanDays > 45 ? 'week' : 'day');
   return { from, to, fromDate, toDate, preset, bucket };
 }
+
+/** Completa os períodos sem pedidos com zero (dia, semana ISO ou mês), em datas locais. */
+export function fillBuckets<T extends { bucket: string }>(rows: T[], fromDate: string, toDate: string, bucket: 'day' | 'week' | 'month', empty: (bucket: string) => T): T[] {
+  const byKey = new Map(rows.map((r) => [r.bucket.slice(0, 10), r]));
+  const out: T[] = [];
+  const start = new Date(`${fromDate}T12:00:00Z`);
+  if (bucket === 'week') start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+  if (bucket === 'month') start.setUTCDate(1);
+  const end = new Date(`${toDate}T12:00:00Z`);
+  for (let d = start; d <= end && out.length < 400; ) {
+    const key = d.toISOString().slice(0, 10);
+    out.push(byKey.get(key) ?? empty(key));
+    if (bucket === 'day') d = new Date(d.getTime() + 86400e3);
+    else if (bucket === 'week') d = new Date(d.getTime() + 7 * 86400e3);
+    else d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1, 12));
+  }
+  return out;
+}
