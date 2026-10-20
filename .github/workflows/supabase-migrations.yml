@@ -99,25 +99,43 @@ jobs:
           else
             supabase link --project-ref "$SUPABASE_PROJECT_REF"
           fi
+          # Executa o CLI no banco e repete quando o Supabase recusa uma senha recém-alterada
+          # (SQLSTATE 28P01: a recusa acontece antes de qualquer comando ser executado).
+          # Qualquer outro erro para na hora.
+          cat > "$RUNNER_TEMP/supabase-db.sh" <<'SCRIPT'
+          set -uo pipefail
+          alvo=(--linked)
+          [ -n "${SUPABASE_DB_URL:-}" ] && alvo=(--db-url "$SUPABASE_DB_URL")
+          for tentativa in 1 2 3 4 5; do
+            saida=$(supabase "$@" "${alvo[@]}" 2>&1)
+            codigo=$?
+            printf '%s\n' "$saida"
+            [ "$codigo" -eq 0 ] && exit 0
+            if grep -q '28P01' <<< "$saida" && [ "$tentativa" -lt 5 ]; then
+              echo "::warning::O Supabase recusou a senha (tentativa $tentativa de 5). Nova tentativa em 30 segundos."
+              sleep 30
+            else
+              exit "$codigo"
+            fi
+          done
+          SCRIPT
 
       - name: Situação atual (Local × Remote)
-        run: |
-          if [ -n "$SUPABASE_DB_URL" ]; then supabase migration list --db-url "$SUPABASE_DB_URL"; else supabase migration list --linked; fi
+        run: bash "$RUNNER_TEMP/supabase-db.sh" migration list
 
       - name: Simulação (não altera nada)
         run: |
           args=(db push --dry-run)
           [ "$INCLUIR_SEED" = "true" ] && args+=(--include-seed)
-          if [ -n "$SUPABASE_DB_URL" ]; then supabase "${args[@]}" --db-url "$SUPABASE_DB_URL"; else supabase "${args[@]}" --linked; fi
+          bash "$RUNNER_TEMP/supabase-db.sh" "${args[@]}"
 
       - name: Aplicar no banco de produção
         if: inputs.modo == 'aplicar'
         run: |
           args=(db push --yes)
           [ "$INCLUIR_SEED" = "true" ] && args+=(--include-seed)
-          if [ -n "$SUPABASE_DB_URL" ]; then supabase "${args[@]}" --db-url "$SUPABASE_DB_URL"; else supabase "${args[@]}" --linked; fi
+          bash "$RUNNER_TEMP/supabase-db.sh" "${args[@]}"
 
       - name: Situação depois de aplicar
         if: inputs.modo == 'aplicar'
-        run: |
-          if [ -n "$SUPABASE_DB_URL" ]; then supabase migration list --db-url "$SUPABASE_DB_URL"; else supabase migration list --linked; fi
+        run: bash "$RUNNER_TEMP/supabase-db.sh" migration list
