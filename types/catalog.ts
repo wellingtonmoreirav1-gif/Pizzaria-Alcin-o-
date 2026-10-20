@@ -21,8 +21,12 @@ export interface CatalogOptionValue {
   combinationTag: string | null;
   sortOrder: number;
   isAvailable: boolean;
-  /** Regras por tamanho: preço específico e se a opção é oferecida naquele tamanho. */
+  /** Regras por tamanho deste produto (id da variante): preço específico e oferta. */
   variantRules: Record<string, VariantRule>;
+  /** Regras por CÓDIGO de tamanho (P, M, G…), usadas por grupos compartilhados. */
+  sizeRules: Record<string, VariantRule>;
+  /** false = preço ainda não definido/conferido: a opção não pode ser escolhida. */
+  priceConfirmed: boolean;
 }
 
 export interface CatalogOptionGroup {
@@ -33,12 +37,16 @@ export interface CatalogOptionGroup {
   minSelect: number;
   maxSelect: number;
   sortOrder: number;
+  /** Grupo compartilhado entre produtos (ex.: bordas recheadas). */
+  sharedKey: string | null;
   values: CatalogOptionValue[];
 }
 
 export interface CatalogVariant {
   id: string;
   name: string;
+  /** Código do tamanho (P, M, G, GG, F…), usado para preços de opções compartilhadas. */
+  sizeCode: string | null;
   description: string | null;
   price: Cents;
   maxFlavors: number;
@@ -92,6 +100,8 @@ export interface CatalogProduct {
   serves: string | null;
   maxQuantity: number;
   isDemo: boolean;
+  /** false = preço de referência ainda não conferido: visível, mas não pode ser pedido. */
+  priceConfirmed: boolean;
   variants: CatalogVariant[];
   groups: CatalogOptionGroup[];
   promotions: CatalogPromotion[];
@@ -106,11 +116,16 @@ export interface CatalogCategory {
   imageUrl: string | null;
   sortOrder: number;
   showOnHome: boolean;
+  /** "products" = lista de produtos; "options" = seção informativa de um grupo compartilhado. */
+  sectionType: 'products' | 'options';
+  sharedGroupId: string | null;
 }
 
 export interface Catalog {
   categories: CatalogCategory[];
   products: CatalogProduct[];
+  /** Grupos compartilhados exibidos em seções informativas (bordas, molhos). */
+  sharedGroups: CatalogOptionGroup[];
   /** Momento em que os dados foram lidos do banco (ISO). */
   fetchedAt: string;
 }

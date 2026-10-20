@@ -40,7 +40,9 @@ export type PricingErrorCode =
   | 'FLAVOR_MIX_NOT_ALLOWED'
   | 'MISSING_PRICE'
   | 'NOTES_TOO_LONG'
-  | 'COMBO_ITEM_UNAVAILABLE';
+  | 'COMBO_ITEM_UNAVAILABLE'
+  | 'PRICE_NOT_CONFIRMED'
+  | 'OPTION_PRICE_PENDING';
 
 export interface PricingError {
   code: PricingErrorCode;
@@ -90,23 +92,28 @@ const MAX_NOTES = 200;
 
 const fail = (code: PricingErrorCode, message: string): PricingResult => ({ ok: false, error: { code, message } });
 
-function optionPriceFor(value: CatalogOptionValue, variantId: string | null): Cents {
-  if (variantId) {
-    const rule = value.variantRules[variantId];
-    if (rule && rule.price !== null) return rule.price;
-  }
-  return value.price;
+/**
+ * Regra da opção para o tamanho: primeiro a regra específica do produto (id da
+ * variante), depois a regra por código de tamanho (grupos compartilhados).
+ */
+export function optionRuleFor(value: CatalogOptionValue, variant: Pick<CatalogVariant, 'id' | 'sizeCode'> | null) {
+  if (!variant) return undefined;
+  return value.variantRules[variant.id] ?? (variant.sizeCode ? value.sizeRules[variant.sizeCode] : undefined);
 }
 
-export function isOptionOfferedFor(value: CatalogOptionValue, variantId: string | null): boolean {
-  if (!variantId) return true;
-  const rule = value.variantRules[variantId];
+export function optionPriceFor(value: CatalogOptionValue, variant: Pick<CatalogVariant, 'id' | 'sizeCode'> | null): Cents {
+  const rule = optionRuleFor(value, variant);
+  return rule && rule.price !== null ? rule.price : value.price;
+}
+
+export function isOptionOfferedFor(value: CatalogOptionValue, variant: Pick<CatalogVariant, 'id' | 'sizeCode'> | null): boolean {
+  const rule = optionRuleFor(value, variant);
   return !rule || rule.isOffered;
 }
 
 /** Preço de um sabor em determinado tamanho: preço específico ou o preço-base do tamanho. */
 export function flavorPriceFor(value: CatalogOptionValue, variant: CatalogVariant): Cents {
-  const rule = value.variantRules[variant.id];
+  const rule = optionRuleFor(value, variant);
   if (rule && rule.price !== null) return rule.price;
   return variant.price;
 }
@@ -135,6 +142,7 @@ export function isWithinValidity(product: CatalogProduct, now: Date): boolean {
 }
 
 export function isProductOrderable(product: CatalogProduct, now: Date): boolean {
+  if (!product.priceConfirmed) return false;
   if (!product.isAvailable || !isWithinValidity(product, now)) return false;
   if (product.kind === 'combo' && product.comboItems.some((item) => !item.isAvailable)) return false;
   if (product.kind === 'pizza' && !product.variants.some((v) => v.isAvailable)) return false;
@@ -163,7 +171,7 @@ export function startingPrice(product: CatalogProduct, now: Date): { regular: Ce
       if (product.kind === 'pizza' && variant.flavorPriceRule !== 'fixed') {
         const flavorGroup = product.groups.find((g) => g.kind === 'flavor');
         const prices = (flavorGroup?.values ?? [])
-          .filter((v) => v.isAvailable && isOptionOfferedFor(v, variant.id))
+          .filter((v) => v.isAvailable && isOptionOfferedFor(v, variant))
           .map((v) => flavorPriceFor(v, variant));
         if (prices.length > 0) regular = Math.min(...prices);
       }
@@ -186,6 +194,9 @@ export function priceLine(
 
   if (!Number.isInteger(selection.quantity) || selection.quantity < 1 || selection.quantity > product.maxQuantity) {
     return fail('INVALID_QUANTITY', `Quantidade inválida para ${name} (máximo ${product.maxQuantity}).`);
+  }
+  if (!product.priceConfirmed) {
+    return fail('PRICE_NOT_CONFIRMED', `${name}: preço em conferência pelo restaurante. Disponível em breve.`);
   }
   if (!product.isAvailable) return fail('PRODUCT_UNAVAILABLE', `${name} está esgotado no momento.`);
   if (!isWithinValidity(product, ctx.now)) {
@@ -260,8 +271,11 @@ export function priceLine(
       if (!value || !value.isAvailable) {
         return fail('OPTION_UNAVAILABLE', `${name}: "${value?.name ?? 'opção'}" não está disponível.`);
       }
-      if (!isOptionOfferedFor(value, variant?.id ?? null)) {
+      if (!isOptionOfferedFor(value, variant)) {
         return fail('OPTION_NOT_OFFERED_FOR_SIZE', `${name}: "${value.name}" não é oferecido no tamanho ${variant?.name ?? ''}.`.trim());
+      }
+      if (!value.priceConfirmed) {
+        return fail('OPTION_PRICE_PENDING', `${name}: o valor de "${value.name}" ainda não foi definido pelo restaurante.`);
       }
       chosen.push(value);
     }
@@ -285,7 +299,7 @@ export function priceLine(
     if (chosen.length > 0) {
       const parts: string[] = [];
       for (const value of chosen) {
-        const price = optionPriceFor(value, variant?.id ?? null);
+        const price = optionPriceFor(value, variant);
         optionsTotal += price;
         options.push({ groupId: group.id, groupKind: group.kind, groupName: group.name, valueId: value.id, valueName: value.name, price });
         parts.push(value.name);

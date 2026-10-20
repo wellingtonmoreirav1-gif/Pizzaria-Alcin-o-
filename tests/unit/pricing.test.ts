@@ -38,7 +38,7 @@ describe('pizza pricing', () => {
   });
 
   it('applies "average" rule with half-up rounding in cents', () => {
-    const v: CatalogVariant = { id: 'x', name: 'G', description: null, price: 5000, maxFlavors: 3, flavorPriceRule: 'average', allowMixedFlavorTags: true, sortOrder: 1, isAvailable: true };
+    const v: CatalogVariant = { id: 'x', sizeCode: 'G', name: 'G', description: null, price: 5000, maxFlavors: 3, flavorPriceRule: 'average', allowMixedFlavorTags: true, sortOrder: 1, isAvailable: true };
     expect(computePizzaBase(v, [5000, 6000])).toBe(5500);
     expect(computePizzaBase(v, [5000, 5000, 5001])).toBe(5000);
     expect(computePizzaBase(v, [1000, 1001])).toBe(1001);

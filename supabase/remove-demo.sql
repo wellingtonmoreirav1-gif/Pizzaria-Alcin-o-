@@ -7,3 +7,7 @@ delete from public.combo_items where combo_product_id in (select id from public.
    or item_product_id in (select id from public.products where is_demo and deleted_at is null);
 delete from public.products where is_demo
   and not exists (select 1 from public.order_items i where i.product_id = products.id);
+-- Oculta as categorias que só existiam para os exemplos (se ficaram vazias).
+update public.categories c set is_active = false
+where c.slug in ('pizzas', 'almoco', 'churrasco', 'combos', 'bebidas')
+  and not exists (select 1 from public.products p where p.category_id = c.id and p.deleted_at is null);

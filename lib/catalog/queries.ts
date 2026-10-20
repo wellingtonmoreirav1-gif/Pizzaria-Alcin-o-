@@ -10,7 +10,7 @@ import type { Catalog } from '@/types/catalog';
 import type { DeliveryZone, PublicBanner, PublicReview, SiteSettings } from '@/types/settings';
 import type { HoursConfig } from '@/lib/business-hours';
 import type { Fulfillment, PaymentMethod } from '@/lib/orders/labels';
-import { mapCategory, mapProduct, PRODUCT_SELECT, type CategoryRow, type ProductRow } from './mappers';
+import { GROUP_SELECT, mapCategory, mapGroups, mapProduct, PRODUCT_SELECT, type CategoryRow, type OptionGroupRow, type ProductRow } from './mappers';
 
 export const CACHE_TAGS = {
   catalog: 'catalog',
@@ -33,21 +33,24 @@ export async function getCatalog(): Promise<Loaded<Catalog>> {
   'use cache';
   cacheTag(CACHE_TAGS.catalog);
   cacheLife(SHORT);
-  const empty: Catalog = { categories: [], products: [], fetchedAt: new Date().toISOString() };
+  const empty: Catalog = { categories: [], products: [], sharedGroups: [], fetchedAt: new Date().toISOString() };
   if (!isSupabaseConfigured()) return failure(empty, 'Supabase não configurado');
   try {
     const supabase = createPublicClient();
-    const [categories, products] = await Promise.all([
-      supabase.from('categories').select('id, slug, name, description, image_url, sort_order, show_on_home').order('sort_order'),
+    const [categories, products, shared] = await Promise.all([
+      supabase.from('categories').select('id, slug, name, description, image_url, sort_order, show_on_home, section_type, shared_group_id').order('sort_order'),
       supabase.from('products').select(PRODUCT_SELECT).order('sort_order').order('name'),
+      supabase.from('option_groups').select(GROUP_SELECT).not('shared_key', 'is', null),
     ]);
     if (categories.error) throw categories.error;
     if (products.error) throw products.error;
+    if (shared.error) throw shared.error;
     const cats = (categories.data as CategoryRow[]).map(mapCategory);
     const activeCategoryIds = new Set(cats.map((c) => c.id));
     return {
       data: {
         fetchedAt: new Date().toISOString(),
+        sharedGroups: mapGroups(shared.data as unknown as OptionGroupRow[]),
         categories: cats,
         products: (products.data as unknown as ProductRow[])
           .filter((p) => !p.deleted_at && p.is_active && activeCategoryIds.has(p.category_id))

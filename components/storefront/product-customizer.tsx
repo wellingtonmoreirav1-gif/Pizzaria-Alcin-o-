@@ -7,6 +7,7 @@ import {
   flavorLimitsFor,
   flavorPriceFor,
   isOptionOfferedFor,
+  optionPriceFor,
   isProductOrderable,
   priceLine,
 } from '@/lib/pricing';
@@ -34,7 +35,7 @@ function pruneForVariant(product: CatalogProduct, options: Record<string, string
   for (const group of product.groups) {
     let ids = (options[group.id] ?? []).filter((id) => {
       const value = group.values.find((v) => v.id === id);
-      return value && value.isAvailable && isOptionOfferedFor(value, variant?.id ?? null);
+      return value && value.isAvailable && isOptionOfferedFor(value, variant);
     });
     if (group.kind === 'flavor') ids = ids.slice(0, flavorLimitsFor(group, variant).max);
     if (ids.length) next[group.id] = ids;
@@ -126,7 +127,7 @@ export function ProductCustomizer({
 
   const variantPriceLabel = (v: CatalogVariant) => {
     if (product.kind === 'pizza' && v.flavorPriceRule !== 'fixed' && flavorGroup) {
-      const prices = flavorGroup.values.filter((f) => f.isAvailable && isOptionOfferedFor(f, v.id)).map((f) => flavorPriceFor(f, v));
+      const prices = flavorGroup.values.filter((f) => f.isAvailable && isOptionOfferedFor(f, v)).map((f) => flavorPriceFor(f, v));
       return prices.length ? `a partir de ${formatBRL(Math.min(...prices))}` : '';
     }
     const promo = findBestPromotion(product, v.id, v.price, now);
@@ -276,7 +277,7 @@ export function ProductCustomizer({
                   />
                 ) : null}
                 {group.values.map((value) => {
-                  const offered = isOptionOfferedFor(value, variant?.id ?? null);
+                  const offered = isOptionOfferedFor(value, variant);
                   const isChosen = chosen.includes(value.id);
                   const tagBlocked =
                     group.kind === 'flavor' && variant && !variant.allowMixedFlavorTags && chosen.length > 0 && !isChosen && !chosenTags.has(value.combinationTag ?? '');
@@ -288,7 +289,7 @@ export function ProductCustomizer({
                         ? formatBRL(flavorPriceFor(value, variant))
                         : null
                       : (() => {
-                          const p = variant ? value.variantRules[variant.id]?.price ?? value.price : value.price;
+                          const p = optionPriceFor(value, variant);
                           return p > 0 ? `+ ${formatBRL(p)}` : null;
                         })();
                   const reason = !value.isAvailable ? 'Esgotado' : !offered ? 'Indisponível neste tamanho' : tagBlocked ? 'Não combina com o sabor escolhido' : null;

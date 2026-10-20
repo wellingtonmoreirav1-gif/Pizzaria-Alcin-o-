@@ -32,14 +32,5 @@ insert into public.business_hours (weekday, shift, opens_at, closes_at, is_activ
 select d, 'dinner', '18:30', '23:00', true from generate_series(0, 6) d
 on conflict (weekday, shift) do nothing;
 
--- Categorias definidas no briefing. "Promoções" e "Mais vendidos" são vitrines
--- automáticas (calculadas), não categorias físicas.
-insert into public.categories (slug, name, sort_order) values
-  ('pizzas', 'Pizzas', 10),
-  ('almoco', 'Almoço', 20),
-  ('churrasco', 'Churrasco', 30),
-  ('combos', 'Combos', 40),
-  ('porcoes', 'Porções', 50),
-  ('bebidas', 'Bebidas', 60),
-  ('sobremesas', 'Sobremesas', 70)
-on conflict (slug) do nothing;
+-- As categorias e o cardápio oficial são criados pela migration
+-- 20261020000200_official_menu.sql.

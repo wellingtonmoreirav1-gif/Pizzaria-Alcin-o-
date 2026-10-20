@@ -13,6 +13,7 @@ import type {
 export interface VariantRow {
   id: string;
   name: string;
+  size_code: string | null;
   description: string | null;
   price: number | string;
   max_flavors: number;
@@ -34,8 +35,10 @@ export interface OptionValueRow {
   sort_order: number;
   is_active: boolean;
   is_available: boolean;
+  price_confirmed: boolean;
   deleted_at: string | null;
   option_value_variant_prices: { variant_id: string; price: number | string | null; is_offered: boolean }[];
+  option_value_size_prices: { size_code: string; price: number | string | null; is_offered: boolean }[];
 }
 export interface OptionGroupRow {
   id: string;
@@ -46,6 +49,7 @@ export interface OptionGroupRow {
   max_select: number;
   sort_order: number;
   is_active: boolean;
+  shared_key: string | null;
   deleted_at: string | null;
   option_values: OptionValueRow[];
 }
@@ -72,8 +76,10 @@ export interface ProductRow {
   serves: string | null;
   max_quantity: number;
   is_demo: boolean;
+  price_confirmed: boolean;
   deleted_at: string | null;
   categories: { id: string; slug: string; name: string } | null;
+  product_shared_groups: { sort_order: number; option_groups: OptionGroupRow | null }[];
   product_images: { url: string; alt: string | null; sort_order: number }[];
   product_variants: VariantRow[];
   option_groups: OptionGroupRow[];
@@ -98,18 +104,22 @@ export interface ProductRow {
   }[];
 }
 
+export const GROUP_SELECT = `id, kind, name, description, min_select, max_select, sort_order, is_active, shared_key, deleted_at,
+    option_values ( id, group_id, name, description, image_url, price, combination_tag, sort_order, is_active,
+                    is_available, price_confirmed, deleted_at,
+      option_value_variant_prices ( variant_id, price, is_offered ),
+      option_value_size_prices ( size_code, price, is_offered ) )`;
+
 export const PRODUCT_SELECT = `
   id, category_id, kind, slug, name, short_description, description, image_url, image_alt, base_price,
   is_active, is_available, is_featured, featured_order, sort_order, shift_restriction, available_from,
-  available_until, tags, serves, max_quantity, is_demo, deleted_at,
+  available_until, tags, serves, max_quantity, is_demo, price_confirmed, deleted_at,
   categories ( id, slug, name ),
   product_images ( url, alt, sort_order ),
-  product_variants ( id, name, description, price, max_flavors, flavor_price_rule, allow_mixed_flavor_tags,
+  product_variants ( id, name, size_code, description, price, max_flavors, flavor_price_rule, allow_mixed_flavor_tags,
                      sort_order, is_active, is_available, deleted_at ),
-  option_groups ( id, kind, name, description, min_select, max_select, sort_order, is_active, deleted_at,
-    option_values ( id, group_id, name, description, image_url, price, combination_tag, sort_order, is_active,
-                    is_available, deleted_at,
-      option_value_variant_prices ( variant_id, price, is_offered ) ) ),
+  option_groups!option_groups_product_id_fkey ( ${GROUP_SELECT} ),
+  product_shared_groups ( sort_order, option_groups ( ${GROUP_SELECT} ) ),
   promotions ( id, title, description, variant_id, promo_price, starts_at, ends_at, is_active ),
   combo_items!combo_items_combo_product_id_fkey ( item_product_id, item_variant_id, quantity, description, sort_order,
     item:products!combo_items_item_product_id_fkey ( name, is_available, is_active, deleted_at ),
@@ -119,7 +129,7 @@ export const PRODUCT_SELECT = `
 const live = <T extends { is_active: boolean; deleted_at: string | null }>(row: T) => row.is_active && !row.deleted_at;
 const bySort = <T extends { sort_order: number }>(a: T, b: T) => a.sort_order - b.sort_order;
 
-function mapGroups(groups: OptionGroupRow[]): CatalogOptionGroup[] {
+export function mapGroups(groups: OptionGroupRow[]): CatalogOptionGroup[] {
   return groups
     .filter(live)
     .sort(bySort)
@@ -131,6 +141,7 @@ function mapGroups(groups: OptionGroupRow[]): CatalogOptionGroup[] {
       minSelect: g.min_select,
       maxSelect: g.max_select,
       sortOrder: g.sort_order,
+      sharedKey: g.shared_key,
       values: g.option_values
         .filter(live)
         .sort(bySort)
@@ -144,8 +155,12 @@ function mapGroups(groups: OptionGroupRow[]): CatalogOptionGroup[] {
           combinationTag: v.combination_tag,
           sortOrder: v.sort_order,
           isAvailable: v.is_available,
+          priceConfirmed: v.price_confirmed,
           variantRules: Object.fromEntries(
             v.option_value_variant_prices.map((r) => [r.variant_id, { price: toCentsOrNull(r.price), isOffered: r.is_offered }]),
+          ),
+          sizeRules: Object.fromEntries(
+            (v.option_value_size_prices ?? []).map((r) => [r.size_code, { price: toCentsOrNull(r.price), isOffered: r.is_offered }]),
           ),
         })),
     }));
@@ -178,12 +193,14 @@ export function mapProduct(row: ProductRow): CatalogProduct {
     serves: row.serves,
     maxQuantity: row.max_quantity,
     isDemo: row.is_demo,
+    priceConfirmed: row.price_confirmed,
     variants: row.product_variants
       .filter(live)
       .sort(bySort)
       .map((v) => ({
         id: v.id,
         name: v.name,
+        sizeCode: v.size_code,
         description: v.description,
         price: toCents(v.price),
         maxFlavors: v.max_flavors,
@@ -192,7 +209,15 @@ export function mapProduct(row: ProductRow): CatalogProduct {
         sortOrder: v.sort_order,
         isAvailable: v.is_available,
       })),
-    groups: mapGroups(row.option_groups),
+    // Grupos próprios + compartilhados, na ordem definida no vínculo (shared usa sort_order do vínculo).
+    groups: [
+      ...mapGroups(row.option_groups),
+      ...mapGroups(
+        (row.product_shared_groups ?? [])
+          .filter((link) => link.option_groups)
+          .map((link) => ({ ...(link.option_groups as OptionGroupRow), sort_order: link.sort_order })),
+      ),
+    ].sort((a, b) => a.sortOrder - b.sortOrder),
     promotions: row.promotions
       .filter((p) => p.is_active)
       .map((p) => ({
@@ -225,6 +250,8 @@ export interface CategoryRow {
   image_url: string | null;
   sort_order: number;
   show_on_home: boolean;
+  section_type: 'products' | 'options';
+  shared_group_id: string | null;
 }
 
 export function mapCategory(row: CategoryRow): CatalogCategory {
@@ -236,5 +263,7 @@ export function mapCategory(row: CategoryRow): CatalogCategory {
     imageUrl: row.image_url,
     sortOrder: row.sort_order,
     showOnHome: row.show_on_home,
+    sectionType: row.section_type,
+    sharedGroupId: row.shared_group_id,
   };
 }

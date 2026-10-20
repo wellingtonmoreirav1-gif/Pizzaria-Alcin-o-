@@ -46,6 +46,7 @@ const baseProduct = {
   serves: null,
   maxQuantity: 30,
   isDemo: false,
+  priceConfirmed: true,
   variants: [],
   groups: [],
   promotions: [],
@@ -60,32 +61,32 @@ export function pizzaProduct(overrides: Partial<CatalogProduct> = {}): CatalogPr
     slug: 'pizza',
     name: 'Pizza',
     variants: [
-      { id: IDS.small, name: 'Pequena', description: null, price: 3000, maxFlavors: 1, flavorPriceRule: 'highest', allowMixedFlavorTags: true, sortOrder: 1, isAvailable: true },
-      { id: IDS.large, name: 'Grande', description: null, price: 5000, maxFlavors: 2, flavorPriceRule: 'highest', allowMixedFlavorTags: false, sortOrder: 2, isAvailable: true },
+      { id: IDS.small, sizeCode: 'P', name: 'Pequena', description: null, price: 3000, maxFlavors: 1, flavorPriceRule: 'highest', allowMixedFlavorTags: true, sortOrder: 1, isAvailable: true },
+      { id: IDS.large, sizeCode: 'G', name: 'Grande', description: null, price: 5000, maxFlavors: 2, flavorPriceRule: 'highest', allowMixedFlavorTags: false, sortOrder: 2, isAvailable: true },
     ],
     groups: [
       {
-        id: IDS.flavorGroup, kind: 'flavor', name: 'Sabores', description: null, minSelect: 1, maxSelect: 2, sortOrder: 1,
+        id: IDS.flavorGroup, kind: 'flavor', name: 'Sabores', description: null, minSelect: 1, maxSelect: 2, sortOrder: 1, sharedKey: null,
         values: [
-          { id: IDS.flavorA, groupId: IDS.flavorGroup, name: 'Sabor A', description: null, imageUrl: null, price: 0, combinationTag: 'salgada', sortOrder: 1, isAvailable: true, variantRules: {} },
+          { id: IDS.flavorA, groupId: IDS.flavorGroup, name: 'Sabor A', description: null, imageUrl: null, price: 0, combinationTag: 'salgada', sortOrder: 1, isAvailable: true, variantRules: {}, sizeRules: {}, priceConfirmed: true },
           { id: IDS.flavorB, groupId: IDS.flavorGroup, name: 'Sabor B', description: null, imageUrl: null, price: 0, combinationTag: 'salgada', sortOrder: 2, isAvailable: true,
-            variantRules: { [IDS.small]: { price: 3600, isOffered: true }, [IDS.large]: { price: 6000, isOffered: true } } },
+            variantRules: { [IDS.small]: { price: 3600, isOffered: true }, [IDS.large]: { price: 6000, isOffered: true } }, sizeRules: {}, priceConfirmed: true },
           { id: IDS.flavorSweet, groupId: IDS.flavorGroup, name: 'Doce', description: null, imageUrl: null, price: 0, combinationTag: 'doce', sortOrder: 3, isAvailable: true,
-            variantRules: { [IDS.small]: { price: null, isOffered: false } } },
+            variantRules: { [IDS.small]: { price: null, isOffered: false } }, sizeRules: {}, priceConfirmed: true },
         ],
       },
       {
-        id: IDS.crustGroup, kind: 'crust', name: 'Borda', description: null, minSelect: 0, maxSelect: 1, sortOrder: 2,
+        id: IDS.crustGroup, kind: 'crust', name: 'Borda', description: null, minSelect: 0, maxSelect: 1, sortOrder: 2, sharedKey: null,
         values: [
           { id: IDS.crust, groupId: IDS.crustGroup, name: 'Borda recheada', description: null, imageUrl: null, price: 600, combinationTag: null, sortOrder: 1, isAvailable: true,
-            variantRules: { [IDS.large]: { price: 900, isOffered: true } } },
+            variantRules: { [IDS.large]: { price: 900, isOffered: true } }, sizeRules: {}, priceConfirmed: true },
         ],
       },
       {
-        id: IDS.extraGroup, kind: 'extra', name: 'Adicionais', description: null, minSelect: 0, maxSelect: 2, sortOrder: 3,
+        id: IDS.extraGroup, kind: 'extra', name: 'Adicionais', description: null, minSelect: 0, maxSelect: 2, sortOrder: 3, sharedKey: null,
         values: [
-          { id: IDS.extra, groupId: IDS.extraGroup, name: 'Extra 1', description: null, imageUrl: null, price: 400, combinationTag: null, sortOrder: 1, isAvailable: true, variantRules: {} },
-          { id: IDS.extra2, groupId: IDS.extraGroup, name: 'Extra 2', description: null, imageUrl: null, price: 300, combinationTag: null, sortOrder: 2, isAvailable: false, variantRules: {} },
+          { id: IDS.extra, groupId: IDS.extraGroup, name: 'Extra 1', description: null, imageUrl: null, price: 400, combinationTag: null, sortOrder: 1, isAvailable: true, variantRules: {}, sizeRules: {}, priceConfirmed: true },
+          { id: IDS.extra2, groupId: IDS.extraGroup, name: 'Extra 2', description: null, imageUrl: null, price: 300, combinationTag: null, sortOrder: 2, isAvailable: false, variantRules: {}, sizeRules: {}, priceConfirmed: true },
         ],
       },
     ],
@@ -102,8 +103,8 @@ export function drinkProduct(overrides: Partial<CatalogProduct> = {}): CatalogPr
     name: 'Refrigerante',
     categoryName: 'Bebidas',
     variants: [
-      { id: IDS.can, name: 'Lata', description: null, price: 600, maxFlavors: 1, flavorPriceRule: 'fixed', allowMixedFlavorTags: true, sortOrder: 1, isAvailable: true },
-      { id: IDS.bottle, name: '2 litros', description: null, price: 1400, maxFlavors: 1, flavorPriceRule: 'fixed', allowMixedFlavorTags: true, sortOrder: 2, isAvailable: true },
+      { id: IDS.can, sizeCode: null, name: 'Lata', description: null, price: 600, maxFlavors: 1, flavorPriceRule: 'fixed', allowMixedFlavorTags: true, sortOrder: 1, isAvailable: true },
+      { id: IDS.bottle, sizeCode: null, name: '2 litros', description: null, price: 1400, maxFlavors: 1, flavorPriceRule: 'fixed', allowMixedFlavorTags: true, sortOrder: 2, isAvailable: true },
     ],
     ...overrides,
   };
@@ -121,11 +122,11 @@ export function lunchProduct(overrides: Partial<CatalogProduct> = {}): CatalogPr
     shiftRestriction: 'lunch',
     groups: [
       {
-        id: IDS.sidesGroup, kind: 'choice', name: 'Acompanhamentos', description: null, minSelect: 1, maxSelect: 2, sortOrder: 1,
+        id: IDS.sidesGroup, kind: 'choice', name: 'Acompanhamentos', description: null, minSelect: 1, maxSelect: 2, sortOrder: 1, sharedKey: null,
         values: [
-          { id: IDS.side1, groupId: IDS.sidesGroup, name: 'Arroz', description: null, imageUrl: null, price: 0, combinationTag: null, sortOrder: 1, isAvailable: true, variantRules: {} },
-          { id: IDS.side2, groupId: IDS.sidesGroup, name: 'Feijão', description: null, imageUrl: null, price: 0, combinationTag: null, sortOrder: 2, isAvailable: true, variantRules: {} },
-          { id: IDS.side3, groupId: IDS.sidesGroup, name: 'Farofa especial', description: null, imageUrl: null, price: 300, combinationTag: null, sortOrder: 3, isAvailable: true, variantRules: {} },
+          { id: IDS.side1, groupId: IDS.sidesGroup, name: 'Arroz', description: null, imageUrl: null, price: 0, combinationTag: null, sortOrder: 1, isAvailable: true, variantRules: {}, sizeRules: {}, priceConfirmed: true },
+          { id: IDS.side2, groupId: IDS.sidesGroup, name: 'Feijão', description: null, imageUrl: null, price: 0, combinationTag: null, sortOrder: 2, isAvailable: true, variantRules: {}, sizeRules: {}, priceConfirmed: true },
+          { id: IDS.side3, groupId: IDS.sidesGroup, name: 'Farofa especial', description: null, imageUrl: null, price: 300, combinationTag: null, sortOrder: 3, isAvailable: true, variantRules: {}, sizeRules: {}, priceConfirmed: true },
         ],
       },
     ],

@@ -5,6 +5,12 @@
 -- Para remover antes da publicação, execute supabase/remove-demo.sql.
 -- =============================================================================
 
+-- Categorias usadas somente pelos produtos de demonstração.
+insert into public.categories (slug, name, sort_order) values
+  ('pizzas', 'Pizzas (exemplo)', 900), ('almoco', 'Almoço (exemplo)', 910), ('churrasco', 'Churrasco (exemplo)', 920),
+  ('combos', 'Combos (exemplo)', 930), ('bebidas', 'Bebidas', 940)
+on conflict (slug) do update set is_active = true, deleted_at = null;
+
 do $$
 declare
   c_pizzas uuid := (select id from public.categories where slug = 'pizzas');
