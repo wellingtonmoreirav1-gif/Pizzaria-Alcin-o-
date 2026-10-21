@@ -28,6 +28,22 @@ export async function saveBrandImages(_prev: ActionResult | null, form: FormData
   );
 }
 
+/** Foto da faixa da categoria na página inicial (vazio = usa a foto do primeiro produto). */
+export async function saveCategoryPhoto(categoryId: string, _prev: ActionResult | null, form: FormData): Promise<ActionResult> {
+  return runAdminAction(
+    [...PERMISSIONS.catalog],
+    async (_ctx, db) => {
+      if (!z.uuid().safeParse(categoryId).success) throw new ActionError('Categoria inválida.');
+      const url = allowedImage(form, 'imageUrl');
+      const { data } = check(await db.from('categories').update({ image_url: url }).eq('id', categoryId).select('name').maybeSingle());
+      if (!data) throw new ActionError('Categoria não encontrada.');
+      revalidatePath('/admin/fotos');
+      return url ? `Foto de ${data.name} salva.` : `Foto de ${data.name} removida.`;
+    },
+    ['catalog'],
+  );
+}
+
 /** Troca a foto de um produto. Ao enviar foto real, o texto "imagem ilustrativa" sai do texto alternativo. */
 export async function saveProductPhoto(productId: string, _prev: ActionResult | null, form: FormData): Promise<ActionResult> {
   return runAdminAction(

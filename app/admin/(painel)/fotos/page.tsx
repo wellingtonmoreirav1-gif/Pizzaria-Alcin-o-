@@ -7,7 +7,7 @@ import { ActionForm } from '@/components/admin/action-form';
 import { ImageUpload } from '@/components/admin/image-upload';
 import { Badge, Notice } from '@/components/ui/feedback';
 import { cn } from '@/lib/utils';
-import { saveBrandImages, saveProductPhoto } from './actions';
+import { saveBrandImages, saveCategoryPhoto, saveProductPhoto } from './actions';
 
 export const metadata = { title: 'Fotos e logo' };
 
@@ -27,10 +27,12 @@ export default async function PhotosPage({ searchParams }: PageProps<'/admin/fot
   const sp = await searchParams;
   const filter = sp.mostrar === 'pendentes' || sp.mostrar === 'enviadas' ? sp.mostrar : 'todas';
   const supabase = await createSessionClient();
-  const [settingsRes, productsRes] = await Promise.all([
+  const [settingsRes, productsRes, categoriesRes] = await Promise.all([
     supabase.from('business_settings').select('logo_url').eq('id', 1).single(),
     supabase.from('products').select('id, name, image_url, image_alt, is_active, categories(name, sort_order)').is('deleted_at', null).order('sort_order'),
+    supabase.from('categories').select('id, name, image_url').is('deleted_at', null).eq('is_active', true).eq('show_on_home', true).order('sort_order'),
   ]);
+  const categories = (categoriesRes.data ?? []) as { id: string; name: string; image_url: string | null }[];
   const all = ((productsRes.data ?? []) as unknown as Row[]).sort(
     (a, b) => (a.categories?.sort_order ?? 0) - (b.categories?.sort_order ?? 0),
   );
@@ -63,6 +65,25 @@ export default async function PhotosPage({ searchParams }: PageProps<'/admin/fot
         <ActionForm action={saveBrandImages} submitLabel="Salvar logo">
           <ImageUpload name="logoUrl" folder="brand" defaultUrl={s?.logo_url ?? null} label="Logo oficial" />
         </ActionForm>
+      </Card>
+
+      <Card
+        title="Fotos das categorias"
+        description="Aparecem nas faixas largas da página inicial (“O que você quer hoje?”). Use foto horizontal, de preferência 1600×600. O lado esquerdo fica mais escuro para o nome aparecer. Sem foto, a faixa usa a foto do primeiro produto da categoria."
+      >
+        <ul className="grid gap-3 md:grid-cols-2">
+          {categories.map((c) => (
+            <li key={c.id} className="rounded-xl border border-line p-3" data-testid="category-photo">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="font-semibold">{c.name}</span>
+                <Badge tone={c.image_url ? 'success' : 'neutral'}>{c.image_url ? 'Foto enviada' : 'Usando foto do produto'}</Badge>
+              </div>
+              <ActionForm action={saveCategoryPhoto.bind(null, c.id)} submitLabel="Salvar foto" size="sm">
+                <ImageUpload name="imageUrl" folder="categories" defaultUrl={c.image_url} label={`Foto de ${c.name}`} />
+              </ActionForm>
+            </li>
+          ))}
+        </ul>
       </Card>
 
       <Card

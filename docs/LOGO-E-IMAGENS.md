@@ -39,6 +39,13 @@ Cada um dos 46 produtos do cardápio oficial (40 + 6 bebidas) tem uma **ilustra�
 - **Para trocar pela foto real:** Painel → **Fotos e logo** — lista todos os produtos por categoria, com a situação de cada um (“Ilustração provisória”, “Foto enviada”, “Sem imagem”) e o filtro **Sem foto real**. Em cada produto: **Substituir** → escolha a foto → **Salvar foto**. O texto alternativo “imagem ilustrativa” é trocado automaticamente pelo nome do produto (ou pelo texto que você escrever). Também dá para trocar no editor do produto. Reaplicar as migrations **não** sobrescreve uma foto já enviada.
 - Produto sem foto nem ilustração mostra uma arte neutra com “Foto em breve” — nunca a foto de outro produto.
 
+### Fotos das categorias (faixas da página inicial)
+
+Em "O que você quer hoje?", cada categoria aparece numa faixa larga, de ponta a ponta da tela. Para trocar a foto: **Painel → Fotos e logo → Fotos das categorias**.
+- Use foto **horizontal**, de preferência 1600×600.
+- O lado esquerdo da faixa fica mais escuro, para o nome aparecer.
+- Sem foto própria, a faixa usa a foto do primeiro produto da categoria.
+
 ### Direção de arte (todo o cardápio)
 
 - Fotografia gastronômica profissional e realista; ingredientes nítidos; queijo derretido natural; massa e borda realistas.

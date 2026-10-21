@@ -72,52 +72,69 @@ export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Cat
   );
 }
 
-/** Grade de navegação pelas categorias do cardápio. */
+/**
+ * Categorias em faixas largas (de ponta a ponta da tela), uma embaixo da outra.
+ * Foto: a da categoria (Painel → Fotos e logo) ou, sem ela, a do primeiro produto.
+ */
 function CategoryTiles({ catalog }: { catalog: Catalog }) {
   const groups = new Map(catalog.sharedGroups.map((g) => [g.id, g]));
   const tiles = catalog.categories
     .map((c: CatalogCategory) => {
       const products = catalog.products.filter((p) => p.categoryId === c.id);
       const count = c.sectionType === 'options' ? groups.get(c.sharedGroupId ?? '')?.values.length ?? 0 : products.length;
-      return { category: c, count, image: products.find((p) => p.imageUrl)?.imageUrl ?? null, isOptions: c.sectionType === 'options' };
+      const image = c.imageUrl ?? products.find((p) => p.imageUrl)?.imageUrl ?? null;
+      return { category: c, count, image, isOptions: c.sectionType === 'options' };
     })
     .filter((t) => t.count > 0);
   if (tiles.length === 0) return null;
   return (
-    <section aria-labelledby="categorias-titulo" className="py-10 sm:py-14" id="categorias">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-6 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Cardápio</p>
-            <h2 id="categorias-titulo" className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">O que você quer hoje?</h2>
-          </div>
-          <Link href="/cardapio" className="hidden shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold hover:bg-mist sm:inline-flex">
-            Ver cardápio completo <ArrowRight className="size-4" aria-hidden />
-          </Link>
+    <section aria-labelledby="categorias-titulo" className="pb-4 pt-10 sm:pt-14" id="categorias">
+      <div className="mx-auto mb-6 flex max-w-7xl items-end justify-between gap-4 px-4 sm:px-6">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Cardápio</p>
+          <h2 id="categorias-titulo" className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">O que você quer hoje?</h2>
         </div>
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {tiles.map(({ category, count, image, isOptions }) => (
-            <li key={category.id}>
-              <Link
-                href={`/cardapio?categoria=${category.slug}`}
-                className="group flex h-full flex-col overflow-hidden rounded-2xl bg-surface ring-1 ring-line transition-colors hover:ring-gold/60"
-              >
-                <span className="relative grid h-24 place-items-center overflow-hidden bg-mist sm:h-28" aria-hidden>
-                  {image ? (
-                    <Image src={image} alt="" fill sizes="(max-width: 640px) 50vw, 16vw" unoptimized={image.endsWith('.svg')} className="object-cover object-top transition-transform duration-300 group-hover:scale-105" />
-                  ) : (
-                    <Layers className="size-8 text-gold" />
-                  )}
-                </span>
-                <span className="flex flex-1 flex-col justify-center px-3 py-2.5">
-                  <span className="font-display text-base font-semibold leading-tight">{category.name}</span>
-                  <span className="mt-0.5 text-xs text-gold">{isOptions ? `${count} opções` : `${count} ${count === 1 ? 'item' : 'itens'}`}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <Link href="/cardapio" className="hidden shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold hover:bg-mist sm:inline-flex">
+          Ver cardápio completo <ArrowRight className="size-4" aria-hidden />
+        </Link>
       </div>
+      <ul className="flex flex-col gap-1.5" data-testid="category-bands">
+        {tiles.map(({ category, count, image, isOptions }, i) => (
+          <li key={category.id}>
+            <Link
+              href={`/cardapio?categoria=${category.slug}`}
+              className="group relative flex h-32 w-full items-center overflow-hidden bg-wine sm:h-40 lg:h-44"
+            >
+              {image ? (
+                <Image
+                  src={image}
+                  alt=""
+                  fill
+                  sizes="100vw"
+                  priority={i < 2}
+                  unoptimized={image.endsWith('.svg')}
+                  className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+              ) : (
+                <Layers className="absolute right-[12%] size-16 text-gold/40 sm:size-24" aria-hidden />
+              )}
+              {/* Escurece o lado do texto para o nome ficar sempre legível sobre a foto. */}
+              <span className="absolute inset-0 bg-gradient-to-r from-ink-950/90 via-ink-950/55 to-transparent" aria-hidden />
+              <span className="relative mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
+                <span>
+                  <span className="block font-display text-[1.7rem] font-bold leading-tight text-white drop-shadow sm:text-4xl lg:text-5xl">{category.name}</span>
+                  <span className="mt-1 block text-sm font-semibold text-gold sm:text-base">
+                    {isOptions ? `${count} opções` : `${count} ${count === 1 ? 'item' : 'itens'}`}
+                  </span>
+                </span>
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-black/40 text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors group-hover:bg-brand-600 sm:size-12" aria-hidden>
+                  <ArrowRight className="size-5" />
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
