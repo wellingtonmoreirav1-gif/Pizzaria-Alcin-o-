@@ -9,7 +9,8 @@ const LOOP = { webm: '/hero/pizza-loop.webm', mp4: '/hero/pizza-loop.mp4' };
 
 /**
  * Primeira dobra: a pizza desmonta sozinha, em loop (como um GIF, mas leve e sem travar),
- * por baixo do cabeçalho transparente. A primeira imagem aparece na hora; o vídeo entra
+ * por baixo do cabeçalho transparente. No celular a pizza fica em cima e o letreiro embaixo;
+ * no computador, a pizza à direita e o letreiro à esquerda. A primeira imagem aparece na hora; o vídeo entra
  * por cima quando começa a tocar. Quem pede menos movimento ou economia de dados vê só a
  * imagem parada.
  */
@@ -75,35 +76,35 @@ export function HeroLoop({ children }: { children: ReactNode }) {
       ref={stageRef}
       aria-label="Apresentação"
       data-hero
-      className="group/hero relative -mt-[var(--header-h)] h-svh overflow-hidden bg-wine-900 text-white [--header-h:114px] sm:[--header-h:73px]"
+      className="group/hero relative -mt-[var(--header-h)] overflow-hidden bg-wine-900 text-white [--header-h:114px] sm:[--header-h:73px] lg:h-svh"
       data-testid="hero"
     >
-      <div className="bg-wine absolute inset-0 lg:[background-image:radial-gradient(ellipse_48%_80%_at_63%_52%,var(--color-wine-500)_0%,var(--color-wine-700)_50%,var(--color-wine-900)_100%)]">
-        {/* Área da pizza: tela inteira no celular; no computador, grande e levemente à direita. */}
-        <div
-          className="absolute inset-0 lg:inset-auto lg:left-[40%] lg:top-1/2 lg:aspect-[9/16] lg:h-[145%] lg:w-auto lg:-translate-y-1/2 lg:[mask-image:radial-gradient(closest-side,black_70%,transparent_100%)]"
-          aria-hidden
+      <div
+        className="bg-wine absolute inset-0 lg:[background-image:radial-gradient(ellipse_45%_80%_at_74%_52%,var(--color-wine-500)_0%,var(--color-wine-700)_50%,var(--color-wine-900)_100%)]"
+        aria-hidden
+      />
+      {/* Pizza em destaque: no celular, em cima e sem nada por cima; no computador, grande à direita. */}
+      <div
+        className="relative mt-[var(--header-h)] h-[58svh] w-full [mask-image:linear-gradient(to_bottom,black_80%,transparent)] lg:absolute lg:mt-0 lg:right-[-1%] lg:top-1/2 lg:aspect-[9/16] lg:h-[145%] lg:w-auto lg:-translate-y-1/2 lg:[mask-image:radial-gradient(closest-side,black_70%,transparent_100%)]"
+        aria-hidden
+      >
+        <Image src={POSTER} alt="" fill loading="eager" fetchPriority="high" unoptimized sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover object-[center_32%] lg:object-center" />
+        <video
+          ref={videoRef}
+          muted
+          loop
+          playsInline
+          preload="none"
+          disablePictureInPicture
+          className="absolute inset-0 size-full object-cover object-[center_32%] opacity-0 lg:object-center transition-opacity duration-500 group-data-[ready=true]/hero:opacity-100"
         >
-          <Image src={POSTER} alt="" fill loading="eager" fetchPriority="high" unoptimized sizes="100vw" className="object-cover" />
-          <video
-            ref={videoRef}
-            muted
-            loop
-            playsInline
-            preload="none"
-            disablePictureInPicture
-            className="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-500 group-data-[ready=true]/hero:opacity-100"
-          >
-            <source src={LOOP.webm} type="video/webm" />
-            <source src={LOOP.mp4} type="video/mp4" />
-          </video>
-        </div>
-        {/* Sombra para o texto ficar legível sobre a imagem. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[55%] bg-gradient-to-b from-[#260304]/90 via-[#260304]/45 to-transparent lg:hidden" aria-hidden />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-gradient-to-t from-[#260304]/95 to-transparent lg:hidden" aria-hidden />
+          <source src={LOOP.webm} type="video/webm" />
+          <source src={LOOP.mp4} type="video/mp4" />
+        </video>
       </div>
 
-      <div className="relative mx-auto flex h-full max-w-7xl flex-col px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(var(--header-h)+1.25rem)] sm:px-6 lg:justify-center lg:pb-10 max-sm:[body:has([data-mobile-cart-bar])_&]:pb-24">
+      {/* Texto: no celular, logo abaixo da pizza, sobre o fundo vermelho; no computador, à esquerda. */}
+      <div className="relative mx-auto -mt-10 flex max-w-7xl flex-col px-4 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6 lg:mt-0 lg:h-full lg:justify-center lg:pb-10 lg:pt-[var(--header-h)] max-sm:[body:has([data-mobile-cart-bar])_&]:pb-24">
         {children}
       </div>
     </section>

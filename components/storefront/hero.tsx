@@ -20,7 +20,7 @@ export function Hero({ settings }: { settings: SiteSettings }) {
   return (
     <HeroLoop>
       <div className="max-w-xl">
-        <p className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-sm">
+        <p className="hidden w-fit items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-sm lg:inline-flex">
           <UtensilsCrossed className="size-3.5 text-gold" aria-hidden /> {settings.city ?? 'São Bento'} · {settings.state ?? 'PB'}
         </p>
         {customTitle ? (
@@ -29,7 +29,7 @@ export function Hero({ settings }: { settings: SiteSettings }) {
           </h1>
         ) : (
           // Letreiro "Sabor irresistível no Alcinão" (arte do restaurante, fundo recortado), com fade-in.
-          <h1 className="mt-4">
+          <h1 className="lg:mt-4">
             <Image
               src="/hero/sabor-irresistivel.webp"
               alt="Sabor irresistível no Alcinão"
@@ -37,7 +37,7 @@ export function Hero({ settings }: { settings: SiteSettings }) {
               height={793}
               loading="eager"
               sizes="(max-width: 640px) 92vw, 560px"
-              className="h-auto w-full max-w-[22rem] drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)] motion-safe:animate-title-in sm:max-w-[32rem] lg:max-w-[35rem]"
+              className="mx-auto h-auto w-full max-w-[19rem] drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)] motion-safe:animate-title-in sm:max-w-[30rem] lg:mx-0 lg:max-w-[35rem]"
             />
             <span className="sr-only"> — pizzaria e churrascaria em {settings.city ?? 'São Bento'} ({settings.state ?? 'PB'})</span>
           </h1>
@@ -45,8 +45,8 @@ export function Hero({ settings }: { settings: SiteSettings }) {
         {customTitle ? <p className="mt-5 hidden max-w-md text-pretty text-lg leading-relaxed text-white/80 sm:block">{subtitle}</p> : null}
       </div>
 
-      <div className="mt-auto lg:mt-8">
-        <div className="flex flex-wrap gap-3">
+      <div className="mt-6 lg:mt-8">
+        <div className="flex flex-wrap justify-center gap-3 lg:justify-start">
           <ButtonLink href="/cardapio" size="lg">
             Pedir agora <ArrowRight className="size-5" aria-hidden />
           </ButtonLink>
@@ -59,10 +59,10 @@ export function Hero({ settings }: { settings: SiteSettings }) {
             <MessageCircle className="size-5" aria-hidden /> Falar no WhatsApp
           </a>
         </div>
-        <p className="mt-4 flex items-center gap-2 text-sm text-white/70">
+        <p className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70 lg:justify-start">
           <MessageCircle className="size-4" aria-hidden /> Pedido confirmado pela equipe no WhatsApp
         </p>
-        <p className="mt-5 flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60 motion-reduce:hidden" aria-hidden>
+        <p className="mt-5 hidden items-center gap-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60 lg:flex motion-reduce:hidden" aria-hidden>
           <ChevronDown className="size-4 motion-safe:animate-bounce" /> Role para ver
         </p>
       </div>

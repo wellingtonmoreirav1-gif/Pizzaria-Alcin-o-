@@ -18,7 +18,10 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   await expect(loop).toHaveJSProperty('loop', true);
   await expect(loop).toHaveJSProperty('muted', true);
   await expect.poll(() => loop.evaluate((v) => (v as HTMLVideoElement).currentTime)).toBeGreaterThan(0);
-  expect(await hero.evaluate((el) => (el as HTMLElement).offsetHeight)).toBeLessThanOrEqual(page.viewportSize()!.height);
+  // No celular: a pizza em cima e o letreiro logo abaixo dela (não por cima).
+  const pizzaBottom = await hero.locator('video').evaluate((v) => v.parentElement!.getBoundingClientRect().bottom);
+  const titleTop = await page.getByRole('heading', { level: 1 }).evaluate((h) => h.getBoundingClientRect().top);
+  expect(titleTop).toBeGreaterThan(pizzaBottom - 80);
   await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
   await expect(hero.getByRole('link', { name: 'Falar no WhatsApp' })).toHaveAttribute('href', /wa\.me\/\d+/);
   await expect(page.getByRole('heading', { name: 'Peça agora pelo WhatsApp' })).toBeVisible();
@@ -89,12 +92,12 @@ test('história da Alcinão: vídeo com capa, carrossel e Instagram', async ({ p
   await expect(story.getByRole('link', { name: /Seguir @pizzariaalcinao no Instagram/ })).toHaveAttribute('href', 'https://www.instagram.com/pizzariaalcinao/');
 });
 
-test('quem pede menos movimento vê o topo parado, da altura da tela', async ({ page }) => {
+test('quem pede menos movimento vê a pizza parada', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   const hero = page.getByTestId('hero');
-  const height = await hero.evaluate((el) => (el as HTMLElement).offsetHeight);
-  expect(height).toBeLessThanOrEqual(page.viewportSize()!.height);
+  await expect(hero).toHaveAttribute('data-static', 'true');
+  await expect(hero.locator('video')).toHaveJSProperty('paused', true);
   await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, 400));
   await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
