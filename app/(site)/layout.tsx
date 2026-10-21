@@ -13,8 +13,9 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
   const { data: catalog } = await getCatalog();
   const suggestions = catalog.products.filter((p) => SUGGESTION_CATEGORIES.has(p.categorySlug)).slice(0, 12);
   return (
-    <StoreProviders>
-      <div className="theme-dark flex min-h-screen flex-col">
+    // O tema escuro envolve também as janelas (escolher produto), que ficam no provedor.
+    <div className="theme-dark flex min-h-screen flex-col">
+      <StoreProviders>
       <Suspense fallback={null}>
         <ClosedBanner />
       </Suspense>
@@ -28,7 +29,7 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
         <CartDrawer suggestions={suggestions} fetchedAt={catalog.fetchedAt} />
         <MobileCartBar />
       </Suspense>
-      </div>
-    </StoreProviders>
+      </StoreProviders>
+    </div>
   );
 }

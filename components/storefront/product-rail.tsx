@@ -58,7 +58,7 @@ export function ProductRail({
       </ul>
       {href ? (
         <div className="mt-2 px-4 sm:hidden">
-          <Link href={href} className={cn('inline-flex items-center gap-1 text-sm font-semibold', tone === 'wine' ? 'text-gold' : 'text-danger')}>
+          <Link href={href} className={cn('inline-flex items-center gap-1 text-sm font-semibold', 'text-gold')}>
             Ver todos <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>

@@ -26,6 +26,8 @@ O topo da página inicial mostra uma pizza que **desmonta conforme a rolagem** e
   `ffmpeg -i video.mp4 -vf "select='not(mod(n\,3))',scale=640:-2" -vsync vfr -c:v libwebp -quality 55 public/hero/pizza/%03d.webp`
 
   Se o número de quadros mudar, ajuste `FRAME_COUNT`.
+- **Tela cheia:** na página inicial o topo fica por baixo do cabeçalho, que é transparente enquanto a animação está na tela e volta ao normal depois dela. No computador, a pizza ocupa o centro-direita em tamanho grande.
+- **Cache:** os quadros ficam guardados no aparelho por 7 dias (`next.config.ts`). Ao trocar o vídeo, prefira gerar os quadros com outro nome de pasta (e ajustar `frameSrc`) para todos verem na hora.
 - A "foto principal" do painel não é mais usada no topo. O título padrão é "Conheça a ALCINÃO pizzaria e churrascaria"; um título próprio pode ser definido em **Configurações → Chamada principal**.
 
 ## Fotos dos produtos
@@ -34,7 +36,7 @@ Nenhuma **foto** foi gerada ou inventada, e o site não chama serviços pagos de
 
 ### Ilustrações provisórias do cardápio oficial
 
-Cada um dos 46 produtos do cardápio oficial (40 + 6 bebidas) tem uma **ilustração vetorial provisória e única** (`public/images/products/<slug>.svg`), desenhada a partir dos ingredientes cadastrados (ex.: a pizza de calabresa mostra rodelas de calabresa; a de chocolate, massa escura com granulado). As bebidas usam embalagens genéricas, **sem marcas nem rótulos de fabricantes**. Todas trazem a legenda **“IMAGEM ILUSTRATIVA · FOTO OFICIAL EM BREVE”** e o texto alternativo diz “Imagem ilustrativa provisória de … (foto oficial em breve)”. Elas não são fotos e não devem ser divulgadas como tal.
+Cada um dos 46 produtos do cardápio oficial (40 + 6 bebidas) tem uma **ilustração vetorial provisória e única** (`public/images/products/<slug>.svg`), desenhada a partir dos ingredientes cadastrados (ex.: a pizza de calabresa mostra rodelas de calabresa; a de chocolate, massa escura com granulado). As bebidas usam embalagens genéricas, **sem marcas nem rótulos de fabricantes**. O site mostra sobre elas o aviso **“Imagem ilustrativa”** (o desenho não tem texto escrito) e o texto alternativo diz “Imagem ilustrativa provisória de … (foto oficial em breve)”. Elas não são fotos e não devem ser divulgadas como tal.
 
 - São geradas por `node scripts/generate-menu-placeholders.mjs` (sem internet e sem custo; ~500 KB no total).
 - **Para trocar pela foto real:** Painel → **Fotos e logo** — lista todos os produtos por categoria, com a situação de cada um (“Ilustração provisória”, “Foto enviada”, “Sem imagem”) e o filtro **Sem foto real**. Em cada produto: **Substituir** → escolha a foto → **Salvar foto**. O texto alternativo “imagem ilustrativa” é trocado automaticamente pelo nome do produto (ou pelo texto que você escrever). Também dá para trocar no editor do produto. Reaplicar as migrations **não** sobrescreve uma foto já enviada.
@@ -45,7 +47,7 @@ Cada um dos 46 produtos do cardápio oficial (40 + 6 bebidas) tem uma **ilustra�
 Em "O que você quer hoje?", cada categoria aparece numa faixa larga, de ponta a ponta da tela. Para trocar a foto: **Painel → Fotos e logo → Fotos das categorias**.
 - Use foto **horizontal**, de preferência 1600×600.
 - O lado esquerdo da faixa fica mais escuro, para o nome aparecer.
-- Sem foto própria, a faixa usa a foto do primeiro produto da categoria.
+- Sem foto própria, a faixa usa a foto do primeiro produto da categoria, com um recorte diferente em cada faixa (a foto enviada aparece inteira).
 
 ### Direção de arte (todo o cardápio)
 

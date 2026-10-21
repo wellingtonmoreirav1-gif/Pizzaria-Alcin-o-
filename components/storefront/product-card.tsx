@@ -55,7 +55,8 @@ export function ProductCard({
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           {reason === 'soldout' ? <Badge tone="dark">Esgotado</Badge> : null}
           {reason === 'period' ? <Badge tone="dark">Fora do período</Badge> : null}
-          {reason === 'price' ? <Badge className="bg-ink-950/90 text-gold ring-1 ring-gold/40">Preço em conferência</Badge> : null}
+          {/* Sem valor nenhum, o "Preço a definir" embaixo já diz tudo; o selo fica para o valor de referência. */}
+          {reason === 'price' && price ? <Badge className="bg-ink-950/90 text-gold ring-1 ring-gold/40">Preço em conferência</Badge> : null}
           {houseSpecial ? <Badge className="bg-gold text-ink-950">Especial da casa</Badge> : null}
           {orderable && promo ? <Badge tone="brand">Promoção</Badge> : null}
           {badge && orderable ? <Badge className="bg-white/95 text-ink-900">{badge}</Badge> : null}

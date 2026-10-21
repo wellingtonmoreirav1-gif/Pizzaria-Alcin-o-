@@ -13,10 +13,24 @@ import { BannerStrip } from './banner-strip';
 /** Vitrines da página inicial: categorias agrupadas para a página não ficar longa. */
 const RAIL_GROUPS: { title: string; eyebrow: string; slugs: string[] }[] = [
   { title: 'Pizzas', eyebrow: 'Do forno', slugs: ['pizzas-tradicionais', 'pizzas-especiais', 'pizzas-premium', 'pizzas-doces'] },
+  { title: 'Pratos da casa', eyebrow: 'Na chapa, para dividir', slugs: ['pratos-da-casa'] },
   { title: 'Lanches', eyebrow: 'Na chapa', slugs: ['lanches-tradicionais', 'lanches-especiais', 'beirute'] },
-  { title: 'Petiscos e pratos da casa', eyebrow: 'Para dividir', slugs: ['petiscos', 'pratos-da-casa'] },
+  { title: 'Petiscos', eyebrow: 'Para acompanhar', slugs: ['petiscos'] },
   { title: 'Lasanhas', eyebrow: 'Gratinadas', slugs: ['lasanhas'] },
 ];
+/** Sem foto própria da categoria, cada faixa mostra um recorte diferente do desenho do 1º produto. */
+const BAND_CROPS = [
+  { origin: '50% 40%', zoom: 1.1 },
+  { origin: '25% 65%', zoom: 1.7 },
+  { origin: '75% 35%', zoom: 1.4 },
+  { origin: '50% 80%', zoom: 2 },
+  { origin: '20% 30%', zoom: 1.25 },
+  { origin: '80% 70%', zoom: 1.55 },
+];
+/** Destaques nunca ficam com menos itens que isto: completa com pizzas. */
+const MIN_FEATURED = 4;
+/** Ordem para completar: as mais especiais primeiro (a vitrine de Pizzas já começa pelas tradicionais). */
+const FEATURED_FILL = ['pizzas-premium', 'pizzas-especiais', 'pizzas-tradicionais'];
 
 export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Catalog; bestSellerIds: string[]; banners: PublicBanner[] }) {
   const now = useNow(catalog.fetchedAt);
@@ -30,6 +44,13 @@ export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Cat
   const trending: CatalogProduct[] = [];
   for (const p of [...featured, ...best]) if (!trending.some((t) => t.id === p.id)) trending.push(p);
   const trendingAvailable = trending.filter((p) => isProductOrderable(p, now)).slice(0, 8);
+  // Poucos destaques escolhidos: completa com pizzas (a casa é pizzaria e o topo é uma pizza).
+  if (trendingAvailable.length < MIN_FEATURED) {
+    const pizzas = catalog.products
+      .filter((p) => FEATURED_FILL.includes(p.categorySlug) && isProductOrderable(p, now) && !trendingAvailable.some((t) => t.id === p.id))
+      .sort((a, b) => FEATURED_FILL.indexOf(a.categorySlug) - FEATURED_FILL.indexOf(b.categorySlug) || a.sortOrder - b.sortOrder);
+    trendingAvailable.push(...pizzas.slice(0, MIN_FEATURED - trendingAvailable.length));
+  }
   const badges: Record<string, string> = {};
   for (const p of best) badges[p.id] = 'Mais pedido';
 
@@ -42,7 +63,7 @@ export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Cat
     // Categorias novas criadas no painel ganham a própria vitrine automaticamente.
     ...homeCategories
       .filter((c) => c.sectionType === 'products' && !covered.has(c.slug))
-      .map((c) => ({ title: c.name, eyebrow: 'Cardápio', slugs: [c.slug] })),
+      .map((c) => ({ title: c.name, eyebrow: c.slug === 'bebidas' ? 'Para acompanhar' : 'Cardápio', slugs: [c.slug] })),
   ];
 
   return (
@@ -65,6 +86,8 @@ export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Cat
             .filter((p) => rail.slugs.includes(p.categorySlug))
             .sort((a, b) => (categoryOrder.get(a.categoryId) ?? 0) - (categoryOrder.get(b.categoryId) ?? 0) || a.sortOrder - b.sortOrder),
         ).slice(0, 8);
+        // Sem nada que dê para pedir agora (ex.: bebidas ainda sem preço): fica só no cardápio.
+        if (!list.some((p) => isProductOrderable(p, now))) return null;
         return <ProductRail key={rail.title} id={rail.slugs[0]} title={rail.title} eyebrow={rail.eyebrow} products={list} fetchedAt={catalog.fetchedAt} href={`/cardapio?categoria=${rail.slugs[0]}`} />;
       })}
     </>
@@ -82,7 +105,7 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
     .map((c) => {
       const products = catalog.products.filter((p) => p.categoryId === c.id);
       const image = c.imageUrl ?? products.find((p) => p.imageUrl)?.imageUrl ?? null;
-      return { category: c, count: products.length, image };
+      return { category: c, count: products.length, image, ownPhoto: Boolean(c.imageUrl) };
     })
     .filter((t) => t.count > 0);
   if (tiles.length === 0) return null;
@@ -98,26 +121,30 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
         </Link>
       </div>
       <ul className="flex flex-col gap-1.5" data-testid="category-bands">
-        {tiles.map(({ category, count, image }) => (
+        {tiles.map(({ category, count, image, ownPhoto }, i) => {
+          const crop = ownPhoto ? null : BAND_CROPS[i % BAND_CROPS.length]!;
+          return (
           <li key={category.id}>
             <Link
               href={`/cardapio?categoria=${category.slug}`}
               className="group relative flex h-24 w-full items-center overflow-hidden bg-wine sm:h-36 lg:h-40"
             >
               {image ? (
-                <Image
-                  src={image}
-                  alt=""
-                  fill
-                  sizes="100vw"
-                  unoptimized={image.endsWith('.svg')}
-                  className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
-                />
+                <span className="absolute inset-0" style={crop ? { transform: `scale(${crop.zoom})`, transformOrigin: crop.origin } : undefined}>
+                  <Image
+                    src={image}
+                    alt=""
+                    fill
+                    sizes="100vw"
+                    unoptimized={image.endsWith('.svg')}
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                </span>
               ) : (
                 <Layers className="absolute right-[12%] size-16 text-gold/40 sm:size-24" aria-hidden />
               )}
               {/* Escurece o lado do texto para o nome ficar sempre legível sobre a foto. */}
-              <span className="absolute inset-0 bg-gradient-to-r from-ink-950/90 via-ink-950/55 to-transparent" aria-hidden />
+              <span className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/10" aria-hidden />
               <span className="relative mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
                 <span>
                   <span className="block font-display text-[1.6rem] font-bold leading-tight text-white drop-shadow sm:text-4xl lg:text-5xl">{category.name}</span>
@@ -131,7 +158,8 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
               </span>
             </Link>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );

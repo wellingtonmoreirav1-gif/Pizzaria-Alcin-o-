@@ -11,11 +11,13 @@ const frameSrc = (i: number) => `/hero/pizza/${String(i + 1).padStart(3, '0')}.w
  * Etapas da rolagem: 0 = apresentação; 1..n = legendas; a última = convite final.
  * O limite de cada etapa é o progresso (0–1) em que ela começa.
  */
-const STAGE_STARTS = [0, 0.25, 0.5, 0.78];
+const STAGE_STARTS = [0, 0.18, 0.48, 0.78];
 const stageOf = (p: number) => STAGE_STARTS.reduce((stage, start, i) => (p >= start ? i : stage), 0);
 /** Quadros-chave (um a cada 8) carregam logo; os demais, quando a pessoa começa a rolar. */
 const KEY_STEP = 8;
 const PARALLEL = 6;
+/** Os intermediários vêm com menos pedidos simultâneos, para não travar a rolagem. */
+const PARALLEL_REST = 3;
 
 // Visível só na etapa indicada; invisível sai da ordem do Tab e do leitor de tela.
 const LAYER = 'invisible opacity-0 translate-y-3 transition-[opacity,translate,visibility] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]';
@@ -57,11 +59,32 @@ export function HeroScroll({
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (!stage || !box || !canvas || !ctx) return;
+
+    // O topo fica por baixo do cabeçalho (transparente enquanto a animação está na tela):
+    // mede a altura real dele e avisa quando a animação já passou (cabeçalho volta ao normal).
+    let headerH = 0;
+    const measureHeader = () => {
+      headerH = document.querySelector('header')?.getBoundingClientRect().height ?? 0;
+      stage.style.setProperty('--header-h', `${Math.round(headerH)}px`);
+    };
+    const markDone = () => {
+      const done = stage.getBoundingClientRect().bottom <= headerH + 1;
+      if ((stage.dataset.done === 'true') !== done) stage.dataset.done = String(done);
+    };
+    measureHeader();
+    markDone();
+    window.addEventListener('scroll', markDone, { passive: true });
+    window.addEventListener('resize', measureHeader);
+    const stopChrome = () => {
+      window.removeEventListener('scroll', markDone);
+      window.removeEventListener('resize', measureHeader);
+    };
+
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
     if (reduce || saveData) {
       stage.dataset.static = 'true';
-      return;
+      return stopChrome;
     }
 
     const frames: (HTMLImageElement | null)[] = Array.from({ length: FRAME_COUNT }, () => null);
@@ -69,17 +92,10 @@ export function HeroScroll({
     let raf = 0;
     let cancelled = false;
 
-    // A animação fica abaixo do cabeçalho fixo: mede a altura real dele.
-    let headerH = 0;
-    const measureHeader = () => {
-      headerH = document.querySelector('header')?.getBoundingClientRect().height ?? 0;
-      stage.style.setProperty('--header-h', `${Math.round(headerH)}px`);
-    };
-
     const progress = () => {
       const rect = stage.getBoundingClientRect();
-      const total = stage.offsetHeight - (window.innerHeight - headerH);
-      return total > 0 ? Math.min(1, Math.max(0, (headerH - rect.top) / total)) : 0;
+      const total = stage.offsetHeight - window.innerHeight;
+      return total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
     };
 
     /** Quadro mais próximo do desejado entre os que já carregaram. */
@@ -142,15 +158,16 @@ export function HeroScroll({
       if (i === 0) stage.dataset.ready = 'true';
       schedule();
     };
-    const loadAll = async (list: number[]) => {
+    const loadAll = async (list: number[], parallel: number) => {
       const queue = [...list];
       const worker = async () => {
         while (!cancelled && queue.length) await loadFrame(queue.shift()!);
       };
-      await Promise.all(Array.from({ length: PARALLEL }, worker));
+      await Promise.all(Array.from({ length: parallel }, worker));
     };
-    // Primeiro quadro (já pré-carregado pela página) e os quadros-chave: a animação já
-    // responde à rolagem. Os intermediários só quando a pessoa começa a rolar.
+    // Primeiro quadro (já carregado pela página) e os quadros-chave: a animação já
+    // responde à rolagem. Os intermediários vêm em seguida, aos poucos, ou de uma vez
+    // assim que a pessoa começa a rolar.
     const keyFrames = [...Array(FRAME_COUNT).keys()].filter((i) => i % KEY_STEP === 0 || i === FRAME_COUNT - 1);
     const rest = [...Array(FRAME_COUNT).keys()].filter((i) => !keyFrames.includes(i));
     let restStarted = false;
@@ -158,15 +175,16 @@ export function HeroScroll({
       if (restStarted) return;
       restStarted = true;
       window.removeEventListener('scroll', startRest);
-      void loadAll(rest);
+      void loadAll(rest, PARALLEL_REST);
     };
-    void loadAll(keyFrames);
+    void loadAll(keyFrames, PARALLEL).then(startRest);
     window.addEventListener('scroll', startRest, { passive: true });
 
     resize();
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', resize);
     return () => {
+      stopChrome();
       cancelled = true;
       if (raf) cancelAnimationFrame(raf);
       window.removeEventListener('scroll', schedule);
@@ -179,18 +197,19 @@ export function HeroScroll({
     <section
       ref={stageRef}
       aria-label="Apresentação"
-      className="group/hero relative h-auto bg-wine-900 text-white [--header-h:114px] sm:[--header-h:73px] motion-safe:h-[220svh] motion-safe:lg:h-[280vh] data-[static=true]:h-auto!"
+      data-hero
+      className="group/hero relative -mt-[var(--header-h)] h-auto bg-wine-900 text-white [--header-h:114px] sm:[--header-h:73px] motion-safe:h-[220svh] motion-safe:lg:h-[280vh] data-[static=true]:h-auto!"
       style={{ '--p': 0 } as CSSProperties}
       data-testid="hero"
     >
-      <div className="bg-wine sticky top-[var(--header-h)] h-[calc(100svh-var(--header-h))] overflow-hidden lg:[background-image:radial-gradient(ellipse_40%_75%_at_76%_52%,var(--color-wine-500)_0%,var(--color-wine-700)_50%,var(--color-wine-900)_100%)]">
-        {/* Área da pizza: tela inteira no celular; coluna à direita no computador. */}
+      <div className="bg-wine sticky top-0 h-svh overflow-hidden lg:[background-image:radial-gradient(ellipse_48%_80%_at_63%_52%,var(--color-wine-500)_0%,var(--color-wine-700)_50%,var(--color-wine-900)_100%)]">
+        {/* Área da pizza: tela inteira no celular; no computador, grande e levemente à direita. */}
         <div
           ref={boxRef}
-          className="absolute inset-0 lg:inset-y-0 lg:left-auto lg:right-[6%] lg:aspect-[9/16] lg:h-full lg:w-auto lg:[mask-image:radial-gradient(closest-side,black_74%,transparent_100%)]"
+          className="absolute inset-0 lg:inset-auto lg:left-[40%] lg:top-1/2 lg:aspect-[9/16] lg:h-[145%] lg:w-auto lg:-translate-y-1/2 lg:[mask-image:radial-gradient(closest-side,black_70%,transparent_100%)]"
           aria-hidden
         >
-          <Image src={frameSrc(0)} alt="" fill preload unoptimized sizes="100vw" className="object-cover" />
+          <Image src={frameSrc(0)} alt="" fill loading="eager" fetchPriority="high" unoptimized sizes="100vw" className="object-cover" />
           <canvas ref={canvasRef} className="absolute inset-0 size-full opacity-0 transition-opacity duration-300 group-data-[ready=true]/hero:opacity-100" />
         </div>
         {/* Sombra para o texto ficar legível sobre a imagem. */}
@@ -198,12 +217,12 @@ export function HeroScroll({
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-gradient-to-t from-[#260304]/95 to-transparent lg:hidden" aria-hidden />
         {/* No convite final o texto fica sobre a pizza: escurece mais a parte de baixo. */}
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-[#260304] via-[#260304]/80 to-transparent opacity-0 transition-opacity duration-500 group-data-[stage='3']/hero:opacity-100 lg:hidden"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-[#260304] via-[#260304]/90 to-transparent opacity-0 transition-opacity duration-500 group-data-[stage='3']/hero:opacity-100 lg:hidden"
           aria-hidden
         />
 
         <div
-          className={`relative mx-auto grid h-full max-w-7xl px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 *:[grid-area:1/1] sm:px-6 lg:pt-0 ${ABOVE_CART}`}
+          className={`relative mx-auto grid h-full max-w-7xl px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(var(--header-h)+1.25rem)] *:[grid-area:1/1] sm:px-6 lg:pb-10 ${ABOVE_CART}`}
         >
           {/* Apresentação: some no começo da rolagem (e deixa de receber foco). */}
           <div

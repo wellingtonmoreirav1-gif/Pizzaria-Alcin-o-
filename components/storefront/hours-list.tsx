@@ -28,7 +28,7 @@ export function HoursList({ hours, tone = 'dark' }: { hours: BusinessHourRow[]; 
     <dl className={cn('mt-3 space-y-2 text-sm', tone === 'light' ? 'text-white/80' : 'text-fg')}>
       {groups.map((g) => (
         <div key={g.days.join()} className="flex flex-col">
-          <dt className="font-semibold capitalize">
+          <dt className="font-semibold first-letter:uppercase">
             {g.days.length === 7 ? 'Todos os dias' : g.days.length > 2 ? `${dayName(g.days[0] ?? 0)} a ${dayName(g.days[g.days.length - 1] ?? 0)}` : g.days.map(dayName).join(' e ')}
           </dt>
           <dd className={tone === 'light' ? 'text-white/60' : 'text-muted'}>{g.text}</dd>

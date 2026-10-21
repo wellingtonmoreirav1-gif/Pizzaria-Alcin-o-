@@ -7,7 +7,7 @@ import { HeroScroll } from './hero-scroll';
 /** Título que vinha do cadastro inicial; trocado pela apresentação "Conheça a ALCINÃO". */
 const LEGACY_TITLE = 'Seu próximo sabor favorito está aqui.';
 
-const CAPTION = 'max-w-md font-display lg:max-w-2xl lg:text-7xl text-[2.6rem] font-bold italic leading-[1.02] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] sm:text-6xl';
+const CAPTION = 'max-w-md text-balance font-display lg:max-w-[30rem] lg:text-7xl text-[2.6rem] font-bold italic leading-[1.02] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] sm:text-6xl';
 const GLASS_BUTTON = 'border-white/30 bg-black/25 text-white backdrop-blur-sm hover:border-white hover:bg-white/10';
 
 /**
@@ -34,8 +34,8 @@ export function Hero({ settings }: { settings: SiteSettings }) {
         </ButtonLink>
       }
       outro={
-        <div className="max-w-md lg:max-w-xl">
-          <h2 className="font-display text-[2.6rem] font-bold leading-[1.02] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] sm:text-6xl lg:text-7xl">
+        <div className="max-w-md lg:max-w-[30rem]">
+          <h2 className="text-balance font-display text-[2.6rem] font-bold leading-[1.02] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] sm:text-6xl lg:text-7xl">
             Agora é <span className="italic text-gold">a sua vez.</span>
           </h2>
           <p className="mt-3 text-pretty text-white/85 sm:text-lg">Escolha o sabor e o tamanho. A equipe confirma o pedido no WhatsApp.</p>

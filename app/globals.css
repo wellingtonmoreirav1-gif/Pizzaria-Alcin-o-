@@ -113,6 +113,9 @@
   color: var(--color-fg);
 }
 
+/* Cabeçalho transparente enquanto a animação do topo (página inicial) está na tela. */
+@custom-variant over-hero (html:has([data-hero]:not([data-done="true"])) &);
+
 body:has(.theme-dark) {
   background: #0b0a09;
 }
@@ -121,6 +124,17 @@ body:has(.theme-dark) {
   html {
     -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
+    /* O foco e os atalhos (#horarios…) não ficam escondidos atrás do cabeçalho fixo. */
+    scroll-padding-top: 8rem;
+    @media (min-width: 48rem) {
+      scroll-padding-top: 5.5rem;
+    }
+    /* …nem atrás da barra do carrinho no celular. */
+    @media (max-width: 39.99rem) {
+      &:has([data-mobile-cart-bar]) {
+        scroll-padding-bottom: 6rem;
+      }
+    }
   }
   body {
     background: var(--color-paper);

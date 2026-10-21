@@ -10,7 +10,7 @@ export async function SiteFooter() {
   const s = data.settings;
   const phone = s.whatsappNumber.startsWith('55') ? s.whatsappNumber.slice(2) : s.whatsappNumber;
   return (
-    <footer className="mt-20 border-t border-line bg-[#080706] text-white">
+    <footer className="mt-20 border-t [main:has(#cta-whatsapp-titulo)+&]:mt-0 border-line bg-[#080706] text-white">
       <div className="grain">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.3fr_1fr_1fr]">
           <div className="space-y-4">
@@ -38,7 +38,7 @@ export async function SiteFooter() {
             </a>
           </div>
           <div>
-            <h2 className="font-display text-lg font-semibold">Horários</h2>
+            <h2 className="font-display text-lg font-semibold">Horário de funcionamento</h2>
             <HoursList hours={data.hours.hours} tone="light" />
           </div>
           <div>

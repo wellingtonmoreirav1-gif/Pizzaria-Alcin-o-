@@ -34,7 +34,7 @@ export function BrandLogo({
     );
   }
   return (
-    <span className={cn('flex flex-col leading-none', className)} aria-label={name}>
+    <span className={cn('flex flex-col leading-none', className)}>
       <span className={cn('text-[0.58rem] font-semibold uppercase tracking-[0.22em]', tone === 'dark' ? 'text-muted' : 'text-white/60')}>
         Pizzaria &amp; Churrascaria
       </span>

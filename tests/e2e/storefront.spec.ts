@@ -14,7 +14,7 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   // Topo animado: a sequência de quadros da pizza carrega e acompanha a rolagem.
   const hero = page.getByTestId('hero');
   await expect(hero).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
-  await page.evaluate(() => window.scrollTo(0, window.innerHeight));
+  await page.evaluate(() => window.scrollTo(0, window.innerHeight * 0.5));
   await expect.poll(async () => Number(await hero.evaluate((el) => getComputedStyle(el).getPropertyValue('--p')))).toBeGreaterThan(0);
   // Durante a animação: a apresentação some (e sai do Tab), o botão de pedido fica à mão.
   await expect(hero).toHaveAttribute('data-stage', /[12]/);
@@ -35,6 +35,8 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   // Bordas e molhos não se pedem sozinhos: não viram faixa na página inicial.
   await expect(page.getByTestId('category-bands')).not.toContainText('Bordas recheadas');
   await expect(page.getByTestId('category-bands')).toContainText('Pizzas tradicionais');
+  // Fileiras sem nada que dê para pedir (bebidas sem preço) ficam só no cardápio; "Pratos da casa" tem a sua.
+  await expect(page.getByRole('heading', { name: 'Pratos da casa', level: 2 })).toBeVisible();
   await hero.getByRole('link', { name: /Pedir agora/ }).first().click();
   await expect(page).toHaveURL(/\/cardapio$/);
 });

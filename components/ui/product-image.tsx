@@ -33,7 +33,14 @@ export function ProductImage({
           unoptimized={src.endsWith('.svg')}
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
         />
-      ) : (
+      ) : null}
+      {/* Ilustração provisória: o aviso fica legível aqui, não escrito dentro do desenho. */}
+      {src?.startsWith('/images/products/') ? (
+        <span aria-hidden className="pointer-events-none absolute bottom-2 left-2 rounded-full bg-black/65 px-2.5 py-1 text-[0.7rem] font-semibold leading-none text-white/90 backdrop-blur-sm">
+          Imagem ilustrativa
+        </span>
+      ) : null}
+      {src ? null : (
         <div className="grain absolute inset-0 grid place-items-center" role="img" aria-label={`Foto de ${name} em breve`}>
           <svg viewBox="0 0 120 120" className="w-1/3 text-brand-600/80" aria-hidden>
             <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" strokeWidth="5" />

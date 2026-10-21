@@ -96,14 +96,10 @@ function frame(slug, body) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Imagem ilustrativa: ${esc(name)}">
 <defs>
   <radialGradient id="bg" cx="50%" cy="42%" r="70%"><stop offset="0" stop-color="#2a2422"/><stop offset="1" stop-color="#0c0a09"/></radialGradient>
-  <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.6" stop-color="#0c0a09" stop-opacity="0"/><stop offset="1" stop-color="#0c0a09" stop-opacity="0.92"/></linearGradient>
   <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity="0.55"/></filter>
 </defs>
 <rect width="800" height="600" fill="url(#bg)"/>
 <g filter="url(#sh)">${body}</g>
-<rect width="800" height="600" fill="url(#fade)"/>
-<text x="40" y="540" font-family="Georgia, serif" font-size="40" font-weight="700" fill="#fff">${esc(name)}</text>
-<text x="40" y="574" font-family="Arial, sans-serif" font-size="17" letter-spacing="3" fill="#d4af37">IMAGEM ILUSTRATIVA · FOTO OFICIAL EM BREVE</text>
 </svg>
 `;
 }
