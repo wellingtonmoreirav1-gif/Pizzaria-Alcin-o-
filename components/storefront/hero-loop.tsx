@@ -76,7 +76,7 @@ export function HeroLoop({ children }: { children: ReactNode }) {
       ref={stageRef}
       aria-label="Apresentação"
       data-hero
-      className="group/hero relative -mt-[var(--header-h)] overflow-hidden bg-wine-900 text-white [--header-h:114px] sm:[--header-h:73px] lg:h-svh"
+      className="group/hero relative -mt-[var(--header-h)] overflow-hidden bg-wine-900 text-white [--header-h:114px] sm:[--header-h:73px] lg:h-[var(--app-h-stable)]"
       data-testid="hero"
     >
       <div
@@ -85,7 +85,7 @@ export function HeroLoop({ children }: { children: ReactNode }) {
       />
       {/* Pizza em destaque: no celular, em cima e sem nada por cima; no computador, grande à direita. */}
       <div
-        className="relative mt-[var(--header-h)] h-[58svh] w-full [mask-image:linear-gradient(to_bottom,black_80%,transparent)] lg:absolute lg:mt-0 lg:right-[-1%] lg:top-1/2 lg:aspect-[9/16] lg:h-[145%] lg:w-auto lg:-translate-y-1/2 lg:[mask-image:radial-gradient(closest-side,black_70%,transparent_100%)]"
+        className="relative mt-[var(--header-h)] h-[calc(var(--app-h-stable)*0.58)] w-full [mask-image:linear-gradient(to_bottom,black_80%,transparent)] lg:absolute lg:mt-0 lg:right-[-1%] lg:top-1/2 lg:aspect-[9/16] lg:h-[145%] lg:w-auto lg:-translate-y-1/2 lg:[mask-image:radial-gradient(closest-side,black_70%,transparent_100%)]"
         aria-hidden
       >
         <Image src={POSTER} alt="" fill loading="eager" fetchPriority="high" unoptimized sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover object-[center_32%] lg:object-center" />

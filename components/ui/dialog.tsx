@@ -46,10 +46,11 @@ export function Dialog({
   }, [open]);
 
   const position = {
-    center: 'm-auto max-h-[92dvh] w-[min(42rem,calc(100%-1.5rem))] rounded-[1.5rem]',
-    right: 'ml-auto mr-0 my-0 h-dvh max-h-dvh w-full max-w-md rounded-none sm:rounded-l-[1.5rem]',
+    // Alturas pela tela medida no navegador (--app-h, ver app/layout.tsx), não por dvh.
+    center: 'm-auto max-h-[calc(var(--app-h)*0.92)] w-[min(42rem,calc(100%-1.5rem))] rounded-[1.5rem]',
+    right: 'ml-auto mr-0 my-0 h-[var(--app-h)] max-h-[var(--app-h)] w-full max-w-md rounded-none sm:rounded-l-[1.5rem]',
     bottom:
-      'mx-auto mb-0 mt-auto max-h-[94dvh] w-full max-w-2xl rounded-t-[1.5rem] sm:m-auto sm:max-h-[90dvh] sm:rounded-[1.5rem]',
+      'mx-auto mb-[var(--app-bottom-gap)] mt-auto max-h-[calc(var(--app-h)*0.94)] w-full max-w-2xl rounded-t-[1.5rem] sm:m-auto sm:max-h-[calc(var(--app-h)*0.9)] sm:rounded-[1.5rem]',
   }[side];
 
   return (

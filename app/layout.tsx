@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { Inter, Playfair_Display } from 'next/font/google';
 import { SITE_URL } from '@/config/business';
 import { getOperation } from '@/lib/catalog/queries';
@@ -34,10 +35,26 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
+/**
+ * Altura real da tela, medida no navegador. Alguns navegadores embutidos em apps
+ * (Instagram, WhatsApp…) calculam errado as unidades dvh/svh do CSS: as gavetas ficavam
+ * espremidas no rodapé, atrás da barra do app. --app-h: área visível agora (gavetas);
+ * --app-h-stable: só muda com mudança grande (ex.: girar a tela), para o topo não pular
+ * quando a barra do navegador some ao rolar; --app-bottom-gap: barra do app por cima
+ * da página, quando o navegador informa.
+ */
+const VIEWPORT_SCRIPT = `(function(){var d=document.documentElement,s=0,w=0;function f(){var v=window.visualViewport,ih=window.innerHeight,h=v?Math.min(ih,v.height):ih,gap=v?Math.max(0,ih-v.height-v.offsetTop):0;if(!h)return;d.style.setProperty('--app-h',h+'px');d.style.setProperty('--app-bottom-gap',Math.round(gap)+'px');if(!s||window.innerWidth!==w||Math.abs(ih-s)>150){s=ih;w=window.innerWidth;d.style.setProperty('--app-h-stable',ih+'px')}}f();addEventListener('resize',f);addEventListener('pageshow',f);if(window.visualViewport)visualViewport.addEventListener('resize',f)})()`;
+
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="pt-BR" className={`${playfair.variable} ${inter.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+    // suppressHydrationWarning: o script abaixo grava as alturas no style do <html> antes do React.
+    <html lang="pt-BR" className={`${playfair.variable} ${inter.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="flex min-h-full flex-col">
+        <Script id="altura-da-tela" strategy="beforeInteractive">
+          {VIEWPORT_SCRIPT}
+        </Script>
+        {children}
+      </body>
     </html>
   );
 }

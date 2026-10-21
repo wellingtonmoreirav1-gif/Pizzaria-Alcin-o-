@@ -5,6 +5,13 @@
  * Preto (base), vermelho (ação/oferta), branco (leitura) e cinzas quentes (apoio).
  * Use SEMPRE estas classes/variáveis em vez de cores soltas nos componentes.
  */
+/* Alturas da tela: o script em app/layout.tsx troca pelas medidas reais; isto vale sem JS. */
+:root {
+  --app-h: 100dvh;
+  --app-h-stable: 100svh;
+  --app-bottom-gap: 0px;
+}
+
 @theme {
   --color-ink-950: #0c0a09;
   --color-ink-900: #151211;
