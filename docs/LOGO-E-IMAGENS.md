@@ -61,6 +61,13 @@ Em "O que você quer hoje?", cada grupo do cardápio tem um bloco: o botão à e
 
 Cada página mostra as categorias do grupo separadas. Textos, fotos e categorias ficam em `lib/catalog/groups.ts`. Bebidas não aparecem nesta área (aguardando definição do restaurante). Categorias novas criadas no painel aparecem em faixas abaixo dos blocos.
 
+### Nossa história (página inicial)
+
+Logo abaixo dos blocos "Pedir …": linha do tempo que desce com a rolagem — "No início, a Alcinão era um restaurante de sucesso." → "Até que uma tragédia aconteceu…" com o vídeo "Das cinzas à inauguração" (capa por cima) → carrossel 3D com 3 vídeos → botão para o Instagram @pizzariaalcinao.
+- Vídeos do Instagram do restaurante, comprimidos para 540×960 (≈13 MB no total) em `public/historia/` (`video-1.mp4` a `video-4.mp4`), com capa `capa-das-cinzas.webp` e quadros de prévia `video-2..4.webp`. Só baixam quando a pessoa dá play.
+- Para recomprimir um vídeo novo: `ffmpeg -i entrada.mp4 -vf scale=540:960 -c:v libx264 -preset slow -crf 28 -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart public/historia/video-N.mp4`.
+- Código: `components/storefront/story-timeline.tsx`.
+
 ### Fotos das categorias (faixas da página inicial)
 
 Em "O que você quer hoje?", cada categoria aparece numa faixa larga, de ponta a ponta da tela. Para trocar a foto: **Painel → Fotos e logo → Fotos das categorias**.

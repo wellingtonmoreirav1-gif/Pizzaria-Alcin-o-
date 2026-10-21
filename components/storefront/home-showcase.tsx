@@ -10,6 +10,7 @@ import { useNow } from '@/lib/use-now';
 import { ProductRail } from './product-rail';
 import { BannerStrip } from './banner-strip';
 import { WeeklyFeature, type WeeklyFeatureConfig } from './weekly-feature';
+import { StoryTimeline } from './story-timeline';
 import { HOME_HIDDEN_CATEGORIES, MENU_GROUPS, groupOfCategory, type MenuGroup } from '@/lib/catalog/groups';
 
 /** Vitrines da página inicial: categorias agrupadas para a página não ficar longa. */
@@ -59,6 +60,7 @@ export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: 
     <>
       <WeeklyFeature config={WEEKLY_FEATURE} product={weeklyProduct} fetchedAt={catalog.fetchedAt} />
       <CategoryTiles catalog={catalog} />
+      <StoryTimeline />
       <BannerStrip banners={banners} now={now} />
       <ProductRail id="promocoes" eyebrow="Por tempo limitado" title="Promoções" products={promos.slice(0, 8)} fetchedAt={catalog.fetchedAt} href="/cardapio?colecao=promocoes" tone="wine" />
       {rails.map((rail) => {

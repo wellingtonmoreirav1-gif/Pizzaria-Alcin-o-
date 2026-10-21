@@ -74,6 +74,21 @@ test('Pedir pratos reúne pratos da casa e lasanhas', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 2, name: 'Lasanhas' })).toBeVisible();
 });
 
+test('história da Alcinão: vídeo com capa, carrossel e Instagram', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('hero')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
+  const story = page.locator('#historia');
+  await story.scrollIntoViewIfNeeded();
+  await expect(story.getByText('No início, a Alcinão era um restaurante de sucesso.')).toBeVisible();
+  await expect(story.getByRole('button', { name: /Assistir ao vídeo: Das cinzas à inauguração/ })).toBeVisible();
+  const carousel = story.getByRole('region', { name: 'Vídeos da Alcinão' });
+  await carousel.scrollIntoViewIfNeeded();
+  await expect(carousel.locator('video[controls]')).toHaveAttribute('src', '/historia/video-2.mp4');
+  await carousel.getByRole('button', { name: 'Próximo vídeo' }).click();
+  await expect(carousel.locator('video[controls]')).toHaveAttribute('src', '/historia/video-3.mp4');
+  await expect(story.getByRole('link', { name: /Seguir @pizzariaalcinao no Instagram/ })).toHaveAttribute('href', 'https://www.instagram.com/pizzariaalcinao/');
+});
+
 test('quem pede menos movimento vê o topo parado, da altura da tela', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
