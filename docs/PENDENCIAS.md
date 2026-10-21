@@ -25,6 +25,13 @@ Tudo abaixo é preenchido **pelo painel**, sem mexer no código.
 | Instagram e outros contatos | Configurações | opcional |
 | Revisão jurídica dos textos de privacidade e termos | `/privacidade`, `/termos` | pendente |
 
+### Página inicial (decisões em aberto)
+
+- [ ] **Bebidas:** cadastrar os preços. Enquanto nenhuma tiver preço, a vitrine de bebidas não aparece na página inicial (continua no cardápio).
+- [ ] **Telefone para ligação:** só há o número de WhatsApp cadastrado. Se ele também atende ligações, dá para incluir um botão "Ligar".
+- [ ] **Primeiro destaque:** hoje é o lanche "Alcinão — Especial da Casa" (marcado como destaque no cadastro). Para abrir com uma pizza, ajustar em Painel → Cardápio.
+- [ ] **Churrasco:** a vitrine "Pratos da casa" mostra os pratos na chapa. Itens de churrasco de verdade (ex.: espetinhos) precisam ser cadastrados para aparecer.
+
 ## Preços que precisam ser confirmados
 
 Esses itens **aparecem no site** com “Preço a definir” e **não podem ser pedidos** (nem pela tela nem pela API) até alguém com papel de gerente/administrador informar o valor em **Painel → Conferência de preços** → **Salvar e confirmar valores**. Valor 0,00 não é aceito para produto (evita liberar um item de graça por engano). Quem confirmou e quando fica gravado pelo banco e na Auditoria.
