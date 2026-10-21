@@ -57,23 +57,81 @@ test('destaque da semana abre o lanche para pedir', async ({ page }) => {
   await expect(page.getByRole('dialog', { name: 'X-Frango' })).toBeVisible();
 });
 
-test('Pedir pizzas leva às pizzas separadas por categoria', async ({ page }) => {
+test('Pedir pizzas: passo a passo tipo → tamanho → sabor', async ({ page }) => {
   await page.goto('/');
   await page.locator('#categorias').getByRole('link', { name: /Pedir pizzas/ }).click();
   await expect(page).toHaveURL(/\/pizzas$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Pizzas' })).toBeVisible();
+  // 1) Tipo
+  await expect(page.getByRole('heading', { name: 'Qual tipo você quer?' })).toBeVisible();
   for (const name of ['Pizzas tradicionais', 'Pizzas especiais', 'Pizzas premium', 'Pizzas doces']) {
-    await expect(page.getByRole('heading', { level: 2, name })).toBeVisible();
+    await expect(page.getByRole('button', { name: new RegExp(name) })).toBeVisible();
   }
-  await expect(page.getByRole('heading', { level: 2, name: 'Lanches tradicionais' })).toHaveCount(0);
+  await expect(page.getByText('Passo 1 de 3')).toBeVisible();
+  await page.getByRole('button', { name: /Pizzas tradicionais/ }).click();
+  // 2) Tamanho, do maior para o menor
+  await expect(page.getByRole('heading', { name: 'Qual tamanho?' })).toBeVisible();
+  const sizes = await page.getByTestId('easy-order').getByRole('listitem').allTextContents();
+  expect(sizes.map((t) => t.match(/\(([A-Z]+)\)/)?.[1])).toEqual(['F', 'GG', 'G', 'M', 'P']);
+  await page.getByRole('button', { name: /Grande \(G\)/ }).click();
+  // 3) Sabor: nome, do que é feito e preço
+  await expect(page.getByRole('heading', { name: 'Qual sabor?' })).toBeVisible();
+  const calabresa = page.getByRole('button', { name: /Pizza Calabresa/ });
+  await expect(calabresa).toContainText('Molho, calabresa e orégano.');
+  await expect(calabresa).toContainText('R$ 50,00');
+  await calabresa.click();
+  await page.getByTestId('easy-add').click();
+  await expect(page.getByText('Pizza Calabresa adicionado ao carrinho')).toBeVisible();
+  // O voltar do celular volta um passo.
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Qual tamanho?' })).toBeVisible();
 });
 
-test('Pedir pratos reúne pratos da casa e lasanhas', async ({ page }) => {
+test('Pedir pratos reúne pratos da casa e lasanhas (lasanha tem tamanho)', async ({ page }) => {
   await page.goto('/');
   await page.locator('#categorias').getByRole('link', { name: 'Pedir pratos' }).click();
   await expect(page).toHaveURL(/\/pratos$/);
-  await expect(page.getByRole('heading', { level: 2, name: 'Pratos da casa' })).toBeVisible();
-  await expect(page.getByRole('heading', { level: 2, name: 'Lasanhas' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Pratos da casa/ })).toBeVisible();
+  await page.getByRole('button', { name: /Lasanhas/ }).click();
+  await expect(page.getByRole('heading', { name: 'Qual tamanho?' })).toBeVisible();
+  await page.goBack();
+  await page.getByRole('button', { name: /Pratos da casa/ }).click();
+  // Pratos da casa não têm tamanho: vai direto para a lista.
+  await expect(page.getByRole('button', { name: /Picanha na Chapa/ })).toContainText('R$ 70,00');
+});
+
+test('pedir por áudio: entende o pedido e monta o carrinho após confirmar', async ({ page }) => {
+  // Simula o reconhecimento de voz do navegador com uma frase pronta.
+  await page.addInitScript(() => {
+    class FakeRecognition {
+      lang = 'pt-BR'; interimResults = true; continuous = false; maxAlternatives = 1;
+      onresult: ((e: unknown) => void) | null = null; onerror: ((e: unknown) => void) | null = null; onend: (() => void) | null = null;
+      start() {
+        setTimeout(() => {
+          this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: 'quero uma pizza grande de calabresa e dois xis frango' } }] });
+          this.onend?.();
+        }, 50);
+      }
+      stop() {}
+      abort() {}
+    }
+    const w = window as unknown as { SpeechRecognition: unknown; webkitSpeechRecognition: unknown };
+    w.SpeechRecognition = FakeRecognition;
+    w.webkitSpeechRecognition = FakeRecognition;
+  });
+  await page.goto('/');
+  await expect(page.getByTestId('hero')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
+  await page.getByTestId('voice-order').click();
+  await page.getByRole('button', { name: 'Começar a falar' }).click();
+  const items = page.getByTestId('voice-items');
+  await expect(items).toContainText('Pizza Calabresa');
+  await expect(items.getByRole('button', { name: 'Grande (G)' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(items).toContainText('X-Frango');
+  await page.getByRole('button', { name: /Adicionar ao carrinho/ }).click();
+  const cart = page.getByRole('dialog', { name: 'Seu carrinho' });
+  await expect(cart).toContainText('Pizza Calabresa');
+  await expect(cart).toContainText('X-Frango');
+  await expect(cart).toContainText('3 itens');
 });
 
 test('história da Alcinão: vídeo com capa, carrossel e Instagram', async ({ page }) => {

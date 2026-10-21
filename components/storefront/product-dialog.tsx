@@ -14,12 +14,16 @@ interface DialogState {
   product: CatalogProduct;
   fetchedAt: string;
   editLine?: CartLine | null;
+  /** Tamanho já escolhido (ex.: no pedido passo a passo). */
+  variantId?: string | null;
 }
 
 interface ProductDialogValue {
-  open: (product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null) => void;
+  open: (product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null, variantId?: string | null) => void;
   /** Adiciona direto quando o produto não precisa de escolhas; senão abre o montador. */
   quickAdd: (product: CatalogProduct, fetchedAt: string) => void;
+  /** Adiciona com o tamanho escolhido, sem adicionais (pedido passo a passo, pedido por áudio). */
+  addDirect: (product: CatalogProduct, variantId: string | null, quantity?: number, opts?: { silent?: boolean; suggest?: boolean }) => boolean;
   /** Depois de adicionar um item que não é bebida: sugere uma bebida (se houver). */
   suggestDrink: (added: CatalogProduct) => void;
 }
@@ -53,21 +57,18 @@ export function ProductDialogProvider({ children, drinks = [] }: { children: Rea
   );
   const closeNudge = useCallback(() => setNudge(null), []);
 
-  const open = useCallback((product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null) => {
-    setState({ product, fetchedAt, editLine });
+  const open = useCallback((product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null, variantId?: string | null) => {
+    setState({ product, fetchedAt, editLine, variantId });
   }, []);
 
-  const quickAdd = useCallback(
-    (product: CatalogProduct, fetchedAt: string) => {
-      if (needsCustomization(product)) {
-        setState({ product, fetchedAt });
-        return;
-      }
-      const selection: LineSelection = { productId: product.id, variantId: product.variants[0]?.id ?? null, options: {}, quantity: 1 };
+  /** Adiciona direto ao carrinho (tamanho já escolhido, sem adicionais). Retorna false se não deu. */
+  const addDirect = useCallback(
+    (product: CatalogProduct, variantId: string | null, quantity = 1, opts: { silent?: boolean; suggest?: boolean } = {}) => {
+      const selection: LineSelection = { productId: product.id, variantId, options: {}, quantity };
       const result = priceLine(product, selection, { now: new Date(), openShifts: null });
       if (!result.ok) {
         toast(result.error.message, 'error');
-        return;
+        return false;
       }
       cart.add({
         ...selection,
@@ -81,13 +82,25 @@ export function ProductDialogProvider({ children, drinks = [] }: { children: Rea
         unitRegular: result.line.unitRegular,
         maxQuantity: product.maxQuantity,
       });
-      toast(`${product.name} adicionado ao carrinho`);
-      suggestDrink(product);
+      if (!opts.silent) toast(`${product.name} adicionado ao carrinho`);
+      if (opts.suggest !== false) suggestDrink(product);
+      return true;
     },
     [cart, toast, suggestDrink],
   );
 
-  const value = useMemo(() => ({ open, quickAdd, suggestDrink }), [open, quickAdd, suggestDrink]);
+  const quickAdd = useCallback(
+    (product: CatalogProduct, fetchedAt: string) => {
+      if (needsCustomization(product)) {
+        setState({ product, fetchedAt });
+        return;
+      }
+      addDirect(product, product.variants[0]?.id ?? null);
+    },
+    [addDirect],
+  );
+
+  const value = useMemo(() => ({ open, quickAdd, addDirect, suggestDrink }), [open, quickAdd, addDirect, suggestDrink]);
 
   return (
     <ProductDialogContext value={value}>
@@ -99,6 +112,7 @@ export function ProductDialogProvider({ children, drinks = [] }: { children: Rea
             product={state.product}
             fetchedAt={state.fetchedAt}
             editLine={state.editLine}
+            initialVariantId={state.variantId}
             onDone={() => setState(null)}
           />
         </Dialog>

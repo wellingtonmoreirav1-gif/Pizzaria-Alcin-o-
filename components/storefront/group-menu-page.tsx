@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { getBestSellerIds, getCatalog } from '@/lib/catalog/queries';
+import { getCatalog } from '@/lib/catalog/queries';
 import { menuGroup, type MenuGroup } from '@/lib/catalog/groups';
 import { Notice, Skeleton } from '@/components/ui/feedback';
-import { MenuBrowser } from './menu-browser';
+import Link from 'next/link';
+import { EasyOrder } from './easy-order';
 
 export function groupMetadata(key: MenuGroup['key']): Metadata {
   const g = menuGroup(key);
@@ -14,10 +15,10 @@ export function groupMetadata(key: MenuGroup['key']): Metadata {
   };
 }
 
-/** Página de um grupo do cardápio (ex.: /pizzas): só as categorias do grupo, cada uma na sua seção. */
+/** Página de um grupo do cardápio (ex.: /pizzas): pedido passo a passo (tipo → tamanho → sabor). */
 export async function GroupMenuPage({ groupKey }: { groupKey: MenuGroup['key'] }) {
   const group = menuGroup(groupKey);
-  const [{ data: catalog, error }, bestSellerIds] = await Promise.all([getCatalog(), getBestSellerIds()]);
+  const { data: catalog, error } = await getCatalog();
   return (
     <>
       <div className="bg-wine border-b border-line text-white">
@@ -32,8 +33,14 @@ export async function GroupMenuPage({ groupKey }: { groupKey: MenuGroup['key'] }
         </div>
       ) : null}
       <Suspense fallback={<Skeleton className="mx-auto mt-6 h-80 max-w-7xl" />}>
-        <MenuBrowser catalog={catalog} bestSellerIds={bestSellerIds} scope={group.slugs} basePath={group.path} />
+        <EasyOrder catalog={catalog} group={group} />
       </Suspense>
+      <p className="mx-auto max-w-3xl px-4 pb-12 text-center text-sm text-muted sm:px-6">
+        Prefere ver tudo de uma vez?{' '}
+        <Link href={`/cardapio?categoria=${group.slugs[0]}`} className="font-semibold text-gold underline underline-offset-4">
+          Ver o cardápio completo
+        </Link>
+      </p>
     </>
   );
 }

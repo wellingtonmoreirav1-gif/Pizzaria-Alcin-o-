@@ -1,5 +1,7 @@
 import { getActiveBanners, getApprovedReviews, getCatalog, getOperation } from '@/lib/catalog/queries';
 import { Hero } from '@/components/storefront/hero';
+import { VoiceOrderButton } from '@/components/storefront/voice-order';
+import { buttonClasses } from '@/components/ui/button';
 import { HomeShowcase } from '@/components/storefront/home-showcase';
 import { ReviewsSection } from '@/components/storefront/info-sections';
 import { StoryTimeline } from '@/components/storefront/story-timeline';
@@ -18,7 +20,16 @@ export default async function HomePage() {
   return (
     <>
       <RestaurantJsonLd settings={operation.settings} hours={operation.hours.hours} />
-      <Hero settings={operation.settings} />
+      <Hero
+        settings={operation.settings}
+        voice={
+          <VoiceOrderButton
+            products={catalog.products}
+            whatsappNumber={operation.settings.whatsappNumber}
+            className={buttonClasses('outline', 'lg', 'border-gold/70 bg-black/25 text-white backdrop-blur-sm hover:border-gold hover:bg-white/10')}
+          />
+        }
+      />
       {error ? (
         <div className="mx-auto max-w-3xl px-4 pt-8">
           <Notice tone="warning" title="Cardápio temporariamente indisponível">

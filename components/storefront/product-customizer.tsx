@@ -59,12 +59,14 @@ export function ProductCustomizer({
   product,
   fetchedAt,
   editLine,
+  initialVariantId,
   onDone,
   layout = 'dialog',
 }: {
   product: CatalogProduct;
   fetchedAt: string;
   editLine?: CartLine | null;
+  initialVariantId?: string | null;
   onDone?: () => void;
   layout?: 'dialog' | 'page';
 }) {
@@ -72,7 +74,7 @@ export function ProductCustomizer({
   const cart = useCart();
   const toast = useToast();
   const dialog = useProductDialog();
-  const [variantId, setVariantId] = useState<string | null>(editLine?.variantId ?? defaultVariant(product)?.id ?? null);
+  const [variantId, setVariantId] = useState<string | null>(editLine?.variantId ?? initialVariantId ?? defaultVariant(product)?.id ?? null);
   const [options, setOptions] = useState<Record<string, string[]>>(editLine?.options ?? {});
   const [quantity, setQuantity] = useState(editLine?.quantity ?? 1);
   const [notes, setNotes] = useState(editLine?.notes ?? '');
