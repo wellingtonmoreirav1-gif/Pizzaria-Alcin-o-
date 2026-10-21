@@ -35,7 +35,7 @@ export function WeeklyFeature({ config, product, fetchedAt }: { config: WeeklyFe
     <section
       id="em-alta"
       aria-labelledby={titleId}
-      className="relative overflow-hidden bg-[linear-gradient(90deg,var(--color-wine-900)_0%,var(--color-wine-700)_45%,#450001_100%)] text-white"
+      className="relative overflow-hidden border-y-2 border-gold/70 bg-[linear-gradient(90deg,var(--color-wine-900)_0%,var(--color-wine-700)_45%,#450001_100%)] text-white"
     >
       <div className="lg:grid lg:min-h-[36rem] lg:grid-cols-2 lg:items-center xl:min-h-[40rem]">
         {/* Foto: em cima no celular; metade direita da tela no computador, sangrando até a borda. */}

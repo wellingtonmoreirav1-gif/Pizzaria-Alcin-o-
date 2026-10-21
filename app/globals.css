@@ -103,7 +103,8 @@
   --color-muted-strong: #d6cfc8;
   --color-fg: #f6f2ee;
   --color-danger: #ff8593;
-  --color-gold: #dcb64e;
+  /* Amarelo de destaque (pinceladas): palavras em itálico, preços, ícones e detalhes. */
+  --color-gold: #ffc72c;
   --color-gold-soft: #2a2210;
   --color-brand-50: #2b1015;
   --color-brand-100: #3b141b;
