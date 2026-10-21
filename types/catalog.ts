@@ -138,4 +138,6 @@ export interface LineSelection {
   options: Record<string, string[]>;
   quantity: number;
   notes?: string | null;
+  /** Pizza metade/metade: o outro sabor (outro produto pizza, no mesmo tamanho). */
+  halfProductId?: string | null;
 }

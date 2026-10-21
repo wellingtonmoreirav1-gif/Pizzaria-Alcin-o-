@@ -1,5 +1,5 @@
 import { quoteSchema } from '@/lib/validation/checkout';
-import { loadProductsForCart, OrderError, quoteLines } from '@/lib/orders/create';
+import { cartProductIds, loadProductsForCart, OrderError, quoteLines } from '@/lib/orders/create';
 import { getOperationFresh } from '@/lib/catalog/queries';
 import { computeStoreStatus } from '@/lib/business-hours';
 import { sumLines, type PricedLine } from '@/lib/pricing';
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const now = new Date();
     const [operation, products] = await Promise.all([
       getOperationFresh(),
-      loadProductsForCart(parsed.data.items.map((i) => i.productId)),
+      loadProductsForCart(cartProductIds(parsed.data.items)),
     ]);
     const status = computeStoreStatus(operation.hours, now);
     const lines = quoteLines(parsed.data.items, products, {

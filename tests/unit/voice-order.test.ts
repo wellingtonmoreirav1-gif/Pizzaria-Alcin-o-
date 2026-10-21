@@ -43,8 +43,8 @@ describe('pedido por áudio', () => {
   it('pizza com tamanho e refrigerante com medida', () => {
     const r = parse('quero uma pizza grande de calabresa e duas coca lata');
     expect(r.items).toEqual([
-      { productId: 'pz-calabresa', variantId: 'pz-calabresa-G', quantity: 1, needsSize: false },
-      { productId: 'coca', variantId: 'coca-Lata', quantity: 2, needsSize: false },
+      { productId: 'pz-calabresa', variantId: 'pz-calabresa-G', quantity: 1, needsSize: false, halfProductId: null },
+      { productId: 'coca', variantId: 'coca-Lata', quantity: 2, needsSize: false, halfProductId: null },
     ]);
     expect(r.unmatched).toEqual([]);
   });
@@ -61,14 +61,14 @@ describe('pedido por áudio', () => {
   it('sem tamanho: pede para escolher; plural e números por extenso', () => {
     const r = parse('duas pizzas de mussarela e três cocas de dois litros');
     expect(r.items).toEqual([
-      { productId: 'pz-mucarela', variantId: null, quantity: 2, needsSize: true },
-      { productId: 'coca', variantId: 'coca-2 litros', quantity: 3, needsSize: false },
+      { productId: 'pz-mucarela', variantId: null, quantity: 2, needsSize: true, halfProductId: null },
+      { productId: 'coca', variantId: 'coca-2 litros', quantity: 3, needsSize: false, halfProductId: null },
     ]);
   });
 
   it('"dois litros" antes do nome é tamanho, não quantidade', () => {
     const r = parse('quero uma de dois litros de coca');
-    expect(r.items).toEqual([{ productId: 'coca', variantId: 'coca-2 litros', quantity: 1, needsSize: false }]);
+    expect(r.items).toEqual([{ productId: 'coca', variantId: 'coca-2 litros', quantity: 1, needsSize: false, halfProductId: null }]);
   });
 
   it('lasanha com tamanho, pizza "tamanho gg" e água', () => {
@@ -86,8 +86,26 @@ describe('pedido por áudio', () => {
     expect(r.unmatched).toEqual(['refrigerante']);
   });
 
+  it('metade/metade: junta os dois sabores num item só', () => {
+    const r = parse('quero uma pizza grande metade calabresa e metade frango com catupiry e uma coca lata');
+    expect(r.items).toEqual([
+      { productId: 'pz-calabresa', variantId: 'pz-calabresa-G', quantity: 1, needsSize: false, halfProductId: 'pz-frango-cat' },
+      { productId: 'coca', variantId: 'coca-Lata', quantity: 1, needsSize: false, halfProductId: null },
+    ]);
+    expect(r.unmatched).toEqual([]);
+  });
+
+  it('meio a meio, tamanho no fim; P e M não valem para metade/metade', () => {
+    expect(parse('duas meio a meio de mussarela com frango família').items).toEqual([
+      { productId: 'pz-mucarela', variantId: 'pz-mucarela-F', quantity: 2, needsSize: false, halfProductId: 'pz-frango' },
+    ]);
+    expect(parse('uma pizza pequena metade calabresa metade frango').items).toEqual([
+      { productId: 'pz-calabresa', variantId: null, quantity: 1, needsSize: true, halfProductId: 'pz-frango' },
+    ]);
+  });
+
   it('repetições somam a quantidade', () => {
     const r = parse('uma coca lata e mais uma coca lata');
-    expect(r.items).toEqual([{ productId: 'coca', variantId: 'coca-Lata', quantity: 2, needsSize: false }]);
+    expect(r.items).toEqual([{ productId: 'coca', variantId: 'coca-Lata', quantity: 2, needsSize: false, halfProductId: null }]);
   });
 });

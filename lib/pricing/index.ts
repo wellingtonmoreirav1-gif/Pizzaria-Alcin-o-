@@ -42,7 +42,9 @@ export type PricingErrorCode =
   | 'NOTES_TOO_LONG'
   | 'COMBO_ITEM_UNAVAILABLE'
   | 'PRICE_NOT_CONFIRMED'
-  | 'OPTION_PRICE_PENDING';
+  | 'OPTION_PRICE_PENDING'
+  | 'HALF_NOT_ALLOWED'
+  | 'HALF_UNAVAILABLE';
 
 export interface PricingError {
   code: PricingErrorCode;
@@ -81,6 +83,8 @@ export interface PricedLine {
     rule?: string;
     base: Cents;
     flavorPrices?: { name: string; price: Cents }[];
+    /** Pizza metade/metade: os dois sabores e o preço de cada um neste tamanho. */
+    halves?: { productId: string; name: string; price: Cents }[];
     optionsTotal: Cents;
     promotion?: { id: string; title: string; promoPrice: Cents };
   };
@@ -134,6 +138,16 @@ function fractionLabel(count: number): string {
   if (count <= 1) return '';
   return `1/${count} `;
 }
+
+/** Tamanhos em que a pizza pode ser metade/metade (decisão do restaurante). */
+export const HALF_SIZES = ['G', 'GG', 'F'];
+
+export function canBeHalved(product: Pick<CatalogProduct, 'kind'>, variant: Pick<CatalogVariant, 'sizeCode'> | null): boolean {
+  return product.kind === 'pizza' && !!variant?.sizeCode && HALF_SIZES.includes(variant.sizeCode);
+}
+
+/** "Pizza Calabresa" → "Calabresa" (para "½ Calabresa + ½ Frango"). */
+export const flavorName = (name: string) => name.replace(/^pizza\s+/i, '');
 
 export function isWithinValidity(product: CatalogProduct, now: Date): boolean {
   if (product.availableFrom && new Date(product.availableFrom) > now) return false;
@@ -192,10 +206,15 @@ export function startingPrice(product: CatalogProduct, now: Date): { regular: Ce
   return candidates.reduce((a, b) => (b.current < a.current ? b : a));
 }
 
+/**
+ * Preço de um item. Na pizza metade/metade, `half` é o produto do outro sabor: vale o
+ * preço do sabor mais caro no tamanho escolhido (borda e adicionais seguem o 1º sabor).
+ */
 export function priceLine(
   product: CatalogProduct | undefined,
   selection: LineSelection,
   ctx: PricingContext,
+  half?: CatalogProduct,
 ): PricingResult {
   if (!product) return fail('PRODUCT_NOT_FOUND', 'Produto não encontrado ou retirado do cardápio.');
   const name = product.name;
@@ -229,6 +248,27 @@ export function priceLine(
     return fail('VARIANT_UNAVAILABLE', `O tamanho escolhido para ${name} não existe mais.`);
   }
   if (product.kind === 'pizza' && !variant) return fail('VARIANT_REQUIRED', `Escolha o tamanho de ${name}.`);
+
+  // ---------------------------------------------------------------- metade/metade
+  let halfVariant: CatalogVariant | null = null;
+  if (selection.halfProductId) {
+    if (!canBeHalved(product, variant)) {
+      return fail('HALF_NOT_ALLOWED', `${name}: metade/metade só nos tamanhos ${HALF_SIZES.join(', ')}.`);
+    }
+    if (!half || half.id !== selection.halfProductId || half.id === product.id || half.kind !== 'pizza') {
+      return fail('HALF_UNAVAILABLE', `${name}: o segundo sabor não está mais no cardápio. Escolha outro.`);
+    }
+    const halfName = half.name;
+    if (!half.priceConfirmed) return fail('PRICE_NOT_CONFIRMED', `${halfName}: preço em conferência pelo restaurante. Disponível em breve.`);
+    if (!half.isAvailable || !isWithinValidity(half, ctx.now)) return fail('HALF_UNAVAILABLE', `${halfName} está esgotado no momento.`);
+    if (ctx.openShifts && half.shiftRestriction !== 'any' && !ctx.openShifts.includes(half.shiftRestriction)) {
+      return fail('SHIFT_NOT_OPEN', `${halfName} não é servido neste horário.`);
+    }
+    halfVariant = half.variants.find((v) => v.sizeCode === variant?.sizeCode) ?? null;
+    if (!halfVariant || !halfVariant.isAvailable) {
+      return fail('HALF_UNAVAILABLE', `${halfName} não tem o tamanho ${variant?.name ?? ''} agora.`.trim());
+    }
+  }
 
   if (product.kind === 'combo') {
     const missing = product.comboItems.find((item) => !item.isAvailable);
@@ -330,8 +370,27 @@ export function priceLine(
     return fail('MISSING_PRICE', `${name} está sem preço cadastrado. Avise a equipe.`);
   }
 
-  const promotion = findBestPromotion(product, variant?.id ?? null, base, ctx.now);
-  const unitDiscount = promotion ? base - promotion.promoPrice : 0;
+  let promotion = findBestPromotion(product, variant?.id ?? null, base, ctx.now);
+  let unitDiscount = promotion ? base - promotion.promoPrice : 0;
+  let halves: PricedLine['detail']['halves'];
+  let productName = product.name;
+  if (half && halfVariant) {
+    // Vale o sabor mais caro (cada metade com a promoção que tiver).
+    const halfBase = halfVariant.price;
+    const halfPromo = findBestPromotion(half, halfVariant.id, halfBase, ctx.now);
+    const current = Math.max(promotion ? promotion.promoPrice : base, halfPromo ? halfPromo.promoPrice : halfBase);
+    halves = [
+      { productId: product.id, name: product.name, price: base },
+      { productId: half.id, name: half.name, price: halfBase },
+    ];
+    base = Math.max(base, halfBase);
+    unitDiscount = base - current;
+    if (unitDiscount === 0) promotion = null;
+    else promotion = promotion ?? halfPromo;
+    rule = 'highest';
+    productName = `Pizza ½ ${flavorName(product.name)} + ½ ${flavorName(half.name)}`;
+    summary.unshift('Metade/metade · vale o preço do sabor mais caro');
+  }
   const unitRegular = base + optionsTotal;
   const unitPrice = unitRegular - unitDiscount;
 
@@ -347,7 +406,7 @@ export function priceLine(
       productId: product.id,
       variantId: variant?.id ?? null,
       kind: product.kind,
-      productName: product.name,
+      productName,
       variantName: variant?.name ?? null,
       categoryId: product.categoryId,
       categoryName: product.categoryName,
@@ -364,6 +423,7 @@ export function priceLine(
         rule,
         base,
         flavorPrices,
+        halves,
         optionsTotal,
         promotion: promotion ? { id: promotion.id, title: promotion.title, promoPrice: promotion.promoPrice } : undefined,
       },

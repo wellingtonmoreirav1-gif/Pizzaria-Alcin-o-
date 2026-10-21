@@ -27,6 +27,8 @@ export const ORDER_DETAIL_SELECT = `
 export interface OrderItemView {
   id: string;
   productId: string | null;
+  /** Pizza metade/metade: o produto do segundo sabor. */
+  halfProductId: string | null;
   variantId: string | null;
   productName: string;
   variantName: string | null;
@@ -88,10 +90,11 @@ export function mapOrder(row: Row): OrderView {
   const items: OrderItemView[] = [...row.order_items]
     .sort((a, b) => Number(a.sort_order) - Number(b.sort_order))
     .map((i) => {
-      const detail = (i.pricing_detail ?? {}) as { summary?: string[] };
+      const detail = (i.pricing_detail ?? {}) as { summary?: string[]; halves?: { productId: string }[] };
       return {
         id: String(i.id),
         productId: (i.product_id as string | null) ?? null,
+        halfProductId: detail.halves?.[1]?.productId ?? null,
         variantId: (i.variant_id as string | null) ?? null,
         productName: String(i.product_name),
         variantName: (i.variant_name as string | null) ?? null,

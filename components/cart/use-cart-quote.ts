@@ -30,7 +30,7 @@ export function useCartQuote(enabled = true) {
     pricesChanged: false,
   });
   const [reloadKey, setReloadKey] = useState(0);
-  const signature = JSON.stringify(lines.map((l) => [l.lineId, l.productId, l.variantId, l.options, l.quantity, l.notes ?? '']));
+  const signature = JSON.stringify(lines.map((l) => [l.lineId, l.productId, l.variantId, l.options, l.quantity, l.notes ?? '', l.halfProductId ?? null]));
   const linesRef = useRef(lines);
   linesRef.current = lines;
 

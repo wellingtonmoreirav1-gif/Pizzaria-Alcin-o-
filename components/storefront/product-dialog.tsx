@@ -16,16 +16,27 @@ interface DialogState {
   editLine?: CartLine | null;
   /** Tamanho já escolhido (ex.: no pedido passo a passo). */
   variantId?: string | null;
+  /** Segundo sabor já escolhido (pizza metade/metade). */
+  halfProductId?: string | null;
 }
 
 interface ProductDialogValue {
-  open: (product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null, variantId?: string | null) => void;
+  open: (product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null, variantId?: string | null, halfProductId?: string | null) => void;
   /** Adiciona direto quando o produto não precisa de escolhas; senão abre o montador. */
   quickAdd: (product: CatalogProduct, fetchedAt: string) => void;
   /** Adiciona com o tamanho escolhido, sem adicionais (pedido passo a passo, pedido por áudio). */
-  addDirect: (product: CatalogProduct, variantId: string | null, quantity?: number, opts?: { silent?: boolean; suggest?: boolean }) => boolean;
+  addDirect: (product: CatalogProduct, variantId: string | null, quantity?: number, opts?: AddDirectOptions) => boolean;
+  /** Sabores de pizza para a segunda metade (metade/metade). */
+  pizzas: CatalogProduct[];
   /** Depois de adicionar um item que não é bebida: sugere uma bebida (se houver). */
   suggestDrink: (added: CatalogProduct) => void;
+}
+
+interface AddDirectOptions {
+  silent?: boolean;
+  suggest?: boolean;
+  /** Pizza metade/metade: o outro sabor. */
+  half?: CatalogProduct | null;
 }
 
 const ProductDialogContext = createContext<ProductDialogValue | null>(null);
@@ -37,7 +48,15 @@ export function needsCustomization(product: CatalogProduct): boolean {
   return product.groups.some((g) => g.minSelect > 0 || g.values.some((v) => v.isAvailable && v.priceConfirmed));
 }
 
-export function ProductDialogProvider({ children, drinks = [] }: { children: ReactNode; drinks?: CatalogProduct[] }) {
+export function ProductDialogProvider({
+  children,
+  drinks = [],
+  pizzas = [],
+}: {
+  children: ReactNode;
+  drinks?: CatalogProduct[];
+  pizzas?: CatalogProduct[];
+}) {
   const [state, setState] = useState<DialogState | null>(null);
   const [nudge, setNudge] = useState<CatalogProduct[] | null>(null);
   const cart = useCart();
@@ -57,15 +76,18 @@ export function ProductDialogProvider({ children, drinks = [] }: { children: Rea
   );
   const closeNudge = useCallback(() => setNudge(null), []);
 
-  const open = useCallback((product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null, variantId?: string | null) => {
-    setState({ product, fetchedAt, editLine, variantId });
-  }, []);
+  const open = useCallback(
+    (product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null, variantId?: string | null, halfProductId?: string | null) => {
+      setState({ product, fetchedAt, editLine, variantId, halfProductId });
+    },
+    [],
+  );
 
   /** Adiciona direto ao carrinho (tamanho já escolhido, sem adicionais). Retorna false se não deu. */
   const addDirect = useCallback(
-    (product: CatalogProduct, variantId: string | null, quantity = 1, opts: { silent?: boolean; suggest?: boolean } = {}) => {
-      const selection: LineSelection = { productId: product.id, variantId, options: {}, quantity };
-      const result = priceLine(product, selection, { now: new Date(), openShifts: null });
+    (product: CatalogProduct, variantId: string | null, quantity = 1, opts: AddDirectOptions = {}) => {
+      const selection: LineSelection = { productId: product.id, variantId, options: {}, quantity, halfProductId: opts.half?.id ?? null };
+      const result = priceLine(product, selection, { now: new Date(), openShifts: null }, opts.half ?? undefined);
       if (!result.ok) {
         toast(result.error.message, 'error');
         return false;
@@ -74,7 +96,7 @@ export function ProductDialogProvider({ children, drinks = [] }: { children: Rea
         ...selection,
         notes: null,
         slug: product.slug,
-        name: product.name,
+        name: result.line.productName,
         variantName: result.line.variantName,
         summary: result.line.summary,
         imageUrl: product.imageUrl,
@@ -82,7 +104,7 @@ export function ProductDialogProvider({ children, drinks = [] }: { children: Rea
         unitRegular: result.line.unitRegular,
         maxQuantity: product.maxQuantity,
       });
-      if (!opts.silent) toast(`${product.name} adicionado ao carrinho`);
+      if (!opts.silent) toast(`${result.line.productName} adicionado ao carrinho`);
       if (opts.suggest !== false) suggestDrink(product);
       return true;
     },
@@ -100,7 +122,7 @@ export function ProductDialogProvider({ children, drinks = [] }: { children: Rea
     [addDirect],
   );
 
-  const value = useMemo(() => ({ open, quickAdd, addDirect, suggestDrink }), [open, quickAdd, addDirect, suggestDrink]);
+  const value = useMemo(() => ({ open, quickAdd, addDirect, suggestDrink, pizzas }), [open, quickAdd, addDirect, suggestDrink, pizzas]);
 
   return (
     <ProductDialogContext value={value}>
@@ -113,6 +135,7 @@ export function ProductDialogProvider({ children, drinks = [] }: { children: Rea
             fetchedAt={state.fetchedAt}
             editLine={state.editLine}
             initialVariantId={state.variantId}
+            initialHalfProductId={state.halfProductId}
             onDone={() => setState(null)}
           />
         </Dialog>

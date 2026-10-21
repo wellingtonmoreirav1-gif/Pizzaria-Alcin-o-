@@ -141,7 +141,7 @@ async function OrderContent({ params, searchParams }: { params: Promise<{ code: 
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <RepeatOrderButton items={order.items.map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity, notes: i.notes, options: i.options.map((o) => ({ groupId: o.groupId, valueId: o.valueId })) }))} />
+        <RepeatOrderButton items={order.items.map((i) => ({ productId: i.productId, halfProductId: i.halfProductId, variantId: i.variantId, quantity: i.quantity, notes: i.notes, options: i.options.map((o) => ({ groupId: o.groupId, valueId: o.valueId })) }))} />
         <ButtonLink href="/cardapio" variant="ghost">Voltar ao cardápio</ButtonLink>
         {final ? null : <p className="w-full text-xs text-muted">Esta página atualiza o status sozinha.</p>}
       </div>

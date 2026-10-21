@@ -9,6 +9,7 @@ import { useCart } from '@/components/cart/cart-context';
 
 export interface RepeatItem {
   productId: string | null;
+  halfProductId?: string | null;
   variantId: string | null;
   quantity: number;
   notes: string | null;
@@ -34,7 +35,7 @@ export function RepeatOrderButton({ items }: { items: RepeatItem[] }) {
         if (!o.groupId || !o.valueId) continue;
         (options[o.groupId] ??= []).push(o.valueId);
       }
-      return { productId: i.productId as string, variantId: i.variantId, options, quantity: i.quantity, notes: i.notes };
+      return { productId: i.productId as string, halfProductId: i.halfProductId ?? null, variantId: i.variantId, options, quantity: i.quantity, notes: i.notes };
     });
     try {
       const res = await fetch('/api/cart/quote', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ items: selections }) });

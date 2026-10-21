@@ -51,6 +51,18 @@ Combinações inválidas são bloqueadas na tela e recusadas no servidor: sabor 
   - **Molhos** (opcional, até 4) — ligados a lanches, Beirute e petiscos. **Grátis** (definido pelo restaurante). Uma opção sem valor definido fica visível, porém **não selecionável** (“Valor a definir pelo restaurante”) até o administrador informar o valor (0,00 = grátis).
 - **Prioridade do valor de uma opção:** valor cadastrado para aquele tamanho específico do produto (`option_value_variant_prices`) → valor pelo código do tamanho (`option_value_size_prices`) → valor padrão da opção. Um tamanho **sem código** usa o valor padrão — por isso, ao criar uma pizza nova, preencha o “Código do tamanho”.
 
+## Pizza metade/metade (2 sabores)
+
+Definido pelo restaurante em 21/10/2026:
+
+- Só nos tamanhos **G, GG e F** (P e M ficam com 1 sabor). Os tamanhos ficam em `HALF_SIZES` (`lib/pricing/index.ts`).
+- **Vale o preço do sabor mais caro** naquele tamanho. Ex.: ½ Calabresa (G, 50,00) + ½ Frango com Catupiry (G, 55,00) = **55,00**.
+- **Pode misturar tipos** (tradicional, especial, premium, doce).
+- Borda recheada, molhos e observação seguem o 1º sabor e somam por cima (ex.: + Catupiry na G = 55,00 + 16,00).
+- Promoção: cada metade usa a promoção que tiver; vale o maior dos dois valores (uma promoção só baixa o preço se o sabor dela for o mais caro).
+- No pedido, o item fica como “Pizza ½ Calabresa + ½ Frango com Catupiry”, com o produto do 1º sabor em `order_items.product_id` e os dois sabores em `pricing_detail.halves`. **Relatório por produto** conta a pizza no 1º sabor.
+- Sem mudança no banco: o 2º sabor viaja no carrinho (`halfProductId`) e o servidor recalcula tudo.
+
 ## Conferência de preços
 
 - `products.price_confirmed` e `option_values.price_confirmed`. Quando falso, o item aparece com “Preço em conferência”/“Valor a definir” e o cálculo recusa o pedido (`PRICE_NOT_CONFIRMED`, `OPTION_PRICE_PENDING`), na tela **e no servidor**.

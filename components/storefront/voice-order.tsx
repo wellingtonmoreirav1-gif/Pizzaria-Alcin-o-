@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Mic, MessageCircle, RotateCcw, ShoppingBag, Square, X } from 'lucide-react';
 import type { CatalogProduct } from '@/types/catalog';
 import { formatBRL, type Cents } from '@/lib/money';
-import { isProductOrderable, priceLine } from '@/lib/pricing';
+import { canBeHalved, flavorName, isProductOrderable, priceLine } from '@/lib/pricing';
 import { parseVoiceOrder, type VoiceItem } from '@/lib/voice/parse-order';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import { cn } from '@/lib/utils';
@@ -140,7 +140,9 @@ function VoiceOrderDialog({
   const priceOf = (it: VoiceItem): Cents | null => {
     const p = byId.get(it.productId);
     if (!p || (it.needsSize && !it.variantId)) return null;
-    const r = priceLine(p, { productId: p.id, variantId: it.variantId, options: {}, quantity: it.quantity }, { now: new Date(), openShifts: null });
+    const half = it.halfProductId ? byId.get(it.halfProductId) : undefined;
+    const selection = { productId: p.id, variantId: it.variantId, options: {}, quantity: it.quantity, halfProductId: it.halfProductId };
+    const r = priceLine(p, selection, { now: new Date(), openShifts: null }, half);
     return r.ok ? r.line.lineTotal : null;
   };
   const ready = items.length > 0 && items.every((it) => it.variantId || !it.needsSize);
@@ -150,7 +152,8 @@ function VoiceOrderDialog({
     let n = 0;
     for (const it of items) {
       const p = byId.get(it.productId);
-      if (p && dialog.addDirect(p, it.variantId, it.quantity, { silent: true, suggest: false })) n += it.quantity;
+      const half = it.halfProductId ? byId.get(it.halfProductId) : null;
+      if (p && dialog.addDirect(p, it.variantId, it.quantity, { silent: true, suggest: false, half })) n += it.quantity;
     }
     if (n) {
       toast(`${n} ${n === 1 ? 'item adicionado' : 'itens adicionados'} ao carrinho`);
@@ -208,21 +211,27 @@ function VoiceOrderDialog({
               <ul className="space-y-3" data-testid="voice-items">
                 {items.map((it, k) => {
                   const p = byId.get(it.productId)!;
+                  const half = it.halfProductId ? byId.get(it.halfProductId) : undefined;
+                  const name = half ? `Pizza ½ ${flavorName(p.name)} + ½ ${flavorName(half.name)}` : p.name;
+                  // Metade/metade: só os tamanhos G, GG e F que os dois sabores têm.
+                  const sizes = p.variants.filter(
+                    (v) => v.isAvailable && (!half || (canBeHalved(p, v) && half.variants.some((h) => h.sizeCode === v.sizeCode && h.isAvailable))),
+                  );
                   const price = priceOf(it);
                   const update = (patch: Partial<VoiceItem>) => setItems((list) => list.map((x, j) => (j === k ? { ...x, ...patch } : x)));
                   return (
                     <li key={`${it.productId}-${k}`} className="rounded-2xl bg-mist p-4">
                       <div className="flex items-start justify-between gap-3">
-                        <p className="font-display text-xl font-semibold leading-tight">{p.name}</p>
-                        <button type="button" onClick={() => setItems((list) => list.filter((_, j) => j !== k))} className="grid size-9 shrink-0 place-items-center rounded-full hover:bg-line" aria-label={`Tirar ${p.name}`}>
+                        <p className="font-display text-xl font-semibold leading-tight">{name}</p>
+                        <button type="button" onClick={() => setItems((list) => list.filter((_, j) => j !== k))} className="grid size-9 shrink-0 place-items-center rounded-full hover:bg-line" aria-label={`Tirar ${name}`}>
                           <X className="size-5" aria-hidden />
                         </button>
                       </div>
                       {p.variants.length > 1 ? (
                         <div className="mt-3">
                           {it.needsSize && !it.variantId ? <p className="mb-2 text-sm font-semibold text-gold">Qual tamanho?</p> : null}
-                          <div className="flex flex-wrap gap-2" role="group" aria-label={`Tamanho de ${p.name}`}>
-                            {p.variants.filter((v) => v.isAvailable).map((v) => (
+                          <div className="flex flex-wrap gap-2" role="group" aria-label={`Tamanho de ${name}`}>
+                            {sizes.map((v) => (
                               <button
                                 key={v.id}
                                 type="button"

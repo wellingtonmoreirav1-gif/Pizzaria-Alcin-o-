@@ -32,9 +32,10 @@ type Action =
 
 const STORAGE_KEY = 'alcinao:cart:v1';
 
-/** Dois itens são "iguais" quando produto, tamanho, opções e observação coincidem. */
+/** Dois itens são "iguais" quando produto, tamanho, opções, observação e 2º sabor coincidem. */
 export function sameSelection(a: LineSelection, b: LineSelection): boolean {
   if (a.productId !== b.productId || a.variantId !== b.variantId || (a.notes ?? '') !== (b.notes ?? '')) return false;
+  if ((a.halfProductId ?? null) !== (b.halfProductId ?? null)) return false;
   const keys = new Set([...Object.keys(a.options), ...Object.keys(b.options)]);
   for (const key of keys) {
     const x = a.options[key] ?? [];
@@ -178,5 +179,12 @@ export function useCart() {
 }
 
 export function toSelection(line: CartLine): LineSelection {
-  return { productId: line.productId, variantId: line.variantId, options: line.options, quantity: line.quantity, notes: line.notes ?? undefined };
+  return {
+    productId: line.productId,
+    variantId: line.variantId,
+    options: line.options,
+    quantity: line.quantity,
+    notes: line.notes ?? undefined,
+    halfProductId: line.halfProductId ?? null,
+  };
 }

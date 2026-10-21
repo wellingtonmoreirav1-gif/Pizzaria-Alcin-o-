@@ -43,6 +43,11 @@ export async function loadProductsForCart(productIds: string[]): Promise<Map<str
   );
 }
 
+/** Produtos que o carrinho usa (inclui o 2º sabor das pizzas metade/metade). */
+export function cartProductIds(items: { productId: string; halfProductId?: string | null }[]): string[] {
+  return items.flatMap((i) => (i.halfProductId ? [i.productId, i.halfProductId] : [i.productId]));
+}
+
 export interface QuotedLine {
   index: number;
   ok: boolean;
@@ -56,7 +61,8 @@ export function quoteLines(
   ctx: { now: Date; openShifts: ('lunch' | 'dinner')[] | null },
 ): QuotedLine[] {
   return items.map((item, index) => {
-    const result = priceLine(products.get(item.productId), { ...item, notes: item.notes ?? undefined }, ctx);
+    const half = item.halfProductId ? products.get(item.halfProductId) : undefined;
+    const result = priceLine(products.get(item.productId), { ...item, notes: item.notes ?? undefined }, ctx, half);
     return result.ok ? { index, ok: true, line: result.line } : { index, ok: false, error: result.error };
   });
 }
@@ -125,7 +131,7 @@ export async function createOrder(
     throw new OrderError(422, 'PAYMENT_NOT_ALLOWED', 'Forma de pagamento indisponível para esta modalidade.');
   }
 
-  const products = await loadProductsForCart(input.items.map((i) => i.productId));
+  const products = await loadProductsForCart(cartProductIds(input.items));
   const quoted = quoteLines(input.items, products, { now, openShifts: status.openShifts });
   const failures = quoted.filter((q) => !q.ok);
   if (failures.length > 0) {

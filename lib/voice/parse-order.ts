@@ -1,4 +1,5 @@
 import type { CatalogProduct, CatalogVariant } from '@/types/catalog';
+import { canBeHalved } from '@/lib/pricing';
 
 /**
  * Lê um pedido falado (já transcrito) e encontra os produtos do cardápio, com quantidade
@@ -12,6 +13,8 @@ export interface VoiceItem {
   quantity: number;
   /** O produto tem vários tamanhos e o cliente não disse qual. */
   needsSize: boolean;
+  /** Pizza metade/metade ("metade calabresa, metade frango"): o outro sabor. */
+  halfProductId: string | null;
 }
 
 export interface VoiceParse {
@@ -27,7 +30,7 @@ const NUMBERS: Record<string, number> = {
 const STOP = new Set(['de', 'da', 'do', 'das', 'dos', 'com', 'e', 'a', 'o', 'as', 'os', 'no', 'na', 'em', 'pra', 'para', 'por']);
 const FILLER = new Set([
   'quero', 'queria', 'gostaria', 'eu', 'me', 'manda', 'mande', 'traz', 'traga', 'favor', 'tambem', 'mais', 'pizza', 'pizzas', 'lanche', 'lanches',
-  'tamanho', 'ai', 'ok', 'entao', 'bom', 'boa', 'noite', 'tarde', 'dia', 'ola', 'oi', 'pedido', 'meu', 'minha', 'vou', 'querer', 'pode', 'ser', 'so', 'isso', 'obrigado', 'obrigada',
+  'tamanho', 'metade', 'meia', 'meio', 'ai', 'ok', 'entao', 'bom', 'boa', 'noite', 'tarde', 'dia', 'ola', 'oi', 'pedido', 'meu', 'minha', 'vou', 'querer', 'pode', 'ser', 'so', 'isso', 'obrigado', 'obrigada',
 ]);
 /** Grafias comuns que o reconhecimento de voz devolve. */
 const ALIASES: [RegExp, string][] = [
@@ -120,14 +123,32 @@ export function parseVoiceOrder(text: string, products: CatalogProduct[]): Voice
     } else c += 1;
   }
 
+  // "metade calabresa e metade frango", "meio a meio de calabresa com frango": junta as
+  // duas pizzas num item só (o 1º sabor recebe quantidade e tamanho).
+  const HALF = new Set(['metade', 'meia', 'meio']);
+  type Unit = { m: (typeof matches)[number]; half: (typeof matches)[number] | null };
+  const units: Unit[] = [];
+  for (let k = 0; k < matches.length; k++) {
+    const m = matches[k]!;
+    const next = matches[k + 1];
+    const from = k > 0 ? matches[k - 1]!.end : 0;
+    const marked = words.slice(from, m.start).some((w) => HALF.has(w));
+    if (marked && next && m.product.kind === 'pizza' && next.product.kind === 'pizza' && next.product.id !== m.product.id) {
+      units.push({ m, half: next });
+      k++;
+    } else units.push({ m, half: null });
+  }
+
   const items: VoiceItem[] = [];
   const used = new Set<number>();
-  matches.forEach((m, k) => {
-    for (let i = m.start; i < m.end; i++) used.add(i);
-    const from = k > 0 ? matches[k - 1]!.end : 0;
-    const to = k < matches.length - 1 ? matches[k + 1]!.start : words.length;
+  units.forEach(({ m, half }, k) => {
+    const last = half ?? m;
+    for (let i = m.start; i < last.end; i++) if (!half || i < m.end || i >= half.start) used.add(i);
+    const from = k > 0 ? (units[k - 1]!.half ?? units[k - 1]!.m).end : 0;
+    const to = k < units.length - 1 ? units[k + 1]!.m.start : words.length;
     const before = words.slice(from, m.start);
-    const after = words.slice(m.end, to);
+    // Entre as metades também pode vir o tamanho ("metade calabresa grande e metade frango").
+    const after = half ? [...words.slice(m.end, half.start), ...words.slice(half.end, to)] : words.slice(m.end, to);
     // Quantidade: o número mais perto, antes do produto.
     let quantity = 1;
     for (let i = before.length - 1; i >= 0; i--) {
@@ -148,16 +169,19 @@ export function parseVoiceOrder(text: string, products: CatalogProduct[]): Voice
     before.forEach((w, i) => {
       if (w in NUMBERS || /^\d+$/.test(w)) lastNumber = i;
     });
-    const size = variants.length > 1 ? (sizeIn(after, variants) ?? sizeIn(before.slice(Math.max(0, lastNumber)), variants)) : null;
+    let size = variants.length > 1 ? (sizeIn(after, variants) ?? sizeIn(before.slice(Math.max(0, lastNumber)), variants)) : null;
+    // Metade/metade só em G, GG e F, e o outro sabor precisa ter o mesmo tamanho.
+    if (half && size && (!canBeHalved(m.product, size) || !half.product.variants.some((v) => v.sizeCode === size?.sizeCode))) size = null;
     if (size) {
       // Marca as palavras do tamanho como entendidas.
       const sizeWords = new Set([...normalizeSpeech(size.name).split(' '), ...Object.keys(SIZE_WORDS).filter((w) => SIZE_WORDS[w] === size.sizeCode), 'tamanho', 'litros', 'litro', 'ml', 'um', 'dois', 'seiscentos']);
       for (let i = from; i < to; i++) if (sizeWords.has(words[i]!)) used.add(i);
     }
     const variantId = variants.length === 1 ? variants[0]!.id : (size?.id ?? null);
-    const same = items.find((x) => x.productId === m.product.id && x.variantId === variantId);
+    const halfProductId = half?.product.id ?? null;
+    const same = items.find((x) => x.productId === m.product.id && x.variantId === variantId && x.halfProductId === halfProductId);
     if (same) same.quantity += quantity;
-    else items.push({ productId: m.product.id, variantId, quantity, needsSize: variants.length > 1 && !size });
+    else items.push({ productId: m.product.id, variantId, quantity, needsSize: variants.length > 1 && !size, halfProductId });
   });
 
   // O que sobrou e não é número, tamanho nem palavra de ligação: mostra como "não entendi".

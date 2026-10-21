@@ -13,10 +13,11 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
   const { data: catalog } = await getCatalog();
   // Bebidas saem do cardápio e são oferecidas no carrinho e depois de adicionar um item.
   const drinks = catalog.products.filter((p) => p.categorySlug === DRINK_CATEGORY);
+  const pizzas = catalog.products.filter((p) => p.kind === 'pizza');
   return (
     // O tema escuro envolve também as janelas (escolher produto), que ficam no provedor.
     <div className="theme-dark flex min-h-screen flex-col">
-      <StoreProviders drinks={drinks}>
+      <StoreProviders drinks={drinks} pizzas={pizzas}>
       <Suspense fallback={null}>
         <ClosedBanner />
       </Suspense>

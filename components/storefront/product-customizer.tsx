@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Check, Clock, ShoppingBag } from 'lucide-react';
 import type { CatalogOptionGroup, CatalogOptionValue, CatalogProduct, CatalogVariant, LineSelection } from '@/types/catalog';
 import {
+  canBeHalved,
   flavorLimitsFor,
   flavorPriceFor,
   isOptionOfferedFor,
@@ -22,6 +23,7 @@ import { ProductImage } from '@/components/ui/product-image';
 import { useToast } from '@/components/ui/toast';
 import { useCart, type CartLine } from '@/components/cart/cart-context';
 import { PizzaVisual } from './pizza-visual';
+import { HalfPicker } from './half-picker';
 import { useProductDialog } from './product-dialog';
 
 const SHIFT_NOTE = { lunch: 'Servido no horário do almoço', dinner: 'Servido no horário da noite' } as const;
@@ -60,6 +62,7 @@ export function ProductCustomizer({
   fetchedAt,
   editLine,
   initialVariantId,
+  initialHalfProductId,
   onDone,
   layout = 'dialog',
 }: {
@@ -67,6 +70,7 @@ export function ProductCustomizer({
   fetchedAt: string;
   editLine?: CartLine | null;
   initialVariantId?: string | null;
+  initialHalfProductId?: string | null;
   onDone?: () => void;
   layout?: 'dialog' | 'page';
 }) {
@@ -79,11 +83,13 @@ export function ProductCustomizer({
   const [quantity, setQuantity] = useState(editLine?.quantity ?? 1);
   const [notes, setNotes] = useState(editLine?.notes ?? '');
   const [touched, setTouched] = useState(false);
+  const [halfId, setHalfId] = useState<string | null>(editLine?.halfProductId ?? initialHalfProductId ?? null);
+  const half = dialog.pizzas.find((p) => p.id === halfId) ?? null;
 
   const variant = product.variants.find((v) => v.id === variantId) ?? null;
   const orderable = isProductOrderable(product, now);
-  const selection: LineSelection = { productId: product.id, variantId, options, quantity, notes: notes.trim() || undefined };
-  const result = useMemo(() => priceLine(product, selection, { now, openShifts: null }), [product, variantId, options, quantity, notes, now]); // eslint-disable-line react-hooks/exhaustive-deps
+  const selection: LineSelection = { productId: product.id, variantId, options, quantity, notes: notes.trim() || undefined, halfProductId: halfId };
+  const result = useMemo(() => priceLine(product, selection, { now, openShifts: null }, half ?? undefined), [product, variantId, options, quantity, notes, now, half]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const groups = [...product.groups].sort((a, b) => a.sortOrder - b.sortOrder);
   const flavorGroup = groups.find((g) => g.kind === 'flavor');
@@ -96,6 +102,8 @@ export function ProductCustomizer({
     const next = product.variants.find((v) => v.id === id) ?? null;
     setVariantId(id);
     setOptions((o) => pruneForVariant(product, o, next));
+    // A outra metade só vale em G, GG e F, e se o outro sabor tiver o mesmo tamanho.
+    if (!canBeHalved(product, next) || !half?.variants.some((v) => v.sizeCode === next?.sizeCode && v.isAvailable)) setHalfId(null);
   }
 
   function toggle(group: CatalogOptionGroup, valueId: string) {
@@ -122,7 +130,7 @@ export function ProductCustomizer({
       ...selection,
       notes: selection.notes ?? null,
       slug: product.slug,
-      name: product.name,
+      name: line.productName,
       variantName: line.variantName,
       summary: line.summary,
       imageUrl: product.imageUrl,
@@ -135,11 +143,18 @@ export function ProductCustomizer({
       toast('Item atualizado no carrinho');
     } else {
       cart.add(payload);
-      toast(`${product.name} adicionado ao carrinho`);
+      toast(`${line.productName} adicionado ao carrinho`);
       dialog.suggestDrink(product);
     }
     onDone?.();
   }
+
+  /** "até 2 sabores" (metade/metade em G, GG e F) ou o limite do grupo de sabores do produto. */
+  const pizzaFlavorsNote = (v: CatalogVariant) => {
+    if (product.kind !== 'pizza') return null;
+    const max = flavorGroup ? v.maxFlavors : canBeHalved(product, v) ? 2 : 1;
+    return `até ${max} ${max > 1 ? 'sabores' : 'sabor'}`;
+  };
 
   const variantPriceLabel = (v: CatalogVariant) => {
     // Item sem valor cadastrado (ex.: bebida nova): nunca mostrar "R$ 0,00".
@@ -245,7 +260,7 @@ export function ProductCustomizer({
                   <span className="flex-1">
                     <span className="block font-semibold">{v.name}</span>
                     <span className="block text-xs text-muted">
-                      {[v.description, product.kind === 'pizza' ? `até ${v.maxFlavors} ${v.maxFlavors > 1 ? 'sabores' : 'sabor'}` : null].filter(Boolean).join(' · ')}
+                      {[v.description, pizzaFlavorsNote(v)].filter(Boolean).join(' · ')}
                       {!v.isAvailable ? ' · esgotado' : ''}
                     </span>
                   </span>
@@ -254,6 +269,10 @@ export function ProductCustomizer({
               ))}
             </div>
           </fieldset>
+        ) : null}
+
+        {product.kind === 'pizza' && !flavorGroup ? (
+          <HalfPicker product={product} variant={variant} pizzas={dialog.pizzas} value={halfId} onChange={setHalfId} now={now} />
         ) : null}
 
         {groups.map((group) => {
@@ -369,7 +388,7 @@ export function ProductCustomizer({
             <p className="font-semibold">Resumo</p>
             <ul className="mt-1 space-y-0.5 text-muted-strong">
               <li>
-                {quantity}x {product.name}
+                {quantity}x {result.line.productName}
                 {result.line.variantName ? ` — ${result.line.variantName}` : ''}
               </li>
               {result.line.summary.map((s) => (

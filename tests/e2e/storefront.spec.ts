@@ -87,6 +87,34 @@ test('Pedir pizzas: passo a passo tipo → tamanho → sabor', async ({ page }) 
   await expect(page.getByRole('heading', { name: 'Qual tamanho?' })).toBeVisible();
 });
 
+test('metadinha: 2 sabores na G, vale o preço do mais caro', async ({ page }) => {
+  await page.goto('/pizzas?tipo=pizzas-tradicionais&tamanho=G');
+  await page.getByRole('button', { name: /Pizza Calabresa/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Pizza Calabresa' });
+  await expect(sheet.getByRole('button', { name: /1 sabor/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet).toContainText('R$ 50,00');
+  await sheet.getByTestId('half-two').click();
+  await expect(sheet).toContainText('A outra metade vai ser de quê?');
+  // Pode misturar tipos: a especial (R$ 55,00 na G) aparece junto das tradicionais.
+  await sheet.getByTestId('half-option').filter({ hasText: /^Frango com Catupiry/ }).click();
+  await expect(sheet.getByTestId('half-chosen')).toContainText('½ Calabresa + ½ Frango com Catupiry');
+  await expect(sheet).toContainText('R$ 55,00');
+  await sheet.getByTestId('easy-add').click();
+  await expect(page.getByText('Pizza ½ Calabresa + ½ Frango com Catupiry adicionado ao carrinho')).toBeVisible();
+  // O servidor confere o preço do carrinho (R$ 55,00, sem erro).
+  await page.goto('/carrinho');
+  const lines = page.locator('#conteudo').getByTestId('cart-lines');
+  await expect(lines).toContainText('Pizza ½ Calabresa + ½ Frango com Catupiry');
+  await expect(lines).toContainText('Metade/metade · vale o preço do sabor mais caro');
+  await expect(lines.getByTestId('line-subtotal')).toHaveText('R$ 55,00');
+  await expect(lines.getByRole('alert')).toHaveCount(0);
+  // Na P não tem metade/metade.
+  await page.goto('/pizzas?tipo=pizzas-tradicionais&tamanho=P');
+  await page.getByRole('button', { name: /Pizza Calabresa/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Pizza Calabresa' })).toContainText('nos tamanhos G, GG, F');
+  await expect(page.getByTestId('half-two')).toHaveCount(0);
+});
+
 test('Pedir pratos reúne pratos da casa e lasanhas (lasanha tem tamanho)', async ({ page }) => {
   await page.goto('/');
   await page.locator('#categorias').getByRole('link', { name: 'Pedir pratos' }).click();
@@ -108,7 +136,7 @@ test('pedir por áudio: entende o pedido e monta o carrinho após confirmar', as
       onresult: ((e: unknown) => void) | null = null; onerror: ((e: unknown) => void) | null = null; onend: (() => void) | null = null;
       start() {
         setTimeout(() => {
-          this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: 'quero uma pizza grande de calabresa e dois xis frango' } }] });
+          this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: 'quero uma pizza grande metade calabresa e metade frango com catupiry e dois xis frango' } }] });
           this.onend?.();
         }, 50);
       }
@@ -124,12 +152,14 @@ test('pedir por áudio: entende o pedido e monta o carrinho após confirmar', as
   await page.getByTestId('voice-order').click();
   await page.getByRole('button', { name: 'Começar a falar' }).click();
   const items = page.getByTestId('voice-items');
-  await expect(items).toContainText('Pizza Calabresa');
+  await expect(items).toContainText('Pizza ½ Calabresa + ½ Frango com Catupiry');
   await expect(items.getByRole('button', { name: 'Grande (G)' })).toHaveAttribute('aria-pressed', 'true');
+  // Metade/metade: só G, GG e F.
+  await expect(items.getByRole('button', { name: 'Média (M)' })).toHaveCount(0);
   await expect(items).toContainText('X-Frango');
   await page.getByRole('button', { name: /Adicionar ao carrinho/ }).click();
   const cart = page.getByRole('dialog', { name: 'Seu carrinho' });
-  await expect(cart).toContainText('Pizza Calabresa');
+  await expect(cart).toContainText('Pizza ½ Calabresa + ½ Frango com Catupiry');
   await expect(cart).toContainText('X-Frango');
   await expect(cart).toContainText('3 itens');
 });

@@ -9,6 +9,7 @@ import { formatBRL, type Cents } from '@/lib/money';
 import { isProductOrderable, priceLine } from '@/lib/pricing';
 import { useNow } from '@/lib/use-now';
 import { Dialog } from '@/components/ui/dialog';
+import { HalfPicker } from './half-picker';
 import { QuantityStepper } from '@/components/ui/quantity';
 import { useProductDialog } from './product-dialog';
 
@@ -35,11 +36,13 @@ export function EasyOrder({ catalog, group }: { catalog: Catalog; group: MenuGro
 
   const categories = catalog.categories.filter((c) => group.slugs.includes(c.slug) && catalog.products.some((p) => p.categoryId === c.id));
   const productsOf = (categoryId: string) => catalog.products.filter((p) => p.categoryId === categoryId).sort((a, b) => a.sortOrder - b.sortOrder);
-  const priceOf = (p: CatalogProduct, v: CatalogVariant | null): Cents | null => {
+  const priceOf = (p: CatalogProduct, v: CatalogVariant | null, half: CatalogProduct | null = null): Cents | null => {
     if (!isProductOrderable(p, now) || (v && !v.isAvailable)) return null;
-    const r = priceLine(p, { productId: p.id, variantId: v?.id ?? p.variants[0]?.id ?? null, options: {}, quantity: 1 }, { now, openShifts: null });
+    const selection = { productId: p.id, variantId: v?.id ?? p.variants[0]?.id ?? null, options: {}, quantity: 1, halfProductId: half?.id ?? null };
+    const r = priceLine(p, selection, { now, openShifts: null }, half ?? undefined);
     return r.ok ? r.line.unitPrice : null;
   };
+  const pizzas = catalog.products.filter((p) => p.kind === 'pizza');
   const minPrice = (list: (Cents | null)[]) => {
     const valid = list.filter((x): x is Cents => x != null);
     return valid.length ? (Math.min(...valid) as Cents) : null;
@@ -159,16 +162,18 @@ export function EasyOrder({ catalog, group }: { catalog: Catalog; group: MenuGro
         <AddSheet
           product={picked.product}
           variant={picked.variant}
-          unitPrice={priceOf(picked.product, picked.variant)}
+          priceFor={(half) => priceOf(picked.product, picked.variant, half)}
           description={describe(picked.product)}
+          pizzas={pizzas}
+          now={now}
           onClose={() => setPicked(null)}
-          onAdd={(qty) => {
-            if (dialog.addDirect(picked.product, picked.variant?.id ?? null, qty)) setPicked(null);
+          onAdd={(qty, half) => {
+            if (dialog.addDirect(picked.product, picked.variant?.id ?? null, qty, { half })) setPicked(null);
           }}
-          onCustomize={() => {
+          onCustomize={(half) => {
             const { product, variant } = picked;
             setPicked(null);
-            dialog.open(product, catalog.fetchedAt, null, variant?.id ?? null);
+            dialog.open(product, catalog.fetchedAt, null, variant?.id ?? null, half?.id ?? null);
           }}
         />
       ) : null}
@@ -204,44 +209,55 @@ function BigChoice({ title, subtitle, onClick }: { title: string; subtitle: stri
   );
 }
 
-/** Confirmação simples: quantidade e "Adicionar ao pedido". Borda, molho e observação ficam num link. */
+/**
+ * Confirmação simples: quantidade e "Adicionar ao pedido". Na pizza G, GG ou F dá para
+ * escolher 2 sabores (metade/metade). Borda, molho e observação ficam num link.
+ */
 function AddSheet({
   product,
   variant,
-  unitPrice,
+  priceFor,
   description,
+  pizzas,
+  now,
   onClose,
   onAdd,
   onCustomize,
 }: {
   product: CatalogProduct;
   variant: CatalogVariant | null;
-  unitPrice: Cents | null;
+  priceFor: (half: CatalogProduct | null) => Cents | null;
   description: string | null;
+  pizzas: CatalogProduct[];
+  now: Date;
   onClose: () => void;
-  onAdd: (quantity: number) => void;
-  onCustomize: () => void;
+  onAdd: (quantity: number, half: CatalogProduct | null) => void;
+  onCustomize: (half: CatalogProduct | null) => void;
 }) {
   const [qty, setQty] = useState(1);
+  const [halfId, setHalfId] = useState<string | null>(null);
+  const half = pizzas.find((p) => p.id === halfId) ?? null;
+  const unitPrice = priceFor(half);
   const hasExtras = product.groups.some((g) => g.values.some((v) => v.isAvailable));
   return (
     <Dialog open onClose={onClose} title={product.name} description={variant && product.variants.length > 1 ? variant.name : product.categoryName} side="bottom">
       <div className="space-y-5 pb-2">
         {description ? <p className="text-lg text-muted">{description}</p> : null}
+        <HalfPicker product={product} variant={variant} pizzas={pizzas} value={halfId} onChange={setHalfId} now={now} />
         <div className="flex items-center justify-between gap-4">
           <QuantityStepper value={qty} onChange={setQty} max={product.maxQuantity} />
           {unitPrice != null ? <p className="text-2xl font-bold tabular-nums text-gold">{formatBRL((unitPrice * qty) as Cents)}</p> : null}
         </div>
         <button
           type="button"
-          onClick={() => onAdd(qty)}
+          onClick={() => onAdd(qty, half)}
           className="flex h-16 w-full items-center justify-center gap-3 rounded-2xl bg-brand-600 text-xl font-bold text-white shadow-[var(--shadow-float)] hover:bg-brand-700"
           data-testid="easy-add"
         >
           <ShoppingBag className="size-6" aria-hidden /> Adicionar ao pedido
         </button>
         {hasExtras ? (
-          <button type="button" onClick={onCustomize} className="w-full text-center text-base font-semibold text-gold underline underline-offset-4">
+          <button type="button" onClick={() => onCustomize(half)} className="w-full text-center text-base font-semibold text-gold underline underline-offset-4">
             Quero borda, molho ou observação
           </button>
         ) : null}

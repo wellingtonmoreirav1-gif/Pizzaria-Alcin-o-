@@ -29,6 +29,7 @@ export const cartLineSchema = z.object({
   options: z.record(z.uuid(), z.array(z.uuid()).max(20)).default({}),
   quantity: z.number().int().min(1).max(99),
   notes: optionalText(200),
+  halfProductId: z.uuid().nullable().optional(),
 });
 
 export const addressSchema = z.object({
