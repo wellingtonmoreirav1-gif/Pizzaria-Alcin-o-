@@ -3,24 +3,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Layers } from 'lucide-react';
-import type { Catalog, CatalogCategory, CatalogProduct } from '@/types/catalog';
+import type { Catalog, CatalogCategory } from '@/types/catalog';
 import type { PublicBanner } from '@/types/settings';
 import { hasActivePromotion, isProductOrderable } from '@/lib/pricing';
 import { useNow } from '@/lib/use-now';
 import { ProductRail } from './product-rail';
 import { BannerStrip } from './banner-strip';
 import { WeeklyFeature, type WeeklyFeatureConfig } from './weekly-feature';
-import { StoryTimeline } from './story-timeline';
 import { HOME_HIDDEN_CATEGORIES, MENU_GROUPS, groupOfCategory, type MenuGroup } from '@/lib/catalog/groups';
 
-/** Vitrines da página inicial: categorias agrupadas para a página não ficar longa. */
-const RAIL_GROUPS: { title: string; eyebrow: string; slugs: string[] }[] = [
-  { title: 'Pizzas', eyebrow: 'Do forno', slugs: ['pizzas-tradicionais', 'pizzas-especiais', 'pizzas-premium', 'pizzas-doces'] },
-  { title: 'Pratos da casa', eyebrow: 'Na chapa, para dividir', slugs: ['pratos-da-casa'] },
-  { title: 'Lanches', eyebrow: 'Na chapa', slugs: ['lanches-tradicionais', 'lanches-especiais', 'beirute'] },
-  { title: 'Petiscos', eyebrow: 'Para acompanhar', slugs: ['petiscos'] },
-  { title: 'Lasanhas', eyebrow: 'Gratinadas', slugs: ['lasanhas'] },
-];
 /** Sem foto própria da categoria, cada faixa mostra um recorte diferente do desenho do 1º produto. */
 const BAND_CROPS = [
   { origin: '50% 40%', zoom: 1.1 },
@@ -38,42 +29,21 @@ const WEEKLY_FEATURE: WeeklyFeatureConfig = {
   imageAlt: 'Lanche de frango grelhado com queijo derretido, alface, tomate e cebola roxa no pão com gergelim',
 };
 
+/**
+ * Miolo da página inicial: destaque da semana, blocos "Pedir …" e, quando houver, banners
+ * e promoções. A história e o fechamento vêm depois (app/(site)/page.tsx).
+ */
 export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: PublicBanner[] }) {
   const now = useNow(catalog.fetchedAt);
-  const sortForSale = (list: CatalogProduct[]) =>
-    [...list].sort((a, b) => Number(isProductOrderable(b, now)) - Number(isProductOrderable(a, now)));
   const weeklyProduct = catalog.products.find((p) => p.slug === WEEKLY_FEATURE.productSlug);
-
   const promos = catalog.products.filter((p) => isProductOrderable(p, now) && hasActivePromotion(p, now));
-  const categoryOrder = new Map(catalog.categories.map((c, i) => [c.id, i]));
-  const homeCategories = catalog.categories.filter((c) => c.showOnHome);
-  const covered = new Set(RAIL_GROUPS.flatMap((g) => g.slugs));
-  const rails = [
-    ...RAIL_GROUPS.map((g) => ({ ...g, slugs: g.slugs.filter((s) => homeCategories.some((c) => c.slug === s)) })),
-    // Categorias novas criadas no painel ganham a própria vitrine automaticamente.
-    ...homeCategories
-      .filter((c) => c.sectionType === 'products' && !covered.has(c.slug))
-      .map((c) => ({ title: c.name, eyebrow: c.slug === 'bebidas' ? 'Para acompanhar' : 'Cardápio', slugs: [c.slug] })),
-  ];
 
   return (
     <>
       <WeeklyFeature config={WEEKLY_FEATURE} product={weeklyProduct} fetchedAt={catalog.fetchedAt} />
       <CategoryTiles catalog={catalog} />
-      <StoryTimeline />
       <BannerStrip banners={banners} now={now} />
       <ProductRail id="promocoes" eyebrow="Por tempo limitado" title="Promoções" products={promos.slice(0, 8)} fetchedAt={catalog.fetchedAt} href="/cardapio?colecao=promocoes" tone="wine" />
-      {rails.map((rail) => {
-        const list = sortForSale(
-          catalog.products
-            .filter((p) => rail.slugs.includes(p.categorySlug))
-            .sort((a, b) => (categoryOrder.get(a.categoryId) ?? 0) - (categoryOrder.get(b.categoryId) ?? 0) || a.sortOrder - b.sortOrder),
-        ).slice(0, 8);
-        // Sem nada que dê para pedir agora (ex.: bebidas ainda sem preço): fica só no cardápio.
-        if (!list.some((p) => isProductOrderable(p, now))) return null;
-        const href = groupOfCategory(rail.slugs[0]!)?.path ?? `/cardapio?categoria=${rail.slugs[0]}`;
-        return <ProductRail key={rail.title} id={rail.slugs[0]} title={rail.title} eyebrow={rail.eyebrow} products={list} fetchedAt={catalog.fetchedAt} href={href} />;
-      })}
     </>
   );
 }

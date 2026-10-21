@@ -41,8 +41,14 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   }
   await expect(categorias).not.toContainText('Bebidas');
   await expect(categorias).not.toContainText('Pizzas tradicionais');
-  // Fileiras sem nada que dê para pedir (bebidas sem preço) ficam só no cardápio; "Pratos da casa" tem a sua.
-  await expect(page.getByRole('heading', { name: 'Pratos da casa', level: 2 })).toBeVisible();
+  // Fim da página: história → "Bom saber" (entrega, rodízio, fechado às terças) → WhatsApp.
+  const fechamento = page.getByRole('region', { name: 'Bom saber' });
+  await expect(fechamento).toContainText('Fazemos entrega');
+  await expect(fechamento).toContainText('Rodízio de churrasco');
+  await expect(fechamento).toContainText('A partir de R$ 49,90. Presencial, no restaurante.');
+  await expect(fechamento).toContainText('Fechamos às terças');
+  // As vitrines de produtos saíram da página inicial (ficam no cardápio).
+  await expect(page.getByRole('heading', { name: 'Lanches', level: 2, exact: true })).toHaveCount(0);
   await hero.getByRole('link', { name: /Pedir agora/ }).first().click();
   await expect(page).toHaveURL(/\/cardapio$/);
 });

@@ -94,10 +94,11 @@
 }
 
 .theme-dark {
-  --color-canvas: #0b0a09;
-  --color-surface: #161312;
-  --color-mist: #1f1b19;
-  --color-line: #332d2a;
+  /* Fundo da loja no vermelho do vídeo da pizza; cartões e campos num vinho bem escuro. */
+  --color-canvas: var(--color-wine-900);
+  --color-surface: #1e0405;
+  --color-mist: #2c080a;
+  --color-line: #4f1a1d;
   --color-muted: #aaa29b;
   --color-muted-strong: #d6cfc8;
   --color-fg: #f6f2ee;
@@ -122,7 +123,7 @@
 @custom-variant over-hero (html:has([data-hero]:not([data-done="true"])) &);
 
 body:has(.theme-dark) {
-  background: #0b0a09;
+  background: var(--color-wine-900);
 }
 
 @layer base {

@@ -62,7 +62,7 @@ export function StoryTimeline() {
   }, []);
 
   return (
-    <section id="historia" aria-labelledby="historia-titulo" className="relative overflow-hidden bg-[#0b0a09] py-16 text-white sm:py-24">
+    <section id="historia" aria-labelledby="historia-titulo" className="relative overflow-hidden py-16 text-white sm:py-24">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
         <h2 id="historia-titulo" className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
           Nossa <span className="italic text-gold">história</span>
@@ -124,7 +124,7 @@ function Step({ children, last }: { children: ReactNode; last?: boolean }) {
         last ? 'pb-2' : 'pb-16 sm:pb-20',
       )}
     >
-      <span className="absolute left-0 top-2 grid size-6 place-items-center rounded-full bg-[#0b0a09] ring-2 ring-gold" aria-hidden>
+      <span className="absolute left-0 top-2 grid size-6 place-items-center rounded-full bg-canvas ring-2 ring-gold" aria-hidden>
         <span className="size-2.5 rounded-full bg-gold" />
       </span>
       <div>{children}</div>

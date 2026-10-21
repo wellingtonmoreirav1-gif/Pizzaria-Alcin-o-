@@ -14,7 +14,7 @@ export default async function MenuPage() {
   const [{ data: catalog, error }, bestSellerIds] = await Promise.all([getCatalog(), getBestSellerIds()]);
   return (
     <>
-      <div className="border-b border-line bg-[#080706] text-white">
+      <div className="bg-wine border-b border-line text-white">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Alcinão</p>
           <h1 className="font-display text-4xl font-semibold sm:text-5xl">Cardápio</h1>

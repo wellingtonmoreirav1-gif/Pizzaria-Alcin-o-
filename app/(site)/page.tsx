@@ -1,7 +1,9 @@
 import { getActiveBanners, getApprovedReviews, getCatalog, getOperation } from '@/lib/catalog/queries';
 import { Hero } from '@/components/storefront/hero';
 import { HomeShowcase } from '@/components/storefront/home-showcase';
-import { InfoSections, ReviewsSection } from '@/components/storefront/info-sections';
+import { ReviewsSection } from '@/components/storefront/info-sections';
+import { StoryTimeline } from '@/components/storefront/story-timeline';
+import { ClosingInfo } from '@/components/storefront/closing-info';
 import { EmptyState, Notice } from '@/components/ui/feedback';
 import { RestaurantJsonLd } from '@/components/storefront/json-ld';
 import { WhatsAppCta } from '@/components/storefront/whatsapp-cta';
@@ -32,7 +34,9 @@ export default async function HomePage() {
         <HomeShowcase catalog={catalog} banners={banners} />
       )}
       <ReviewsSection reviews={reviews} />
-      <InfoSections settings={operation.settings} hours={operation.hours.hours} />
+      {/* Fim da página: história → o que é bom saber → WhatsApp. */}
+      <StoryTimeline />
+      <ClosingInfo delivery={operation.settings.deliveryEnabled} />
       <WhatsAppCta settings={operation.settings} />
     </>
   );
