@@ -20,6 +20,8 @@ const eslintConfig = defineConfig([
     ".local-supabase/**",
     "test-results/**",
     ".shot.mjs",
+    // Skills do assistente (código de terceiros, fora do site).
+    ".claude/**",
   ]),
 ]);
 
