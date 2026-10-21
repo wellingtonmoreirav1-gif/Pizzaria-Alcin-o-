@@ -81,6 +81,7 @@ test('história da Alcinão: vídeo com capa, carrossel e Instagram', async ({ p
   await story.scrollIntoViewIfNeeded();
   await expect(story.getByText('No início, a Alcinão era um restaurante de sucesso.')).toBeVisible();
   await expect(story.getByRole('button', { name: /Assistir ao vídeo: Das cinzas à inauguração/ })).toBeVisible();
+  await expect(story.getByText('Então nos reerguemos.')).toBeVisible();
   const carousel = story.getByRole('region', { name: 'Vídeos da Alcinão' });
   await carousel.scrollIntoViewIfNeeded();
   await expect(carousel.locator('video[controls]')).toHaveAttribute('src', '/historia/video-2.mp4');

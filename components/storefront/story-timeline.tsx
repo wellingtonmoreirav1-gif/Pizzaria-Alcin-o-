@@ -87,8 +87,14 @@ export function StoryTimeline() {
             <CoverVideo />
           </Step>
 
-          <Step wide>
-            <VideoCarousel />
+          <Step>
+            <p className="font-display text-3xl font-semibold leading-tight sm:text-4xl">
+              Então nos <span className="italic text-gold">reerguemos.</span>
+            </p>
+            {/* O carrossel usa a largura toda (inclusive a da linha do tempo). */}
+            <div className="-ml-12 mt-8 sm:-ml-16">
+              <VideoCarousel />
+            </div>
           </Step>
 
           <Step last>
@@ -107,7 +113,7 @@ export function StoryTimeline() {
   );
 }
 
-function Step({ children, wide, last }: { children: ReactNode; wide?: boolean; last?: boolean }) {
+function Step({ children, last }: { children: ReactNode; last?: boolean }) {
   return (
     <li
       data-step
@@ -121,7 +127,7 @@ function Step({ children, wide, last }: { children: ReactNode; wide?: boolean; l
       <span className="absolute left-0 top-2 grid size-6 place-items-center rounded-full bg-[#0b0a09] ring-2 ring-gold" aria-hidden>
         <span className="size-2.5 rounded-full bg-gold" />
       </span>
-      <div className={cn(wide && '-ml-12 sm:-ml-16')}>{children}</div>
+      <div>{children}</div>
     </li>
   );
 }
