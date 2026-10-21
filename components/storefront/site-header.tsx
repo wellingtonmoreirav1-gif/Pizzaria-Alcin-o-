@@ -6,8 +6,8 @@ import { HeaderActions } from './header-actions';
 import { StoreStatusFallback, StoreStatusPill } from './store-status';
 
 /** Atalhos do menu no computador: um por tipo de prato (leva à primeira categoria do grupo). */
-const NAV_GROUPS = [
-  { label: 'Pizzas', slug: 'pizzas-tradicionais' },
+const NAV_GROUPS: { label: string; slug: string; href?: string }[] = [
+  { label: 'Pizzas', slug: 'pizzas-tradicionais', href: '/pizzas' },
   { label: 'Pratos da casa', slug: 'pratos-da-casa' },
   { label: 'Lanches', slug: 'lanches-tradicionais' },
   { label: 'Bebidas', slug: 'bebidas' },
@@ -43,7 +43,7 @@ export async function SiteHeader() {
             {NAV_GROUPS.filter((g) => categories.some((c) => c.slug === g.slug)).map((g) => (
               <li key={g.slug} className="hidden xl:block">
                 <Link
-                  href={`/cardapio?categoria=${g.slug}`}
+                  href={g.href ?? `/cardapio?categoria=${g.slug}`}
                   className="rounded-full px-3 py-2 text-muted-strong hover:bg-mist hover:text-fg over-hero:text-white/85 over-hero:hover:bg-white/10"
                 >
                   {g.label}

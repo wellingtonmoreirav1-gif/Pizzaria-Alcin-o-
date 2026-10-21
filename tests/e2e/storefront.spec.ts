@@ -34,7 +34,9 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   await expect(page.getByRole('heading', { name: 'O que você quer hoje?' })).toBeVisible();
   // Bordas e molhos não se pedem sozinhos: não viram faixa na página inicial.
   await expect(page.getByTestId('category-bands')).not.toContainText('Bordas recheadas');
-  await expect(page.getByTestId('category-bands')).toContainText('Pizzas tradicionais');
+  // As pizzas têm um bloco próprio ("Pedir pizzas"); as faixas ficam para as outras categorias.
+  await expect(page.getByTestId('category-bands')).not.toContainText('Pizzas tradicionais');
+  await expect(page.getByTestId('category-bands')).toContainText('Lanches tradicionais');
   // Fileiras sem nada que dê para pedir (bebidas sem preço) ficam só no cardápio; "Pratos da casa" tem a sua.
   await expect(page.getByRole('heading', { name: 'Pratos da casa', level: 2 })).toBeVisible();
   await hero.getByRole('link', { name: /Pedir agora/ }).first().click();
@@ -47,6 +49,17 @@ test('destaque da semana abre o lanche para pedir', async ({ page }) => {
   const weekly = page.locator('#em-alta');
   await weekly.getByRole('link', { name: /Pedir agora/ }).click();
   await expect(page.getByRole('dialog', { name: 'X-Frango' })).toBeVisible();
+});
+
+test('Pedir pizzas leva às pizzas separadas por categoria', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#categorias').getByRole('link', { name: /Pedir pizzas/ }).click();
+  await expect(page).toHaveURL(/\/pizzas$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Pizzas' })).toBeVisible();
+  for (const name of ['Pizzas tradicionais', 'Pizzas especiais', 'Pizzas premium', 'Pizzas doces']) {
+    await expect(page.getByRole('heading', { level: 2, name })).toBeVisible();
+  }
+  await expect(page.getByRole('heading', { level: 2, name: 'Lanches tradicionais' })).toHaveCount(0);
 });
 
 test('quem pede menos movimento vê o topo parado, da altura da tela', async ({ page }) => {

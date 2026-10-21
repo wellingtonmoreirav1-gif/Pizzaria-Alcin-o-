@@ -13,7 +13,22 @@ import { OptionInfoSection } from './option-info-section';
 
 type Collection = 'promocoes' | 'mais-vendidos' | null;
 
-export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; bestSellerIds: string[] }) {
+/**
+ * Lista do cardápio com busca e filtros. `scope` limita a algumas categorias (ex.: a
+ * página /pizzas mostra só as de pizza, cada uma na sua seção); `basePath` é a página
+ * onde os filtros ficam na URL.
+ */
+export function MenuBrowser({
+  catalog,
+  bestSellerIds,
+  scope,
+  basePath = '/cardapio',
+}: {
+  catalog: Catalog;
+  bestSellerIds: string[];
+  scope?: string[];
+  basePath?: string;
+}) {
   const params = useSearchParams();
   const router = useRouter();
   const now = useNow(catalog.fetchedAt);
@@ -35,17 +50,20 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
       if (v === null || v === '') next.delete(k);
       else next.set(k, v);
     }
-    router.replace(`/cardapio${next.size ? `?${next}` : ''}`, { scroll: false });
+    router.replace(`${basePath}${next.size ? `?${next}` : ''}`, { scroll: false });
   }
 
   const groupsById = new Map(catalog.sharedGroups.map((g) => [g.id, g]));
   const categories = catalog.categories.filter((c) =>
-    c.sectionType === 'options'
+    scope && !scope.includes(c.slug)
+      ? false
+      : c.sectionType === 'options'
       ? Boolean(c.sharedGroupId && groupsById.get(c.sharedGroupId)?.values.length)
       : catalog.products.some((p) => p.categoryId === c.id),
   );
-  const hasPromos = catalog.products.some((p) => hasActivePromotion(p, now));
-  const tags = [...new Set(catalog.products.flatMap((p) => p.tags))].sort();
+  const scopedProducts = scope ? catalog.products.filter((p) => scope.includes(p.categorySlug)) : catalog.products;
+  const hasPromos = scopedProducts.some((p) => hasActivePromotion(p, now));
+  const tags = [...new Set(scopedProducts.flatMap((p) => p.tags))].sort();
   const best = useMemo(() => new Set(bestSellerIds), [bestSellerIds]);
 
   const filtered = useMemo(() => {
@@ -96,7 +114,7 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onBlur={() => setParam({ q: query })}
-            placeholder="Buscar pizza, prato, bebida, sabor…"
+            placeholder={scope ? 'Buscar pizza ou sabor…' : 'Buscar pizza, prato, bebida, sabor…'}
             className="h-13 w-full rounded-2xl border border-line bg-surface pl-12 pr-12 text-base focus:border-fg focus:outline-none"
             autoComplete="off"
           />
@@ -108,14 +126,14 @@ export function MenuBrowser({ catalog, bestSellerIds }: { catalog: Catalog; best
         </form>
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none" role="group" aria-label="Filtrar por categoria">
           <button type="button" className={chip(!category && !collection)} aria-pressed={!category && !collection} onClick={() => setParam({ categoria: null, colecao: null })}>
-            Tudo
+            {scope ? 'Todas' : 'Tudo'}
           </button>
           {hasPromos ? (
             <button type="button" className={chip(collection === 'promocoes')} aria-pressed={collection === 'promocoes'} onClick={() => setParam({ colecao: collection === 'promocoes' ? null : 'promocoes', categoria: null })}>
               Promoções
             </button>
           ) : null}
-          {bestSellerIds.length > 0 ? (
+          {scopedProducts.some((p) => best.has(p.id)) ? (
             <button type="button" className={chip(collection === 'mais-vendidos')} aria-pressed={collection === 'mais-vendidos'} onClick={() => setParam({ colecao: collection === 'mais-vendidos' ? null : 'mais-vendidos', categoria: null })}>
               Mais vendidos
             </button>

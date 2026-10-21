@@ -41,7 +41,7 @@ export function Hero({ settings }: { settings: SiteSettings }) {
           </h2>
           <p className="mt-3 text-pretty text-white/85 sm:text-lg">Escolha o sabor e o tamanho. A equipe confirma o pedido no WhatsApp.</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <ButtonLink href="/cardapio?categoria=pizzas-tradicionais" size="lg">
+            <ButtonLink href="/pizzas" size="lg">
               Escolher minha pizza <ArrowRight className="size-5" aria-hidden />
             </ButtonLink>
             <ButtonLink href="/cardapio" size="lg" variant="outline" className={GLASS_BUTTON}>

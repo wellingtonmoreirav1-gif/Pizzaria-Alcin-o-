@@ -48,6 +48,10 @@ Logo depois do topo, uma faixa com a foto grande do lanche à direita e, à esqu
 - Hoje: **X Frango Assado**, que abre o **X-Frango** do cardápio. Foto em `public/destaques/x-frango-assado.webp`, enviada pelo restaurante.
 - Para trocar o destaque: altere `WEEKLY_FEATURE` em `components/storefront/home-showcase.tsx` (nome, produto e foto) e coloque a nova foto em `public/destaques/`. Use foto horizontal com fundo escuro/vermelho, de preferência 1600 px de largura.
 
+### Bloco "Pedir pizzas" (página inicial)
+
+Em "O que você quer hoje?", as pizzas têm um bloco próprio: o botão **Pedir pizzas** à esquerda e a foto da pizza à direita (`public/destaques/pizza-pepperoni.webp`, enviada pelo restaurante, com fundo transparente). O botão leva à página **/pizzas**, com todas as pizzas separadas por categoria (tradicionais, especiais, premium e doces). As demais categorias continuam em faixas.
+
 ### Fotos das categorias (faixas da página inicial)
 
 Em "O que você quer hoje?", cada categoria aparece numa faixa larga, de ponta a ponta da tela. Para trocar a foto: **Painel → Fotos e logo → Fotos das categorias**.
