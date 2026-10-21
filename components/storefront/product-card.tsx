@@ -75,7 +75,7 @@ export function ProductCard({
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <h3 className="font-display text-lg font-semibold leading-snug">
-          <Link href={`/produto/${product.slug}`} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
+          <Link href={`/produto/${product.slug}`} className="after:absolute after:inset-0 after:rounded-[var(--radius-card)] after:content-[''] focus-visible:outline-none focus-visible:after:outline-3 focus-visible:after:-outline-offset-3 focus-visible:after:outline-gold">
             {product.name}
           </Link>
         </h3>
@@ -99,7 +99,9 @@ export function ProductCard({
             disabled={!orderable || !price}
             onClick={() => dialog.quickAdd(product, fetchedAt)}
             className="relative z-10 inline-flex h-11 items-center gap-1.5 rounded-2xl bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:bg-line disabled:text-muted"
-            aria-label={`${needsCustomization(product) ? 'Escolher opções de' : 'Adicionar'} ${product.name}`}
+            aria-label={
+              reason === 'price' ? `Em breve: ${product.name}` : `${needsCustomization(product) ? 'Escolher opções de' : 'Adicionar'} ${product.name}`
+            }
           >
             <Plus className="size-4" aria-hidden />
             {reason === 'price' ? 'Em breve' : needsCustomization(product) ? 'Escolher' : 'Adicionar'}

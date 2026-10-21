@@ -28,7 +28,7 @@ export function BrandLogo({
         width={480}
         height={480}
         sizes={size === 'lg' ? '240px' : '120px'}
-        priority={size === 'sm'}
+        loading={size === 'sm' ? 'eager' : undefined}
         className={cn('w-auto object-contain', size === 'lg' ? 'h-24 max-w-60' : 'h-12 max-w-36 sm:h-14', className)}
       />
     );

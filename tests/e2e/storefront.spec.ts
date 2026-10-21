@@ -16,13 +16,38 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   await expect(hero).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
   await page.evaluate(() => window.scrollTo(0, window.innerHeight));
   await expect.poll(async () => Number(await hero.evaluate((el) => getComputedStyle(el).getPropertyValue('--p')))).toBeGreaterThan(0);
+  // Durante a animação: a apresentação some (e sai do Tab), o botão de pedido fica à mão.
+  await expect(hero).toHaveAttribute('data-stage', /[12]/);
+  await expect(hero.getByRole('link', { name: 'Falar no WhatsApp' })).toBeHidden();
+  await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
+  // No fim, o convite para escolher a pizza.
+  await page.evaluate(() => {
+    const el = document.querySelector<HTMLElement>('[data-testid=hero]')!;
+    window.scrollTo(0, el.offsetTop + el.offsetHeight - window.innerHeight);
+  });
+  await expect(hero.getByRole('link', { name: /Escolher minha pizza/ })).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(hero.getByRole('link', { name: 'Falar no WhatsApp' })).toHaveAttribute('href', /wa\.me\/\d+/);
   await expect(page.getByRole('heading', { name: 'Peça agora pelo WhatsApp' })).toBeVisible();
   await expect(page.getByTestId('store-status').first()).toContainText('Aberto');
   await expect(page.getByRole('heading', { name: /Destaques? do Alcinão/ })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'O que você quer hoje?' })).toBeVisible();
-  await page.getByRole('link', { name: /Pedir agora/ }).click();
+  // Bordas e molhos não se pedem sozinhos: não viram faixa na página inicial.
+  await expect(page.getByTestId('category-bands')).not.toContainText('Bordas recheadas');
+  await expect(page.getByTestId('category-bands')).toContainText('Pizzas tradicionais');
+  await hero.getByRole('link', { name: /Pedir agora/ }).first().click();
   await expect(page).toHaveURL(/\/cardapio$/);
+});
+
+test('quem pede menos movimento vê o topo parado, da altura da tela', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const hero = page.getByTestId('hero');
+  const height = await hero.evaluate((el) => (el as HTMLElement).offsetHeight);
+  expect(height).toBeLessThanOrEqual(page.viewportSize()!.height);
+  await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 400));
+  await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
 });
 
 test('busca e filtros do cardápio funcionam', async ({ page }) => {

@@ -28,7 +28,7 @@ export function ProductImage({
           alt={alt ?? name}
           fill
           sizes={sizes}
-          priority={priority}
+          loading={priority ? 'eager' : undefined}
           // Ilustrações provisórias em SVG (public/images/products) não passam pela otimização.
           unoptimized={src.endsWith('.svg')}
           className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
@@ -43,7 +43,7 @@ export function ProductImage({
             <circle cx="72" cy="78" r="4" fill="currentColor" fillOpacity=".5" />
             <circle cx="62" cy="44" r="3.5" fill="#fff" fillOpacity=".5" />
           </svg>
-          <span className="absolute bottom-2 left-0 right-0 text-center text-[0.65rem] font-medium uppercase tracking-[0.18em] text-white/40">
+          <span className="absolute bottom-2 left-0 right-0 text-center text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-white/75">
             Foto em breve
           </span>
         </div>

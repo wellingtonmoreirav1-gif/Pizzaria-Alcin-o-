@@ -47,7 +47,6 @@ export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Cat
 
   return (
     <>
-      <CategoryTiles catalog={catalog} />
       <ProductRail
         id="em-alta"
         eyebrow="Escolha da casa"
@@ -55,9 +54,9 @@ export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Cat
         products={trendingAvailable}
         fetchedAt={catalog.fetchedAt}
         badges={badges}
-        priority
         tone="wine"
       />
+      <CategoryTiles catalog={catalog} />
       <BannerStrip banners={banners} now={now} />
       <ProductRail id="promocoes" eyebrow="Por tempo limitado" title="Promoções" products={promos.slice(0, 8)} fetchedAt={catalog.fetchedAt} href="/cardapio?colecao=promocoes" tone="wine" />
       {rails.map((rail) => {
@@ -75,15 +74,15 @@ export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Cat
 /**
  * Categorias em faixas largas (de ponta a ponta da tela), uma embaixo da outra.
  * Foto: a da categoria (Painel → Fotos e logo) ou, sem ela, a do primeiro produto.
+ * Grupos de adicionais (bordas, molhos) não se pedem sozinhos: ficam só no cardápio.
  */
 function CategoryTiles({ catalog }: { catalog: Catalog }) {
-  const groups = new Map(catalog.sharedGroups.map((g) => [g.id, g]));
   const tiles = catalog.categories
-    .map((c: CatalogCategory) => {
+    .filter((c: CatalogCategory) => c.sectionType === 'products')
+    .map((c) => {
       const products = catalog.products.filter((p) => p.categoryId === c.id);
-      const count = c.sectionType === 'options' ? groups.get(c.sharedGroupId ?? '')?.values.length ?? 0 : products.length;
       const image = c.imageUrl ?? products.find((p) => p.imageUrl)?.imageUrl ?? null;
-      return { category: c, count, image, isOptions: c.sectionType === 'options' };
+      return { category: c, count: products.length, image };
     })
     .filter((t) => t.count > 0);
   if (tiles.length === 0) return null;
@@ -99,11 +98,11 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
         </Link>
       </div>
       <ul className="flex flex-col gap-1.5" data-testid="category-bands">
-        {tiles.map(({ category, count, image, isOptions }, i) => (
+        {tiles.map(({ category, count, image }) => (
           <li key={category.id}>
             <Link
               href={`/cardapio?categoria=${category.slug}`}
-              className="group relative flex h-32 w-full items-center overflow-hidden bg-wine sm:h-40 lg:h-44"
+              className="group relative flex h-24 w-full items-center overflow-hidden bg-wine sm:h-36 lg:h-40"
             >
               {image ? (
                 <Image
@@ -111,7 +110,6 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
                   alt=""
                   fill
                   sizes="100vw"
-                  priority={i < 2}
                   unoptimized={image.endsWith('.svg')}
                   className="object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
                 />
@@ -122,9 +120,9 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
               <span className="absolute inset-0 bg-gradient-to-r from-ink-950/90 via-ink-950/55 to-transparent" aria-hidden />
               <span className="relative mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
                 <span>
-                  <span className="block font-display text-[1.7rem] font-bold leading-tight text-white drop-shadow sm:text-4xl lg:text-5xl">{category.name}</span>
-                  <span className="mt-1 block text-sm font-semibold text-gold sm:text-base">
-                    {isOptions ? `${count} opções` : `${count} ${count === 1 ? 'item' : 'itens'}`}
+                  <span className="block font-display text-[1.6rem] font-bold leading-tight text-white drop-shadow sm:text-4xl lg:text-5xl">{category.name}</span>
+                  <span className="mt-0.5 block text-sm font-semibold text-gold sm:mt-1 sm:text-base">
+                    {count} {count === 1 ? 'item' : 'itens'}
                   </span>
                 </span>
                 <span className="grid size-11 shrink-0 place-items-center rounded-full bg-black/40 text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors group-hover:bg-brand-600 sm:size-12" aria-hidden>
