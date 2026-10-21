@@ -36,14 +36,15 @@ export const viewport: Viewport = {
 };
 
 /**
- * Altura real da tela, medida no navegador. Alguns navegadores embutidos em apps
- * (Instagram, WhatsApp…) calculam errado as unidades dvh/svh do CSS: as gavetas ficavam
- * espremidas no rodapé, atrás da barra do app. --app-h: área visível agora (gavetas);
+ * Altura real da tela, medida no navegador. Alguns navegadores embutidos em apps calculam
+ * errado as unidades dvh/svh/vh do CSS e até window.innerHeight (tela "minúscula"). Por
+ * isso a altura vem de um elemento fixo de cima a baixo (a área onde ficam as janelas),
+ * e vale a maior das medidas (o elemento é posto e tirado na hora, sem afetar a página).
  * --app-h-stable: só muda com mudança grande (ex.: girar a tela), para o topo não pular
  * quando a barra do navegador some ao rolar; --app-bottom-gap: barra do app por cima
  * da página, quando o navegador informa.
  */
-const VIEWPORT_SCRIPT = `(function(){var d=document.documentElement,s=0,w=0;function f(){var v=window.visualViewport,ih=window.innerHeight,h=v?Math.min(ih,v.height):ih,gap=v?Math.max(0,ih-v.height-v.offsetTop):0;if(!h)return;d.style.setProperty('--app-h',h+'px');d.style.setProperty('--app-bottom-gap',Math.round(gap)+'px');if(!s||window.innerWidth!==w||Math.abs(ih-s)>150){s=ih;w=window.innerWidth;d.style.setProperty('--app-h-stable',ih+'px')}}f();addEventListener('resize',f);addEventListener('pageshow',f);if(window.visualViewport)visualViewport.addEventListener('resize',f)})()`;
+const VIEWPORT_SCRIPT = `(function(){var d=document.documentElement,s=0,w=0,p=document.createElement('div');p.style.cssText='position:fixed;top:0;bottom:0;left:0;width:0;visibility:hidden;pointer-events:none';function probe(){d.appendChild(p);var r=p.getBoundingClientRect().height;d.removeChild(p);return r}function f(){var v=window.visualViewport,ih=window.innerHeight,h=Math.max(ih,probe(),v?v.height:0),gap=v&&v.height<ih?Math.max(0,ih-v.height-v.offsetTop):0;if(!h)return;d.style.setProperty('--app-h',h+'px');d.style.setProperty('--app-bottom-gap',Math.round(gap)+'px');if(!s||window.innerWidth!==w||Math.abs(h-s)>150){s=h;w=window.innerWidth;d.style.setProperty('--app-h-stable',h+'px')}}f();addEventListener('resize',f);addEventListener('pageshow',f);addEventListener('load',f);if(window.visualViewport)visualViewport.addEventListener('resize',f)})()`;
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (

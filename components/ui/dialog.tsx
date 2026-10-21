@@ -46,11 +46,13 @@ export function Dialog({
   }, [open]);
 
   const position = {
-    // Alturas pela tela medida no navegador (--app-h, ver app/layout.tsx), não por dvh.
-    center: 'm-auto max-h-[calc(var(--app-h)*0.92)] w-[min(42rem,calc(100%-1.5rem))] rounded-[1.5rem]',
-    right: 'ml-auto mr-0 my-0 h-[var(--app-h)] max-h-[var(--app-h)] w-full max-w-md rounded-none sm:rounded-l-[1.5rem]',
+    // Alturas em % da própria área da janela (a tela onde ela é posicionada), nunca em
+    // dvh/vh: em navegadores dentro de apps essas unidades (e até innerHeight) vêm com
+    // uma tela minúscula e a janela ficava espremida no rodapé.
+    center: 'm-auto max-h-[calc(100%-2rem)] w-[min(42rem,calc(100%-1.5rem))] rounded-[1.5rem]',
+    right: 'ml-auto mr-0 my-0 h-full max-h-full w-full max-w-md rounded-none sm:rounded-l-[1.5rem]',
     bottom:
-      'mx-auto mb-[var(--app-bottom-gap)] mt-auto max-h-[calc(var(--app-h)*0.94)] w-full max-w-2xl rounded-t-[1.5rem] sm:m-auto sm:max-h-[calc(var(--app-h)*0.9)] sm:rounded-[1.5rem]',
+      'mx-auto mb-[var(--app-bottom-gap)] mt-auto max-h-[calc(100%-2.5rem)] w-full max-w-2xl rounded-t-[1.5rem] sm:m-auto sm:max-h-[calc(100%-4rem)] sm:rounded-[1.5rem]',
   }[side];
 
   return (
