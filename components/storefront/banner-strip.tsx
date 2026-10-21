@@ -9,8 +9,8 @@ export function BannerStrip({ banners, now }: { banners: PublicBanner[]; now: Da
   const active = banners.filter((b) => (!b.startsAt || new Date(b.startsAt) <= now) && (!b.endsAt || new Date(b.endsAt) > now));
   if (active.length === 0) return null;
   return (
-    <section aria-label="Destaques" className="mx-auto max-w-7xl px-4 sm:px-6">
-      <ul className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scrollbar-none">
+    <section aria-label="Ofertas" className="bg-wine py-8 sm:py-10">
+      <ul className="mx-auto flex max-w-7xl snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 scrollbar-none sm:px-6">
         {active.map((b) => {
           const content = (
             <div className="relative isolate flex min-h-44 flex-col justify-end overflow-hidden rounded-[var(--radius-card)] bg-ink-900 p-6 text-white">

@@ -14,16 +14,15 @@ function allowedImage(form: FormData, key: string): string | null {
   return url;
 }
 
-/** Salva somente a logo e a foto principal (sem mexer nas demais configurações). */
+/** Salva somente a logo (sem mexer nas demais configurações). */
 export async function saveBrandImages(_prev: ActionResult | null, form: FormData): Promise<ActionResult> {
   return runAdminAction(
     [...PERMISSIONS.settings],
     async (_ctx, db) => {
       const logo = allowedImage(form, 'logoUrl');
-      const hero = allowedImage(form, 'heroImageUrl');
-      check(await db.from('business_settings').update({ logo_url: logo, hero_image_url: hero }).eq('id', 1));
+      check(await db.from('business_settings').update({ logo_url: logo }).eq('id', 1));
       revalidatePath('/admin/fotos');
-      return 'Logo e foto principal salvas.';
+      return 'Logo salva.';
     },
     ['settings'],
   );

@@ -56,9 +56,10 @@ export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Cat
         fetchedAt={catalog.fetchedAt}
         badges={badges}
         priority
+        tone="wine"
       />
       <BannerStrip banners={banners} now={now} />
-      <ProductRail id="promocoes" eyebrow="Por tempo limitado" title="Promoções" products={promos.slice(0, 8)} fetchedAt={catalog.fetchedAt} href="/cardapio?colecao=promocoes" />
+      <ProductRail id="promocoes" eyebrow="Por tempo limitado" title="Promoções" products={promos.slice(0, 8)} fetchedAt={catalog.fetchedAt} href="/cardapio?colecao=promocoes" tone="wine" />
       {rails.map((rail) => {
         const list = sortForSale(
           catalog.products

@@ -14,6 +14,19 @@ Para colocar a logo:
 
 Para a imagem de compartilhamento (WhatsApp/redes), o arquivo `app/opengraph-image.tsx` gera uma arte só com texto; quando houver logo/foto oficial, pode-se trocar por um arquivo `app/opengraph-image.png` (1200×630).
 
+## Animação do topo (pizza desmontando)
+
+O topo da página inicial mostra uma pizza que **desmonta conforme a rolagem** e se monta de novo ao rolar para cima.
+- **Origem:** vídeo de 8 s gerado pelo restaurante com uma ferramenta de IA paga, uso autorizado pelo dono.
+- **Arquivos:** 64 quadros WebP de 640 px em `public/hero/pizza/001.webp` a `064.webp`, cerca de 2,6 MB no total. O primeiro quadro aparece na hora; os demais carregam depois.
+- **Código:** `components/storefront/hero-scroll.tsx`. Quem ativa "reduzir movimento" ou "economia de dados" no celular vê só a imagem parada.
+- **Para trocar o vídeo:** gere os quadros com o comando abaixo (exige ffmpeg) e substitua a pasta.
+
+  `ffmpeg -i video.mp4 -vf "select='not(mod(n\,3))',scale=640:-2" -vsync vfr -c:v libwebp -quality 55 public/hero/pizza/%03d.webp`
+
+  Se o número de quadros mudar, ajuste `FRAME_COUNT`.
+- A "foto principal" do painel não é mais usada no topo. O título padrão é "Conheça a ALCINÃO pizzaria e churrascaria"; um título próprio pode ser definido em **Configurações → Chamada principal**.
+
 ## Fotos dos produtos
 
 Nenhuma **foto** foi gerada ou inventada, e o site não chama serviços pagos de geração de imagens.

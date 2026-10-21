@@ -28,7 +28,7 @@ export default async function PhotosPage({ searchParams }: PageProps<'/admin/fot
   const filter = sp.mostrar === 'pendentes' || sp.mostrar === 'enviadas' ? sp.mostrar : 'todas';
   const supabase = await createSessionClient();
   const [settingsRes, productsRes] = await Promise.all([
-    supabase.from('business_settings').select('logo_url, hero_image_url').eq('id', 1).single(),
+    supabase.from('business_settings').select('logo_url').eq('id', 1).single(),
     supabase.from('products').select('id, name, image_url, image_alt, is_active, categories(name, sort_order)').is('deleted_at', null).order('sort_order'),
   ]);
   const all = ((productsRes.data ?? []) as unknown as Row[]).sort(
@@ -59,12 +59,9 @@ export default async function PhotosPage({ searchParams }: PageProps<'/admin/fot
         description="Envie aqui a logo oficial e as fotos reais dos produtos. Cada foto aparece no site assim que você clicar em Salvar."
       />
 
-      <Card title="Logo oficial e foto principal" description="Logo: PNG com fundo transparente ou WebP, de preferência quadrada ou horizontal. Foto principal: aparece no topo da página inicial.">
-        <ActionForm action={saveBrandImages} submitLabel="Salvar logo e foto principal">
-          <div className="grid gap-6 md:grid-cols-2">
-            <ImageUpload name="logoUrl" folder="brand" defaultUrl={s?.logo_url ?? null} label="Logo oficial" />
-            <ImageUpload name="heroImageUrl" folder="brand" defaultUrl={s?.hero_image_url ?? null} label="Foto principal da página inicial" />
-          </div>
+      <Card title="Logo oficial" description="PNG com fundo transparente ou WebP, de preferência quadrada ou horizontal. O topo da página inicial usa a animação da pizza.">
+        <ActionForm action={saveBrandImages} submitLabel="Salvar logo">
+          <ImageUpload name="logoUrl" folder="brand" defaultUrl={s?.logo_url ?? null} label="Logo oficial" />
         </ActionForm>
       </Card>
 

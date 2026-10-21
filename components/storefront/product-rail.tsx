@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { CatalogProduct } from '@/types/catalog';
 import { ProductCard } from './product-card';
 
@@ -15,6 +16,7 @@ export function ProductRail({
   href,
   badges,
   priority,
+  tone = 'default',
 }: {
   id?: string;
   title: string;
@@ -25,10 +27,12 @@ export function ProductRail({
   href?: string;
   badges?: Record<string, string>;
   priority?: boolean;
+  /** "wine": faixa com o fundo vermelho da marca (destaques e promoções). */
+  tone?: 'default' | 'wine';
 }) {
   if (products.length === 0) return null;
   return (
-    <section id={id} aria-labelledby={`${id ?? title}-titulo`} className="scroll-mt-28 py-10 sm:py-14">
+    <section id={id} aria-labelledby={`${id ?? title}-titulo`} className={cn('scroll-mt-28 py-10 sm:py-14', tone === 'wine' && 'bg-wine text-white')}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
@@ -39,7 +43,7 @@ export function ProductRail({
             {description ? <p className="mt-1 max-w-xl text-muted">{description}</p> : null}
           </div>
           {href ? (
-            <Link href={href} className="hidden shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold hover:bg-mist sm:inline-flex">
+            <Link href={href} className={cn('hidden shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold sm:inline-flex', tone === 'wine' ? 'hover:bg-white/10' : 'hover:bg-mist')}>
               Ver todos <ArrowRight className="size-4" aria-hidden />
             </Link>
           ) : null}
@@ -54,7 +58,7 @@ export function ProductRail({
       </ul>
       {href ? (
         <div className="mt-2 px-4 sm:hidden">
-          <Link href={href} className="inline-flex items-center gap-1 text-sm font-semibold text-danger">
+          <Link href={href} className={cn('inline-flex items-center gap-1 text-sm font-semibold', tone === 'wine' ? 'text-gold' : 'text-danger')}>
             Ver todos <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>

@@ -28,6 +28,10 @@
   --color-danger: #a50d26;
   --color-gold: #8a6416;
   --color-gold-soft: #fbf3dc;
+  /* Vermelho do vídeo da pizza (fundo da primeira dobra e das seções de destaque). */
+  --color-wine-900: #380507;
+  --color-wine-700: #5e060b;
+  --color-wine-500: #7a0a12;
   --color-mist: #f6f4f2;
   --color-line: #e7e3df;
   --color-muted: #6b6560;
@@ -38,8 +42,8 @@
   --color-warning-600: #9a5b00;
   --color-warning-50: #fff6e5;
 
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
-  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
   --radius-card: 1.25rem;
   --shadow-card: 0 1px 2px rgb(12 10 9 / 0.06), 0 8px 24px -12px rgb(12 10 9 / 0.18);
@@ -78,6 +82,12 @@
  * Identidade da loja: fundo preto, superfícies em cinza escuro, dourado para preços
  * e destaques, vermelho da marca para ações e promoções, texto claro.
  */
+/* Fundo vermelho com brilho no centro, igual ao do vídeo da pizza. */
+@utility bg-wine {
+  background-color: var(--color-wine-900);
+  background-image: radial-gradient(ellipse 80% 70% at 50% 50%, var(--color-wine-500) 0%, var(--color-wine-700) 45%, var(--color-wine-900) 100%);
+}
+
 .theme-dark {
   --color-canvas: #0b0a09;
   --color-surface: #161312;

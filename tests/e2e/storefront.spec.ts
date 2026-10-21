@@ -10,7 +10,14 @@ test.beforeEach(async ({ page }) => {
 
 test('página inicial mostra vitrine, status e chamada para pedir', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Seu próximo sabor favorito');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Conheça a\s*Alcinão\s*pizzaria e churrascaria/i);
+  // Topo animado: a sequência de quadros da pizza carrega e acompanha a rolagem.
+  const hero = page.getByTestId('hero');
+  await expect(hero).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
+  await page.evaluate(() => window.scrollTo(0, window.innerHeight));
+  await expect.poll(async () => Number(await hero.evaluate((el) => getComputedStyle(el).getPropertyValue('--p')))).toBeGreaterThan(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(page.getByRole('heading', { name: 'Peça agora pelo WhatsApp' })).toBeVisible();
   await expect(page.getByTestId('store-status').first()).toContainText('Aberto');
   await expect(page.getByRole('heading', { name: /Destaques? do Alcinão/ })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'O que você quer hoje?' })).toBeVisible();

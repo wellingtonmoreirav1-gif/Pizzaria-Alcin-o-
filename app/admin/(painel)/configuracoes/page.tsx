@@ -35,8 +35,14 @@ export default async function SettingsPage() {
         <Card title="Marca e página inicial">
           <div className="grid gap-4 md:grid-cols-2">
             <ImageUpload name="logoUrl" folder="brand" defaultUrl={s.logo_url} label="Logo oficial" />
-            <ImageUpload name="heroImageUrl" folder="brand" defaultUrl={s.hero_image_url} label="Foto principal (primeira dobra)" />
-            <TextField label="Chamada principal" name="heroTitle" defaultValue={s.hero_title ?? ''} />
+            {/* O topo usa a animação da pizza; a foto antiga fica guardada sem uso. */}
+            <input type="hidden" name="heroImageUrl" value={s.hero_image_url ?? ''} />
+            <TextField
+              label="Chamada principal"
+              name="heroTitle"
+              defaultValue={s.hero_title ?? ''}
+              hint="Vazio = apresentação padrão “Conheça a ALCINÃO pizzaria e churrascaria”."
+            />
             <TextField label="Texto de apoio" name="heroSubtitle" defaultValue={s.hero_subtitle ?? ''} />
             <TextField label="Texto promocional (opcional)" name="promoText" defaultValue={s.promo_text ?? ''} className="md:col-span-2" />
           </div>

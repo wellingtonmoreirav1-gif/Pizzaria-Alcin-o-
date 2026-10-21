@@ -17,12 +17,12 @@ export function MobileCartBar() {
       <button
         type="button"
         onClick={() => setDrawerOpen(true)}
-        className="flex h-14 w-full animate-[var(--animate-rise)] items-center gap-3 rounded-2xl bg-brand-600 px-5 text-white shadow-[var(--shadow-float)]"
+        className="flex h-14 w-full animate-[var(--animate-rise)] items-center gap-3 rounded-2xl bg-wine px-5 text-white shadow-[var(--shadow-float)] ring-1 ring-gold/30"
       >
         <ShoppingBag className="size-5" aria-hidden />
         <span className="font-semibold">Ver carrinho</span>
         <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">{count}</span>
-        <span className="ml-auto font-bold tabular-nums">{formatBRL(estimatedTotal)}</span>
+        <span className="ml-auto font-bold tabular-nums text-gold">{formatBRL(estimatedTotal)}</span>
       </button>
     </div>
   );

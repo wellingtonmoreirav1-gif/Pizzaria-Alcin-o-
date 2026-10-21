@@ -4,6 +4,7 @@ import { HomeShowcase } from '@/components/storefront/home-showcase';
 import { InfoSections, ReviewsSection } from '@/components/storefront/info-sections';
 import { EmptyState, Notice } from '@/components/ui/feedback';
 import { RestaurantJsonLd } from '@/components/storefront/json-ld';
+import { WhatsAppCta } from '@/components/storefront/whatsapp-cta';
 
 export default async function HomePage() {
   const [{ data: catalog, error }, { data: operation }, bestSellerIds, banners, reviews] = await Promise.all([
@@ -33,6 +34,7 @@ export default async function HomePage() {
       )}
       <ReviewsSection reviews={reviews} />
       <InfoSections settings={operation.settings} hours={operation.hours.hours} />
+      <WhatsAppCta settings={operation.settings} />
     </>
   );
 }

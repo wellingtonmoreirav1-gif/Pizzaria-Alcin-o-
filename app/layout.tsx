@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Sans, Fraunces } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import { SITE_URL } from '@/config/business';
 import { getOperation } from '@/lib/catalog/queries';
 import './globals.css';
 
-const fraunces = Fraunces({ variable: '--font-fraunces', subsets: ['latin'], axes: ['SOFT', 'opsz'], style: ['normal', 'italic'] });
-const dmSans = DM_Sans({ variable: '--font-dm-sans', subsets: ['latin'] });
+// Títulos em Playfair Display (com itálico para destaques) e textos em Inter.
+const playfair = Playfair_Display({ variable: '--font-playfair', subsets: ['latin'], style: ['normal', 'italic'] });
+const inter = Inter({ variable: '--font-inter', subsets: ['latin'] });
 
 export async function generateMetadata(): Promise<Metadata> {
   const { data } = await getOperation();
@@ -35,7 +36,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="pt-BR" className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}>
+    <html lang="pt-BR" className={`${playfair.variable} ${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
