@@ -65,7 +65,7 @@ export function Dialog({
       aria-labelledby={titleId}
       className={cn('p-0 text-fg shadow-[var(--shadow-float)] open:flex open:animate-[var(--animate-sheet)] open:flex-col', position, className)}
     >
-      <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
+      <header className="flex shrink-0 items-start justify-between gap-4 border-b border-line px-5 py-4">
         <div>
           <h2 id={titleId} className="font-display text-xl font-semibold leading-tight">
             {title}
@@ -76,8 +76,10 @@ export function Dialog({
           <X className="size-5" aria-hidden />
         </button>
       </header>
-      <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
-      {footer ? <footer className="border-t border-line bg-surface px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">{footer}</footer> : null}
+      {/* flex-auto (não flex-1): no Safari/iPhone, com a altura da janela automática, "flex: 1 1 0%"
+          zerava a área do conteúdo e só o título aparecia. min-h-0 deixa encolher e rolar. */}
+      <div className="min-h-0 flex-auto overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
+      {footer ? <footer className="shrink-0 border-t border-line bg-surface px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">{footer}</footer> : null}
     </dialog>
   );
 }
