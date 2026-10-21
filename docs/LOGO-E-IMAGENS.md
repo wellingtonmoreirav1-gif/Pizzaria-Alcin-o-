@@ -16,19 +16,17 @@ Para a imagem de compartilhamento (WhatsApp/redes), o arquivo `app/opengraph-ima
 
 ## Animação do topo (pizza desmontando)
 
-O topo da página inicial mostra uma pizza que **desmonta conforme a rolagem** e se monta de novo ao rolar para cima.
+O topo da página inicial mostra a pizza **desmontando sozinha, em loop** (como um GIF, mas em vídeo mudo, leve e sem travar), por baixo do cabeçalho transparente, com o letreiro "Sabor irresistível no ALCINÃO" e os botões.
 - **Origem:** vídeo de 8 s gerado pelo restaurante com uma ferramenta de IA paga, uso autorizado pelo dono.
-- **Arquivos:** 64 quadros WebP de 640 px em `public/hero/pizza/001.webp` a `064.webp`, cerca de 2,6 MB no total. O primeiro quadro é pré-carregado (aparece na hora); um a cada 8 carrega logo em seguida, e os demais só quando a pessoa começa a rolar.
-- **Etapas da rolagem:** apresentação (letreiro "Sabor irresistível no ALCINÃO", com fade-in) → "Muçarela que puxa." → "Camada por camada." → convite final "Agora é a sua vez." com **Escolher minha pizza**. Durante a animação, o botão **Pedir agora** fica sempre visível. As frases ficam em `components/storefront/hero.tsx`; os pontos de troca, em `STAGE_STARTS` (`hero-scroll.tsx`).
-- **Código:** `components/storefront/hero-scroll.tsx`. Quem ativa "reduzir movimento" ou "economia de dados" vê só a imagem parada com a apresentação, numa seção da altura da tela (sem rolagem extra).
-- **Para trocar o vídeo:** gere os quadros com o comando abaixo (exige ffmpeg) e substitua a pasta.
+- **Arquivos:** `public/hero/pizza-loop.webm` (≈1,3 MB) e `public/hero/pizza-loop.mp4` (≈1,5 MB, para aparelhos sem WebM), 720×1280, sem som; `public/hero/pizza/001.webp` é a imagem que aparece na hora, antes de o vídeo carregar.
+- **Código:** `components/storefront/hero-loop.tsx`. O vídeo pausa quando sai da tela. Quem ativa "reduzir movimento" ou "economia de dados" vê só a imagem parada.
+- **Para trocar o vídeo:**
 
-  `ffmpeg -i video.mp4 -vf "select='not(mod(n\,3))',scale=640:-2" -vsync vfr -c:v libwebp -quality 55 public/hero/pizza/%03d.webp`
-
-  Se o número de quadros mudar, ajuste `FRAME_COUNT`.
-- **Tela cheia:** na página inicial o topo fica por baixo do cabeçalho, que é transparente enquanto a animação está na tela e volta ao normal depois dela. No computador, a pizza ocupa o centro-direita em tamanho grande.
-- **Cache:** os quadros ficam guardados no aparelho por 7 dias (`next.config.ts`). Ao trocar o vídeo, prefira gerar os quadros com outro nome de pasta (e ajustar `frameSrc`) para todos verem na hora.
-- A "foto principal" do painel não é mais usada no topo. O título padrão é o letreiro "Sabor irresistível no ALCINÃO" (`public/hero/sabor-irresistivel.webp`, arte do restaurante com o fundo recortado); um título próprio em texto pode ser definido em **Configurações → Chamada principal**.
+  `ffmpeg -i video.mp4 -an -vf scale=720:1280 -c:v libvpx-vp9 -b:v 0 -crf 41 -row-mt 1 public/hero/pizza-loop.webm`
+  `ffmpeg -i video.mp4 -an -vf scale=720:1280 -c:v libx264 -preset slow -crf 26 -pix_fmt yuv420p -movflags +faststart public/hero/pizza-loop.mp4`
+  `ffmpeg -i video.mp4 -frames:v 1 -vf scale=640:-2 -c:v libwebp -quality 60 public/hero/pizza/001.webp`
+- **Cache:** os arquivos de `/hero` ficam guardados no aparelho por 7 dias (`next.config.ts`). Ao trocar o vídeo, prefira um nome de arquivo novo (e ajuste `LOOP` no código) para todos verem na hora.
+- A "foto principal" do painel não é usada no topo. O título padrão é o letreiro "Sabor irresistível no ALCINÃO" (`public/hero/sabor-irresistivel.webp`, arte do restaurante com o fundo recortado); um título próprio em texto pode ser definido em **Configurações → Chamada principal**.
 
 ## Fotos dos produtos
 

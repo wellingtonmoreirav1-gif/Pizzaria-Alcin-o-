@@ -3,54 +3,22 @@ import { ArrowRight, ChevronDown, MessageCircle, UtensilsCrossed } from 'lucide-
 import { ButtonLink, buttonClasses } from '@/components/ui/button';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import type { SiteSettings } from '@/types/settings';
-import { HeroScroll } from './hero-scroll';
+import { HeroLoop } from './hero-loop';
 
 /** Título que vinha do cadastro inicial; trocado pelo letreiro "Sabor irresistível no Alcinão". */
 const LEGACY_TITLE = 'Seu próximo sabor favorito está aqui.';
 
-const CAPTION = 'max-w-md text-balance font-display lg:max-w-[30rem] lg:text-7xl text-[2.6rem] font-bold italic leading-[1.02] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] sm:text-6xl';
 const GLASS_BUTTON = 'border-white/30 bg-black/25 text-white backdrop-blur-sm hover:border-white hover:bg-white/10';
 
 /**
- * Primeira dobra: pizza que desmonta conforme a rolagem (HeroScroll) e a apresentação
- * da casa. Um título próprio cadastrado em /admin/configuracoes substitui o padrão.
+ * Primeira dobra: pizza que desmonta em loop (HeroLoop) e a apresentação da casa. Um título próprio cadastrado em /admin/configuracoes substitui o padrão.
  */
 export function Hero({ settings }: { settings: SiteSettings }) {
   const customTitle = settings.heroTitle && settings.heroTitle !== LEGACY_TITLE ? settings.heroTitle : null;
   const subtitle =
     settings.heroSubtitle ?? `Pizzas, lanches, petiscos e pratos da casa em ${settings.city ?? 'São Bento'}. Monte seu pedido e envie pelo WhatsApp.`;
   return (
-    <HeroScroll
-      captions={[
-        <p key="queijo" className={CAPTION}>
-          Muçarela <span className="text-gold">que puxa.</span>
-        </p>,
-        <p key="camadas" className={CAPTION}>
-          Camada <span className="text-gold">por camada.</span>
-        </p>,
-      ]}
-      pinned={
-        <ButtonLink href="/cardapio" size="lg" className="shadow-[var(--shadow-float)]">
-          Pedir agora <ArrowRight className="size-5" aria-hidden />
-        </ButtonLink>
-      }
-      outro={
-        <div className="max-w-md lg:max-w-[30rem]">
-          <h2 className="text-balance font-display text-[2.6rem] font-bold leading-[1.02] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] sm:text-6xl lg:text-7xl">
-            Agora é <span className="italic text-gold">a sua vez.</span>
-          </h2>
-          <p className="mt-3 text-pretty text-white/85 sm:text-lg">Escolha o sabor e o tamanho. A equipe confirma o pedido no WhatsApp.</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <ButtonLink href="/pizzas" size="lg">
-              Escolher minha pizza <ArrowRight className="size-5" aria-hidden />
-            </ButtonLink>
-            <ButtonLink href="/cardapio" size="lg" variant="outline" className={GLASS_BUTTON}>
-              Ver cardápio
-            </ButtonLink>
-          </div>
-        </div>
-      }
-    >
+    <HeroLoop>
       <div className="max-w-xl">
         <p className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-sm">
           <UtensilsCrossed className="size-3.5 text-gold" aria-hidden /> {settings.city ?? 'São Bento'} · {settings.state ?? 'PB'}
@@ -98,6 +66,6 @@ export function Hero({ settings }: { settings: SiteSettings }) {
           <ChevronDown className="size-4 motion-safe:animate-bounce" /> Role para ver
         </p>
       </div>
-    </HeroScroll>
+    </HeroLoop>
   );
 }

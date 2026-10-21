@@ -11,22 +11,15 @@ test.beforeEach(async ({ page }) => {
 test('página inicial mostra vitrine, status e chamada para pedir', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(/Sabor irresistível no Alcinão — pizzaria e churrascaria/i);
-  // Topo animado: a sequência de quadros da pizza carrega e acompanha a rolagem.
+  // Topo: a pizza desmonta sozinha, em loop (vídeo mudo), numa tela só.
   const hero = page.getByTestId('hero');
   await expect(hero).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
-  await page.evaluate(() => window.scrollTo(0, window.innerHeight * 0.5));
-  await expect.poll(async () => Number(await hero.evaluate((el) => getComputedStyle(el).getPropertyValue('--p')))).toBeGreaterThan(0);
-  // Durante a animação: a apresentação some (e sai do Tab), o botão de pedido fica à mão.
-  await expect(hero).toHaveAttribute('data-stage', /[12]/);
-  await expect(hero.getByRole('link', { name: 'Falar no WhatsApp' })).toBeHidden();
+  const loop = hero.locator('video');
+  await expect(loop).toHaveJSProperty('loop', true);
+  await expect(loop).toHaveJSProperty('muted', true);
+  await expect.poll(() => loop.evaluate((v) => (v as HTMLVideoElement).currentTime)).toBeGreaterThan(0);
+  expect(await hero.evaluate((el) => (el as HTMLElement).offsetHeight)).toBeLessThanOrEqual(page.viewportSize()!.height);
   await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
-  // No fim, o convite para escolher a pizza.
-  await page.evaluate(() => {
-    const el = document.querySelector<HTMLElement>('[data-testid=hero]')!;
-    window.scrollTo(0, el.offsetTop + el.offsetHeight - window.innerHeight);
-  });
-  await expect(hero.getByRole('link', { name: /Escolher minha pizza/ })).toBeVisible();
-  await page.evaluate(() => window.scrollTo(0, 0));
   await expect(hero.getByRole('link', { name: 'Falar no WhatsApp' })).toHaveAttribute('href', /wa\.me\/\d+/);
   await expect(page.getByRole('heading', { name: 'Peça agora pelo WhatsApp' })).toBeVisible();
   await expect(page.getByTestId('store-status').first()).toContainText('Aberto');
