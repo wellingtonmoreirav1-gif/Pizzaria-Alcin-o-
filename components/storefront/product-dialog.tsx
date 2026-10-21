@@ -7,6 +7,8 @@ import { useToast } from '@/components/ui/toast';
 import { priceLine } from '@/lib/pricing';
 import { useCart, type CartLine } from '@/components/cart/cart-context';
 import { ProductCustomizer } from './product-customizer';
+import { DrinkNudge, availableDrinks } from './drink-nudge';
+import { DRINK_CATEGORY } from '@/lib/catalog/groups';
 
 interface DialogState {
   product: CatalogProduct;
@@ -18,6 +20,8 @@ interface ProductDialogValue {
   open: (product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null) => void;
   /** Adiciona direto quando o produto não precisa de escolhas; senão abre o montador. */
   quickAdd: (product: CatalogProduct, fetchedAt: string) => void;
+  /** Depois de adicionar um item que não é bebida: sugere uma bebida (se houver). */
+  suggestDrink: (added: CatalogProduct) => void;
 }
 
 const ProductDialogContext = createContext<ProductDialogValue | null>(null);
@@ -29,10 +33,25 @@ export function needsCustomization(product: CatalogProduct): boolean {
   return product.groups.some((g) => g.minSelect > 0 || g.values.some((v) => v.isAvailable && v.priceConfirmed));
 }
 
-export function ProductDialogProvider({ children }: { children: ReactNode }) {
+export function ProductDialogProvider({ children, drinks = [] }: { children: ReactNode; drinks?: CatalogProduct[] }) {
   const [state, setState] = useState<DialogState | null>(null);
+  const [nudge, setNudge] = useState<CatalogProduct[] | null>(null);
   const cart = useCart();
   const toast = useToast();
+
+  // Depois de adicionar um lanche, pizza etc. (não uma bebida), sugere uma bebida —
+  // só se ainda não houver bebida no carrinho.
+  const suggestDrink = useCallback(
+    (added: CatalogProduct) => {
+      if (added.categorySlug === DRINK_CATEGORY) return;
+      const inCart = new Set(cart.lines.map((l) => l.productId));
+      if (drinks.some((d) => inCart.has(d.id))) return;
+      const options = availableDrinks(drinks, inCart, 3);
+      if (options.length) setNudge(options);
+    },
+    [drinks, cart.lines],
+  );
+  const closeNudge = useCallback(() => setNudge(null), []);
 
   const open = useCallback((product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null) => {
     setState({ product, fetchedAt, editLine });
@@ -63,11 +82,12 @@ export function ProductDialogProvider({ children }: { children: ReactNode }) {
         maxQuantity: product.maxQuantity,
       });
       toast(`${product.name} adicionado ao carrinho`);
+      suggestDrink(product);
     },
-    [cart, toast],
+    [cart, toast, suggestDrink],
   );
 
-  const value = useMemo(() => ({ open, quickAdd }), [open, quickAdd]);
+  const value = useMemo(() => ({ open, quickAdd, suggestDrink }), [open, quickAdd, suggestDrink]);
 
   return (
     <ProductDialogContext value={value}>
@@ -82,6 +102,16 @@ export function ProductDialogProvider({ children }: { children: ReactNode }) {
             onDone={() => setState(null)}
           />
         </Dialog>
+      ) : null}
+      {nudge ? (
+        <DrinkNudge
+          drinks={nudge}
+          onClose={closeNudge}
+          onPick={(d) => {
+            setNudge(null);
+            quickAdd(d, new Date().toISOString());
+          }}
+        />
       ) : null}
     </ProductDialogContext>
   );

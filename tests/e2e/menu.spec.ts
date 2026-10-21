@@ -57,7 +57,9 @@ test.beforeEach(async ({ page }) => {
 test('todas as categorias e produtos aparecem no cardápio, na ordem e sem duplicatas', async ({ page }) => {
   await page.goto('/cardapio');
   await page.waitForLoadState('networkidle');
-  for (const [slug, names] of Object.entries(CATEGORIES)) {
+  // Bebidas ficam fora do cardápio (são oferecidas no carrinho).
+  await expect(page.locator('section#bebidas')).toHaveCount(0);
+  for (const [slug, names] of Object.entries(CATEGORIES).filter(([slug]) => slug !== 'bebidas')) {
     const section = page.locator(`section#${slug}`);
     await expect(section.getByTestId('product-card').first()).toBeVisible();
     // Ignora os itens criados só para os testes ("[EXEMPLO]" e o produto do teste do painel).
@@ -151,12 +153,10 @@ test('pizzas especiais liberadas, molhos grátis e bebida sem preço não pode s
   await page.getByText('Maionese verde').click();
   await page.getByText('Maionese de alho').click();
   await expect(addButton(page)).toContainText('R$ 19,00');
-  // Bebida nova: aparece com "Preço a definir" e não pode ser pedida.
-  await page.goto('/cardapio?categoria=bebidas');
+  // Bebida nova (sem preço): fica fora do cardápio e, na própria página, não pode ser pedida.
+  await page.goto('/cardapio');
   await page.waitForLoadState('networkidle');
-  const coca = page.getByTestId('product-card').filter({ hasText: 'Coca-Cola', visible: true });
-  await expect(coca).toContainText('Preço a definir');
-  await expect(coca).not.toContainText('R$ 0,00');
+  await expect(page.getByTestId('product-card').filter({ hasText: 'Coca-Cola' })).toHaveCount(0);
   await openProduct(page, 'coca-cola');
   await expect(page.getByText('a definir').first()).toBeVisible();
   await expect(addButton(page)).toBeDisabled();

@@ -103,17 +103,34 @@ test('quem pede menos movimento vê a pizza parada', async ({ page }) => {
   await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
 });
 
-test('busca e filtros do cardápio funcionam', async ({ page }) => {
+test('busca e filtros do cardápio funcionam (bebidas ficam fora do cardápio)', async ({ page }) => {
   await page.goto('/cardapio');
-  await page.getByRole('searchbox', { name: 'Buscar no cardápio' }).fill('refrigerante');
-  await expect(page.getByTestId('product-card')).toHaveCount(1);
-  await page.getByRole('searchbox', { name: 'Buscar no cardápio' }).fill('');
-  await page.getByRole('button', { name: 'Promoções' }).click();
-  await expect(page.getByTestId('product-card')).toHaveCount(1);
-  await expect(page.getByTestId('product-card').first()).toContainText('Refrigerante');
-  await page.getByRole('button', { name: 'Tudo' }).click();
-  await page.getByRole('button', { name: 'Bebidas', exact: true }).click();
-  await expect(page).toHaveURL(/categoria=bebidas/);
+  const search = page.getByRole('searchbox', { name: 'Buscar no cardápio' });
+  await search.fill('picanha');
+  await expect(page.getByTestId('product-card').filter({ hasText: 'Picanha na Chapa' })).toHaveCount(1);
+  await expect(page.getByTestId('product-card').filter({ hasText: 'Pizza Muçarela' })).toHaveCount(0);
+  // Bebidas não aparecem no cardápio (nem na busca): são oferecidas no carrinho.
+  await search.fill('refrigerante');
+  await expect(page.getByTestId('product-card')).toHaveCount(0);
+  await search.fill('');
+  await expect(page.getByRole('button', { name: 'Bebidas', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Pizzas tradicionais', exact: true }).click();
+  await expect(page).toHaveURL(/categoria=pizzas-tradicionais/);
+});
+
+test('depois de adicionar um lanche, sugere uma bebida; o carrinho também oferece', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('hero')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
+  await page.locator('#em-alta').getByRole('link', { name: /Pedir agora/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'X-Frango' });
+  await dialog.getByTestId('add-to-cart').click();
+  const nudge = page.getByTestId('drink-nudge');
+  await expect(nudge).toContainText('Vai uma bebida gelada?');
+  await expect(nudge).toContainText('Refrigerante');
+  await nudge.getByRole('button', { name: 'Agora não' }).click();
+  await expect(nudge).toHaveCount(0);
+  await page.getByRole('button', { name: /carrinho/i }).first().click();
+  await expect(page.getByRole('dialog', { name: 'Seu carrinho' })).toContainText('Vai uma bebida gelada?');
 });
 
 test('montagem da pizza aplica regras de sabores, borda e preço', async ({ page }) => {

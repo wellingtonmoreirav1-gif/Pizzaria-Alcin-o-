@@ -22,6 +22,7 @@ import { ProductImage } from '@/components/ui/product-image';
 import { useToast } from '@/components/ui/toast';
 import { useCart, type CartLine } from '@/components/cart/cart-context';
 import { PizzaVisual } from './pizza-visual';
+import { useProductDialog } from './product-dialog';
 
 const SHIFT_NOTE = { lunch: 'Servido no horário do almoço', dinner: 'Servido no horário da noite' } as const;
 
@@ -70,6 +71,7 @@ export function ProductCustomizer({
   const now = useNow(fetchedAt);
   const cart = useCart();
   const toast = useToast();
+  const dialog = useProductDialog();
   const [variantId, setVariantId] = useState<string | null>(editLine?.variantId ?? defaultVariant(product)?.id ?? null);
   const [options, setOptions] = useState<Record<string, string[]>>(editLine?.options ?? {});
   const [quantity, setQuantity] = useState(editLine?.quantity ?? 1);
@@ -132,6 +134,7 @@ export function ProductCustomizer({
     } else {
       cart.add(payload);
       toast(`${product.name} adicionado ao carrinho`);
+      dialog.suggestDrink(product);
     }
     onDone?.();
   }

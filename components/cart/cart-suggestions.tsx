@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Plus } from 'lucide-react';
 import type { CatalogProduct } from '@/types/catalog';
 import { formatBRL } from '@/lib/money';
@@ -8,7 +9,7 @@ import { useNow } from '@/lib/use-now';
 import { useProductDialog } from '@/components/storefront/product-dialog';
 import { useCart } from './cart-context';
 
-/** Sugestões de complementos. Nunca adiciona nada sem o cliente tocar no botão. */
+/** Bebidas sugeridas no carrinho. Nunca adiciona nada sem o cliente tocar no botão. */
 export function CartSuggestions({ products, fetchedAt }: { products: CatalogProduct[]; fetchedAt: string }) {
   const now = useNow(fetchedAt);
   const { lines } = useCart();
@@ -19,15 +20,25 @@ export function CartSuggestions({ products, fetchedAt }: { products: CatalogProd
   return (
     <section aria-labelledby="sugestoes" className="rounded-2xl bg-mist p-4">
       <h3 id="sugestoes" className="font-display text-base font-semibold">
-        Que tal acompanhar?
+        Vai uma bebida <span className="italic text-gold">gelada?</span>
       </h3>
       <ul className="mt-3 flex gap-3 overflow-x-auto pb-1 scrollbar-none">
         {items.map((p) => {
           const price = startingPrice(p, now);
           return (
             <li key={p.id} className="w-40 shrink-0 rounded-xl bg-surface p-3 shadow-sm">
+              <div className="relative mb-2 aspect-[4/3] overflow-hidden rounded-lg bg-ink-900">
+                {p.imageUrl ? <Image src={p.imageUrl} alt="" fill sizes="160px" unoptimized={p.imageUrl.endsWith('.svg')} className="object-cover" /> : null}
+              </div>
               <p className="line-clamp-2 text-sm font-semibold leading-snug">{p.name}</p>
-              <p className="mt-1 text-xs text-muted">{price ? formatBRL(price.current) : ''}</p>
+              <p className="mt-1 text-xs text-muted">
+                {price ? (
+                  <>
+                    {p.variants.length > 1 ? 'a partir de ' : ''}
+                    <span className="font-semibold tabular-nums text-gold">{formatBRL(price.current)}</span>
+                  </>
+                ) : null}
+              </p>
               <button
                 type="button"
                 onClick={() => dialog.quickAdd(p, fetchedAt)}

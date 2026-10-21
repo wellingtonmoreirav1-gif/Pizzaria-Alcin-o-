@@ -9,6 +9,7 @@ import { normalizeSearch, cn } from '@/lib/utils';
 import { useNow } from '@/lib/use-now';
 import { EmptyState } from '@/components/ui/feedback';
 import { ProductCard } from './product-card';
+import { MENU_HIDDEN_CATEGORIES } from '@/lib/catalog/groups';
 import { OptionInfoSection } from './option-info-section';
 
 type Collection = 'promocoes' | 'mais-vendidos' | null;
@@ -55,20 +56,23 @@ export function MenuBrowser({
 
   const groupsById = new Map(catalog.sharedGroups.map((g) => [g.id, g]));
   const categories = catalog.categories.filter((c) =>
-    scope && !scope.includes(c.slug)
+    (scope && !scope.includes(c.slug)) || MENU_HIDDEN_CATEGORIES.includes(c.slug)
       ? false
       : c.sectionType === 'options'
       ? Boolean(c.sharedGroupId && groupsById.get(c.sharedGroupId)?.values.length)
       : catalog.products.some((p) => p.categoryId === c.id),
   );
-  const scopedProducts = scope ? catalog.products.filter((p) => scope.includes(p.categorySlug)) : catalog.products;
+  const scopedProducts = useMemo(
+    () => catalog.products.filter((p) => !MENU_HIDDEN_CATEGORIES.includes(p.categorySlug) && (!scope || scope.includes(p.categorySlug))),
+    [catalog.products, scope],
+  );
   const hasPromos = scopedProducts.some((p) => hasActivePromotion(p, now));
   const tags = [...new Set(scopedProducts.flatMap((p) => p.tags))].sort();
   const best = useMemo(() => new Set(bestSellerIds), [bestSellerIds]);
 
   const filtered = useMemo(() => {
     const q = normalizeSearch(query);
-    return catalog.products.filter((p) => {
+    return scopedProducts.filter((p) => {
       if (collection === 'promocoes' && !hasActivePromotion(p, now)) return false;
       if (collection === 'mais-vendidos' && !best.has(p.id)) return false;
       if (onlyAvailable && !isProductOrderable(p, now)) return false;
@@ -83,7 +87,7 @@ export function MenuBrowser({
       }
       return true;
     });
-  }, [catalog.products, category, collection, onlyAvailable, tag, query, now, best]);
+  }, [scopedProducts, category, collection, onlyAvailable, tag, query, now, best]);
 
   const plainView = !normalizeSearch(query) && !collection && !onlyAvailable && !tag;
   const grouped = categories

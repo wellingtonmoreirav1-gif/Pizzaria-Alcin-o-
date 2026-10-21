@@ -66,5 +66,10 @@ export const MENU_GROUPS: MenuGroup[] = [
 
 export const menuGroup = (key: MenuGroup['key']) => MENU_GROUPS.find((g) => g.key === key)!;
 export const groupOfCategory = (slug: string) => MENU_GROUPS.find((g) => g.slugs.includes(slug)) ?? null;
-/** Categoria que não entra nos blocos da página inicial (o restaurante decide depois o que fazer com ela). */
-export const HOME_HIDDEN_CATEGORIES = ['bebidas'];
+/**
+ * Bebidas não aparecem no cardápio nem na página inicial: são oferecidas no carrinho
+ * ("Vai uma bebida gelada?") e logo depois de adicionar um lanche ou uma pizza.
+ */
+export const DRINK_CATEGORY = 'bebidas';
+export const HOME_HIDDEN_CATEGORIES = [DRINK_CATEGORY];
+export const MENU_HIDDEN_CATEGORIES = [DRINK_CATEGORY];

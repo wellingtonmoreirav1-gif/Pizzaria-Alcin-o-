@@ -6,16 +6,17 @@ import { SiteFooter } from '@/components/storefront/site-footer';
 import { ClosedBanner } from '@/components/storefront/store-status';
 import { CartDrawer } from '@/components/cart/cart-drawer';
 import { MobileCartBar } from '@/components/cart/mobile-cart-bar';
+import { DRINK_CATEGORY } from '@/lib/catalog/groups';
 
-const SUGGESTION_CATEGORIES = new Set(['bebidas', 'sobremesas', 'porcoes']);
 
 export default async function SiteLayout({ children }: LayoutProps<'/'>) {
   const { data: catalog } = await getCatalog();
-  const suggestions = catalog.products.filter((p) => SUGGESTION_CATEGORIES.has(p.categorySlug)).slice(0, 12);
+  // Bebidas saem do cardápio e são oferecidas no carrinho e depois de adicionar um item.
+  const drinks = catalog.products.filter((p) => p.categorySlug === DRINK_CATEGORY);
   return (
     // O tema escuro envolve também as janelas (escolher produto), que ficam no provedor.
     <div className="theme-dark flex min-h-screen flex-col">
-      <StoreProviders>
+      <StoreProviders drinks={drinks}>
       <Suspense fallback={null}>
         <ClosedBanner />
       </Suspense>
@@ -26,7 +27,7 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
       <SiteFooter />
       {/* Leem a URL atual (usePathname): ficam fora do HTML estático e carregam no cliente. */}
       <Suspense fallback={null}>
-        <CartDrawer suggestions={suggestions} fetchedAt={catalog.fetchedAt} />
+        <CartDrawer suggestions={drinks} fetchedAt={catalog.fetchedAt} />
         <MobileCartBar />
       </Suspense>
       </StoreProviders>

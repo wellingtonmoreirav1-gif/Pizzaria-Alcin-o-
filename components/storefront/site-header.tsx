@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { getCatalog, getOperation } from '@/lib/catalog/queries';
 import { BrandLogo } from './brand-logo';
 import { HeaderActions } from './header-actions';
+import { MENU_HIDDEN_CATEGORIES } from '@/lib/catalog/groups';
 import { StoreStatusFallback, StoreStatusPill } from './store-status';
 
 /** Atalhos do menu no computador: um por tipo de prato (leva à primeira categoria do grupo). */
@@ -11,13 +12,14 @@ const NAV_GROUPS: { label: string; slug: string; href?: string }[] = [
   { label: 'Lanches', slug: 'lanches-tradicionais', href: '/lanches' },
   { label: 'Petiscos', slug: 'petiscos', href: '/petiscos' },
   { label: 'Pratos', slug: 'pratos-da-casa', href: '/pratos' },
-  { label: 'Bebidas', slug: 'bebidas' },
 ];
 
 export async function SiteHeader() {
   const [{ data: catalog }, { data: operation }] = await Promise.all([getCatalog(), getOperation()]);
   const categories = catalog.categories.filter(
-    (c) => catalog.products.some((p) => p.categoryId === c.id) || (c.sectionType === 'options' && c.sharedGroupId),
+    (c) =>
+      !MENU_HIDDEN_CATEGORIES.includes(c.slug) &&
+      (catalog.products.some((p) => p.categoryId === c.id) || (c.sectionType === 'options' && c.sharedGroupId)),
   );
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-canvas/90 backdrop-blur-md transition-[background-color,border-color] duration-300 over-hero:border-transparent over-hero:bg-transparent over-hero:bg-gradient-to-b over-hero:from-black/60 over-hero:to-transparent over-hero:backdrop-blur-none">

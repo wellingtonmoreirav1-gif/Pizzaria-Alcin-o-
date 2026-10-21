@@ -88,7 +88,8 @@ test('gerente cadastra produto, publica, vê no site e marca como esgotado', asy
   await expect(page.getByRole('heading', { name: 'Início' })).toBeVisible();
   await page.goto('/admin/cardapio/novo');
   await page.getByLabel('Nome').fill('Suco Teste E2E');
-  await page.getByLabel('Categoria').selectOption({ label: 'Bebidas' });
+  // Petiscos: bebidas não aparecem no cardápio (são oferecidas no carrinho).
+  await page.getByLabel('Categoria').selectOption({ label: 'Petiscos' });
   await page.getByLabel('Preço (R$)').fill('8,50');
   await page.getByLabel('Descrição curta').fill('Suco criado pelo teste automatizado.');
   await page.getByRole('button', { name: 'Criar produto' }).click();
