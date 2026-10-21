@@ -24,7 +24,7 @@ interface ProductDialogValue {
   open: (product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null, variantId?: string | null, halfProductId?: string | null) => void;
   /** Adiciona direto quando o produto não precisa de escolhas; senão abre o montador. */
   quickAdd: (product: CatalogProduct, fetchedAt: string) => void;
-  /** Adiciona com o tamanho escolhido, sem adicionais (pedido passo a passo, pedido por áudio). */
+  /** Adiciona com o tamanho escolhido, sem adicionais (pedido passo a passo). */
   addDirect: (product: CatalogProduct, variantId: string | null, quantity?: number, opts?: AddDirectOptions) => boolean;
   /** Sabores de pizza para a segunda metade (metade/metade). */
   pizzas: CatalogProduct[];

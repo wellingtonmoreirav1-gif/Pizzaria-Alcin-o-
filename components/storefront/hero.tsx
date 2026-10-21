@@ -2,7 +2,6 @@ import Image from 'next/image';
 import { ArrowRight, ChevronDown, MessageCircle, UtensilsCrossed } from 'lucide-react';
 import { ButtonLink, buttonClasses } from '@/components/ui/button';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
-import type { ReactNode } from 'react';
 import type { SiteSettings } from '@/types/settings';
 import { HeroLoop } from './hero-loop';
 
@@ -14,7 +13,7 @@ const GLASS_BUTTON = 'border-white/30 bg-black/25 text-white backdrop-blur-sm ho
 /**
  * Primeira dobra: pizza que desmonta em loop (HeroLoop) e a apresentação da casa. Um título próprio cadastrado em /admin/configuracoes substitui o padrão.
  */
-export function Hero({ settings, voice }: { settings: SiteSettings; voice?: ReactNode }) {
+export function Hero({ settings }: { settings: SiteSettings }) {
   const customTitle = settings.heroTitle && settings.heroTitle !== LEGACY_TITLE ? settings.heroTitle : null;
   const subtitle =
     settings.heroSubtitle ?? `Pizzas, lanches, petiscos e pratos da casa em ${settings.city ?? 'São Bento'}. Monte seu pedido e envie pelo WhatsApp.`;
@@ -59,7 +58,6 @@ export function Hero({ settings, voice }: { settings: SiteSettings; voice?: Reac
           >
             <MessageCircle className="size-5" aria-hidden /> Falar no WhatsApp
           </a>
-          {voice}
         </div>
         <p className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70 lg:justify-start">
           <MessageCircle className="size-4" aria-hidden /> Pedido confirmado pela equipe no WhatsApp

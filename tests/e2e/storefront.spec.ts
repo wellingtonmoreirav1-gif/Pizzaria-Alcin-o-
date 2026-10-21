@@ -128,42 +128,6 @@ test('Pedir pratos reúne pratos da casa e lasanhas (lasanha tem tamanho)', asyn
   await expect(page.getByRole('button', { name: /Picanha na Chapa/ })).toContainText('R$ 70,00');
 });
 
-test('pedir por áudio: entende o pedido e monta o carrinho após confirmar', async ({ page }) => {
-  // Simula o reconhecimento de voz do navegador com uma frase pronta.
-  await page.addInitScript(() => {
-    class FakeRecognition {
-      lang = 'pt-BR'; interimResults = true; continuous = false; maxAlternatives = 1;
-      onresult: ((e: unknown) => void) | null = null; onerror: ((e: unknown) => void) | null = null; onend: (() => void) | null = null;
-      start() {
-        setTimeout(() => {
-          this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: 'quero uma pizza grande metade calabresa e metade frango com catupiry e dois xis frango' } }] });
-          this.onend?.();
-        }, 50);
-      }
-      stop() {}
-      abort() {}
-    }
-    const w = window as unknown as { SpeechRecognition: unknown; webkitSpeechRecognition: unknown };
-    w.SpeechRecognition = FakeRecognition;
-    w.webkitSpeechRecognition = FakeRecognition;
-  });
-  await page.goto('/');
-  await expect(page.getByTestId('hero')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
-  await page.getByTestId('voice-order').click();
-  await page.getByRole('button', { name: 'Começar a falar' }).click();
-  const items = page.getByTestId('voice-items');
-  await expect(items).toContainText('Pizza ½ Calabresa + ½ Frango com Catupiry');
-  await expect(items.getByRole('button', { name: 'Grande (G)' })).toHaveAttribute('aria-pressed', 'true');
-  // Metade/metade: só G, GG e F.
-  await expect(items.getByRole('button', { name: 'Média (M)' })).toHaveCount(0);
-  await expect(items).toContainText('X-Frango');
-  await page.getByRole('button', { name: /Adicionar ao carrinho/ }).click();
-  const cart = page.getByRole('dialog', { name: 'Seu carrinho' });
-  await expect(cart).toContainText('Pizza ½ Calabresa + ½ Frango com Catupiry');
-  await expect(cart).toContainText('X-Frango');
-  await expect(cart).toContainText('3 itens');
-});
-
 test('história da Alcinão: vídeo com capa, carrossel e Instagram', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('hero')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
