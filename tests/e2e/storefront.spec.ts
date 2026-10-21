@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 
 test('página inicial mostra vitrine, status e chamada para pedir', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Conheça a\s*Alcinão\s*pizzaria e churrascaria/i);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(/Sabor irresistível no Alcinão — pizzaria e churrascaria/i);
   // Topo animado: a sequência de quadros da pizza carrega e acompanha a rolagem.
   const hero = page.getByTestId('hero');
   await expect(hero).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });

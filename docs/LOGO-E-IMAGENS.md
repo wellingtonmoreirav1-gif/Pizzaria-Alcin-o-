@@ -19,7 +19,7 @@ Para a imagem de compartilhamento (WhatsApp/redes), o arquivo `app/opengraph-ima
 O topo da página inicial mostra uma pizza que **desmonta conforme a rolagem** e se monta de novo ao rolar para cima.
 - **Origem:** vídeo de 8 s gerado pelo restaurante com uma ferramenta de IA paga, uso autorizado pelo dono.
 - **Arquivos:** 64 quadros WebP de 640 px em `public/hero/pizza/001.webp` a `064.webp`, cerca de 2,6 MB no total. O primeiro quadro é pré-carregado (aparece na hora); um a cada 8 carrega logo em seguida, e os demais só quando a pessoa começa a rolar.
-- **Etapas da rolagem:** apresentação ("Conheça a ALCINÃO") → "Muçarela que puxa." → "Camada por camada." → convite final "Agora é a sua vez." com **Escolher minha pizza**. Durante a animação, o botão **Pedir agora** fica sempre visível. As frases ficam em `components/storefront/hero.tsx`; os pontos de troca, em `STAGE_STARTS` (`hero-scroll.tsx`).
+- **Etapas da rolagem:** apresentação (letreiro "Sabor irresistível no ALCINÃO", com fade-in) → "Muçarela que puxa." → "Camada por camada." → convite final "Agora é a sua vez." com **Escolher minha pizza**. Durante a animação, o botão **Pedir agora** fica sempre visível. As frases ficam em `components/storefront/hero.tsx`; os pontos de troca, em `STAGE_STARTS` (`hero-scroll.tsx`).
 - **Código:** `components/storefront/hero-scroll.tsx`. Quem ativa "reduzir movimento" ou "economia de dados" vê só a imagem parada com a apresentação, numa seção da altura da tela (sem rolagem extra).
 - **Para trocar o vídeo:** gere os quadros com o comando abaixo (exige ffmpeg) e substitua a pasta.
 
@@ -28,7 +28,7 @@ O topo da página inicial mostra uma pizza que **desmonta conforme a rolagem** e
   Se o número de quadros mudar, ajuste `FRAME_COUNT`.
 - **Tela cheia:** na página inicial o topo fica por baixo do cabeçalho, que é transparente enquanto a animação está na tela e volta ao normal depois dela. No computador, a pizza ocupa o centro-direita em tamanho grande.
 - **Cache:** os quadros ficam guardados no aparelho por 7 dias (`next.config.ts`). Ao trocar o vídeo, prefira gerar os quadros com outro nome de pasta (e ajustar `frameSrc`) para todos verem na hora.
-- A "foto principal" do painel não é mais usada no topo. O título padrão é "Conheça a ALCINÃO pizzaria e churrascaria"; um título próprio pode ser definido em **Configurações → Chamada principal**.
+- A "foto principal" do painel não é mais usada no topo. O título padrão é o letreiro "Sabor irresistível no ALCINÃO" (`public/hero/sabor-irresistivel.webp`, arte do restaurante com o fundo recortado); um título próprio em texto pode ser definido em **Configurações → Chamada principal**.
 
 ## Fotos dos produtos
 

@@ -1,10 +1,11 @@
+import Image from 'next/image';
 import { ArrowRight, ChevronDown, MessageCircle, UtensilsCrossed } from 'lucide-react';
 import { ButtonLink, buttonClasses } from '@/components/ui/button';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import type { SiteSettings } from '@/types/settings';
 import { HeroScroll } from './hero-scroll';
 
-/** Título que vinha do cadastro inicial; trocado pela apresentação "Conheça a ALCINÃO". */
+/** Título que vinha do cadastro inicial; trocado pelo letreiro "Sabor irresistível no Alcinão". */
 const LEGACY_TITLE = 'Seu próximo sabor favorito está aqui.';
 
 const CAPTION = 'max-w-md text-balance font-display lg:max-w-[30rem] lg:text-7xl text-[2.6rem] font-bold italic leading-[1.02] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] sm:text-6xl';
@@ -59,13 +60,21 @@ export function Hero({ settings }: { settings: SiteSettings }) {
             {customTitle}
           </h1>
         ) : (
-          <h1 className="mt-4 font-display leading-none drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]">
-            <span className="block text-2xl font-semibold sm:text-3xl">Conheça a</span>
-            <span className="mt-1 block text-[3.4rem] font-black uppercase tracking-tight sm:text-7xl lg:text-8xl">Alcinão</span>
-            <span className="mt-2 block text-[1.7rem] font-semibold italic text-gold sm:text-4xl">pizzaria e churrascaria</span>
+          // Letreiro "Sabor irresistível no Alcinão" (arte do restaurante, fundo recortado), com fade-in.
+          <h1 className="mt-4">
+            <Image
+              src="/hero/sabor-irresistivel.webp"
+              alt="Sabor irresistível no Alcinão"
+              width={1200}
+              height={793}
+              loading="eager"
+              sizes="(max-width: 640px) 92vw, 560px"
+              className="h-auto w-full max-w-[22rem] drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)] motion-safe:animate-title-in sm:max-w-[32rem] lg:max-w-[35rem]"
+            />
+            <span className="sr-only"> — pizzaria e churrascaria em {settings.city ?? 'São Bento'} ({settings.state ?? 'PB'})</span>
           </h1>
         )}
-        <p className="mt-5 hidden max-w-md text-pretty text-lg leading-relaxed text-white/80 sm:block">{subtitle}</p>
+        {customTitle ? <p className="mt-5 hidden max-w-md text-pretty text-lg leading-relaxed text-white/80 sm:block">{subtitle}</p> : null}
       </div>
 
       <div className="mt-auto lg:mt-8">

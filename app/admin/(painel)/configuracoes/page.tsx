@@ -41,7 +41,7 @@ export default async function SettingsPage() {
               label="Chamada principal"
               name="heroTitle"
               defaultValue={s.hero_title ?? ''}
-              hint="Vazio = apresentação padrão “Conheça a ALCINÃO pizzaria e churrascaria”."
+              hint="Vazio = letreiro padrão “Sabor irresistível no ALCINÃO”."
             />
             <TextField label="Texto de apoio" name="heroSubtitle" defaultValue={s.hero_subtitle ?? ''} />
             <TextField label="Texto promocional (opcional)" name="promoText" defaultValue={s.promo_text ?? ''} className="md:col-span-2" />
