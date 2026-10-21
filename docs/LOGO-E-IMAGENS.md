@@ -42,6 +42,12 @@ Cada um dos 46 produtos do cardápio oficial (40 + 6 bebidas) tem uma **ilustra�
 - **Para trocar pela foto real:** Painel → **Fotos e logo** — lista todos os produtos por categoria, com a situação de cada um (“Ilustração provisória”, “Foto enviada”, “Sem imagem”) e o filtro **Sem foto real**. Em cada produto: **Substituir** → escolha a foto → **Salvar foto**. O texto alternativo “imagem ilustrativa” é trocado automaticamente pelo nome do produto (ou pelo texto que você escrever). Também dá para trocar no editor do produto. Reaplicar as migrations **não** sobrescreve uma foto já enviada.
 - Produto sem foto nem ilustração mostra uma arte neutra com “Foto em breve” — nunca a foto de outro produto.
 
+### Destaque da semana (página inicial)
+
+Logo depois do topo, uma faixa com a foto grande do lanche à direita e, à esquerda, "Destaque da semana: …" com o botão **Pedir agora** (abre o produto para pedir).
+- Hoje: **X Frango Assado**, que abre o **X-Frango** do cardápio. Foto em `public/destaques/x-frango-assado.webp`, enviada pelo restaurante.
+- Para trocar o destaque: altere `WEEKLY_FEATURE` em `components/storefront/home-showcase.tsx` (nome, produto e foto) e coloque a nova foto em `public/destaques/`. Use foto horizontal com fundo escuro/vermelho, de preferência 1600 px de largura.
+
 ### Fotos das categorias (faixas da página inicial)
 
 Em "O que você quer hoje?", cada categoria aparece numa faixa larga, de ponta a ponta da tela. Para trocar a foto: **Painel → Fotos e logo → Fotos das categorias**.

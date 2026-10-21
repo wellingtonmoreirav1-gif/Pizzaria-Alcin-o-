@@ -1,4 +1,4 @@
-import { getActiveBanners, getApprovedReviews, getBestSellerIds, getCatalog, getOperation } from '@/lib/catalog/queries';
+import { getActiveBanners, getApprovedReviews, getCatalog, getOperation } from '@/lib/catalog/queries';
 import { Hero } from '@/components/storefront/hero';
 import { HomeShowcase } from '@/components/storefront/home-showcase';
 import { InfoSections, ReviewsSection } from '@/components/storefront/info-sections';
@@ -7,10 +7,9 @@ import { RestaurantJsonLd } from '@/components/storefront/json-ld';
 import { WhatsAppCta } from '@/components/storefront/whatsapp-cta';
 
 export default async function HomePage() {
-  const [{ data: catalog, error }, { data: operation }, bestSellerIds, banners, reviews] = await Promise.all([
+  const [{ data: catalog, error }, { data: operation }, banners, reviews] = await Promise.all([
     getCatalog(),
     getOperation(),
-    getBestSellerIds(),
     getActiveBanners(),
     getApprovedReviews(),
   ]);
@@ -30,7 +29,7 @@ export default async function HomePage() {
           <EmptyState title="Cardápio em preparação">O cardápio completo será publicado em breve.</EmptyState>
         </div>
       ) : (
-        <HomeShowcase catalog={catalog} bestSellerIds={bestSellerIds} banners={banners} />
+        <HomeShowcase catalog={catalog} banners={banners} />
       )}
       <ReviewsSection reviews={reviews} />
       <InfoSections settings={operation.settings} hours={operation.hours.hours} />

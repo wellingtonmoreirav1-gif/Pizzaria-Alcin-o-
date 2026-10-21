@@ -30,7 +30,7 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   await expect(hero.getByRole('link', { name: 'Falar no WhatsApp' })).toHaveAttribute('href', /wa\.me\/\d+/);
   await expect(page.getByRole('heading', { name: 'Peça agora pelo WhatsApp' })).toBeVisible();
   await expect(page.getByTestId('store-status').first()).toContainText('Aberto');
-  await expect(page.getByRole('heading', { name: /Destaques? do Alcinão/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Destaque da semana:\s*X Frango Assado/ })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'O que você quer hoje?' })).toBeVisible();
   // Bordas e molhos não se pedem sozinhos: não viram faixa na página inicial.
   await expect(page.getByTestId('category-bands')).not.toContainText('Bordas recheadas');
@@ -39,6 +39,14 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   await expect(page.getByRole('heading', { name: 'Pratos da casa', level: 2 })).toBeVisible();
   await hero.getByRole('link', { name: /Pedir agora/ }).first().click();
   await expect(page).toHaveURL(/\/cardapio$/);
+});
+
+test('destaque da semana abre o lanche para pedir', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('hero')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
+  const weekly = page.locator('#em-alta');
+  await weekly.getByRole('link', { name: /Pedir agora/ }).click();
+  await expect(page.getByRole('dialog', { name: 'X-Frango' })).toBeVisible();
 });
 
 test('quem pede menos movimento vê o topo parado, da altura da tela', async ({ page }) => {

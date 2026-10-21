@@ -9,6 +9,7 @@ import { hasActivePromotion, isProductOrderable } from '@/lib/pricing';
 import { useNow } from '@/lib/use-now';
 import { ProductRail } from './product-rail';
 import { BannerStrip } from './banner-strip';
+import { WeeklyFeature, type WeeklyFeatureConfig } from './weekly-feature';
 
 /** Vitrines da página inicial: categorias agrupadas para a página não ficar longa. */
 const RAIL_GROUPS: { title: string; eyebrow: string; slugs: string[] }[] = [
@@ -27,32 +28,19 @@ const BAND_CROPS = [
   { origin: '20% 30%', zoom: 1.25 },
   { origin: '80% 70%', zoom: 1.55 },
 ];
-/** Destaques nunca ficam com menos itens que isto: completa com pizzas. */
-const MIN_FEATURED = 4;
-/** Ordem para completar: as mais especiais primeiro (a vitrine de Pizzas já começa pelas tradicionais). */
-const FEATURED_FILL = ['pizzas-premium', 'pizzas-especiais', 'pizzas-tradicionais'];
+/** Destaque da semana (troque aqui o lanche, o nome e a foto em public/destaques/). */
+const WEEKLY_FEATURE: WeeklyFeatureConfig = {
+  title: 'X Frango Assado',
+  productSlug: 'x-frango',
+  image: '/destaques/x-frango-assado.webp',
+  imageAlt: 'Lanche de frango grelhado com queijo derretido, alface, tomate e cebola roxa no pão com gergelim',
+};
 
-export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Catalog; bestSellerIds: string[]; banners: PublicBanner[] }) {
+export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: PublicBanner[] }) {
   const now = useNow(catalog.fetchedAt);
-  const byId = new Map(catalog.products.map((p) => [p.id, p]));
   const sortForSale = (list: CatalogProduct[]) =>
     [...list].sort((a, b) => Number(isProductOrderable(b, now)) - Number(isProductOrderable(a, now)));
-
-  // Destaques escolhidos pela equipe (na ordem definida) + mais vendidos reais.
-  const featured = catalog.products.filter((p) => p.isFeatured).sort((a, b) => (a.featuredOrder ?? 999) - (b.featuredOrder ?? 999));
-  const best = bestSellerIds.map((id) => byId.get(id)).filter((p): p is CatalogProduct => Boolean(p));
-  const trending: CatalogProduct[] = [];
-  for (const p of [...featured, ...best]) if (!trending.some((t) => t.id === p.id)) trending.push(p);
-  const trendingAvailable = trending.filter((p) => isProductOrderable(p, now)).slice(0, 8);
-  // Poucos destaques escolhidos: completa com pizzas (a casa é pizzaria e o topo é uma pizza).
-  if (trendingAvailable.length < MIN_FEATURED) {
-    const pizzas = catalog.products
-      .filter((p) => FEATURED_FILL.includes(p.categorySlug) && isProductOrderable(p, now) && !trendingAvailable.some((t) => t.id === p.id))
-      .sort((a, b) => FEATURED_FILL.indexOf(a.categorySlug) - FEATURED_FILL.indexOf(b.categorySlug) || a.sortOrder - b.sortOrder);
-    trendingAvailable.push(...pizzas.slice(0, MIN_FEATURED - trendingAvailable.length));
-  }
-  const badges: Record<string, string> = {};
-  for (const p of best) badges[p.id] = 'Mais pedido';
+  const weeklyProduct = catalog.products.find((p) => p.slug === WEEKLY_FEATURE.productSlug);
 
   const promos = catalog.products.filter((p) => isProductOrderable(p, now) && hasActivePromotion(p, now));
   const categoryOrder = new Map(catalog.categories.map((c, i) => [c.id, i]));
@@ -68,15 +56,7 @@ export function HomeShowcase({ catalog, bestSellerIds, banners }: { catalog: Cat
 
   return (
     <>
-      <ProductRail
-        id="em-alta"
-        eyebrow="Escolha da casa"
-        title={trendingAvailable.length > 1 ? 'Destaques do Alcinão' : 'Destaque do Alcinão'}
-        products={trendingAvailable}
-        fetchedAt={catalog.fetchedAt}
-        badges={badges}
-        tone="wine"
-      />
+      <WeeklyFeature config={WEEKLY_FEATURE} product={weeklyProduct} fetchedAt={catalog.fetchedAt} />
       <CategoryTiles catalog={catalog} />
       <BannerStrip banners={banners} now={now} />
       <ProductRail id="promocoes" eyebrow="Por tempo limitado" title="Promoções" products={promos.slice(0, 8)} fetchedAt={catalog.fetchedAt} href="/cardapio?colecao=promocoes" tone="wine" />

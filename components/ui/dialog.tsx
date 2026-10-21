@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +28,8 @@ export function Dialog({
   className?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  // Id único: com várias janelas na página (carrinho, produto), cada uma tem o próprio nome.
+  const titleId = useId();
 
   useEffect(() => {
     const el = ref.current;
@@ -57,12 +59,12 @@ export function Dialog({
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
-      aria-labelledby="dialog-title"
+      aria-labelledby={titleId}
       className={cn('p-0 text-fg shadow-[var(--shadow-float)] open:flex open:animate-[var(--animate-sheet)] open:flex-col', position, className)}
     >
       <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
         <div>
-          <h2 id="dialog-title" className="font-display text-xl font-semibold leading-tight">
+          <h2 id={titleId} className="font-display text-xl font-semibold leading-tight">
             {title}
           </h2>
           {description ? <p className="mt-0.5 text-sm text-muted">{description}</p> : null}
