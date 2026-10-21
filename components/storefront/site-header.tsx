@@ -8,8 +8,9 @@ import { StoreStatusFallback, StoreStatusPill } from './store-status';
 /** Atalhos do menu no computador: um por tipo de prato (leva à primeira categoria do grupo). */
 const NAV_GROUPS: { label: string; slug: string; href?: string }[] = [
   { label: 'Pizzas', slug: 'pizzas-tradicionais', href: '/pizzas' },
-  { label: 'Pratos da casa', slug: 'pratos-da-casa' },
-  { label: 'Lanches', slug: 'lanches-tradicionais' },
+  { label: 'Lanches', slug: 'lanches-tradicionais', href: '/lanches' },
+  { label: 'Petiscos', slug: 'petiscos', href: '/petiscos' },
+  { label: 'Pratos', slug: 'pratos-da-casa', href: '/pratos' },
   { label: 'Bebidas', slug: 'bebidas' },
 ];
 

@@ -34,9 +34,13 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   await expect(page.getByRole('heading', { name: 'O que você quer hoje?' })).toBeVisible();
   // Bordas e molhos não se pedem sozinhos: não viram faixa na página inicial.
   await expect(page.getByTestId('category-bands')).not.toContainText('Bordas recheadas');
-  // As pizzas têm um bloco próprio ("Pedir pizzas"); as faixas ficam para as outras categorias.
-  await expect(page.getByTestId('category-bands')).not.toContainText('Pizzas tradicionais');
-  await expect(page.getByTestId('category-bands')).toContainText('Lanches tradicionais');
+  // Pizzas, lanches, petiscos e pratos têm blocos próprios ("Pedir …"); bebidas ficam fora daqui.
+  const categorias = page.locator('#categorias');
+  for (const name of ['Pedir pizzas', 'Pedir lanches', 'Pedir petiscos da casa', 'Pedir pratos']) {
+    await expect(categorias.getByRole('link', { name })).toBeVisible();
+  }
+  await expect(categorias).not.toContainText('Bebidas');
+  await expect(categorias).not.toContainText('Pizzas tradicionais');
   // Fileiras sem nada que dê para pedir (bebidas sem preço) ficam só no cardápio; "Pratos da casa" tem a sua.
   await expect(page.getByRole('heading', { name: 'Pratos da casa', level: 2 })).toBeVisible();
   await hero.getByRole('link', { name: /Pedir agora/ }).first().click();
@@ -60,6 +64,14 @@ test('Pedir pizzas leva às pizzas separadas por categoria', async ({ page }) =>
     await expect(page.getByRole('heading', { level: 2, name })).toBeVisible();
   }
   await expect(page.getByRole('heading', { level: 2, name: 'Lanches tradicionais' })).toHaveCount(0);
+});
+
+test('Pedir pratos reúne pratos da casa e lasanhas', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#categorias').getByRole('link', { name: 'Pedir pratos' }).click();
+  await expect(page).toHaveURL(/\/pratos$/);
+  await expect(page.getByRole('heading', { level: 2, name: 'Pratos da casa' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'Lasanhas' })).toBeVisible();
 });
 
 test('quem pede menos movimento vê o topo parado, da altura da tela', async ({ page }) => {

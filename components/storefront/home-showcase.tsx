@@ -10,7 +10,7 @@ import { useNow } from '@/lib/use-now';
 import { ProductRail } from './product-rail';
 import { BannerStrip } from './banner-strip';
 import { WeeklyFeature, type WeeklyFeatureConfig } from './weekly-feature';
-import { PIZZA_CATEGORY_SLUGS } from '@/lib/catalog/groups';
+import { HOME_HIDDEN_CATEGORIES, MENU_GROUPS, groupOfCategory, type MenuGroup } from '@/lib/catalog/groups';
 
 /** Vitrines da página inicial: categorias agrupadas para a página não ficar longa. */
 const RAIL_GROUPS: { title: string; eyebrow: string; slugs: string[] }[] = [
@@ -69,7 +69,7 @@ export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: 
         ).slice(0, 8);
         // Sem nada que dê para pedir agora (ex.: bebidas ainda sem preço): fica só no cardápio.
         if (!list.some((p) => isProductOrderable(p, now))) return null;
-        const href = rail.slugs.some((s) => PIZZA_CATEGORY_SLUGS.includes(s)) ? '/pizzas' : `/cardapio?categoria=${rail.slugs[0]}`;
+        const href = groupOfCategory(rail.slugs[0]!)?.path ?? `/cardapio?categoria=${rail.slugs[0]}`;
         return <ProductRail key={rail.title} id={rail.slugs[0]} title={rail.title} eyebrow={rail.eyebrow} products={list} fetchedAt={catalog.fetchedAt} href={href} />;
       })}
     </>
@@ -82,17 +82,18 @@ export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: 
  * Grupos de adicionais (bordas, molhos) não se pedem sozinhos: ficam só no cardápio.
  */
 function CategoryTiles({ catalog }: { catalog: Catalog }) {
-  const hasPizzas = catalog.products.some((p) => PIZZA_CATEGORY_SLUGS.includes(p.categorySlug));
-  // As pizzas ganham um bloco próprio ("Pedir pizzas"); as faixas ficam para o resto.
+  // Pizzas, lanches, petiscos e pratos ganham um bloco próprio ("Pedir …", com foto); as faixas
+  // ficam só para categorias novas criadas no painel. Bebidas não aparecem aqui.
+  const groups = MENU_GROUPS.filter((g) => catalog.products.some((p) => g.slugs.includes(p.categorySlug)));
   const tiles = catalog.categories
-    .filter((c: CatalogCategory) => c.sectionType === 'products' && !(hasPizzas && PIZZA_CATEGORY_SLUGS.includes(c.slug)))
+    .filter((c: CatalogCategory) => c.sectionType === 'products' && !groupOfCategory(c.slug) && !HOME_HIDDEN_CATEGORIES.includes(c.slug))
     .map((c) => {
       const products = catalog.products.filter((p) => p.categoryId === c.id);
       const image = c.imageUrl ?? products.find((p) => p.imageUrl)?.imageUrl ?? null;
       return { category: c, count: products.length, image, ownPhoto: Boolean(c.imageUrl) };
     })
     .filter((t) => t.count > 0);
-  if (tiles.length === 0 && !hasPizzas) return null;
+  if (tiles.length === 0 && groups.length === 0) return null;
   return (
     <section aria-labelledby="categorias-titulo" className="pb-4 pt-10 sm:pt-14" id="categorias">
       <div className="mx-auto mb-6 flex max-w-7xl items-end justify-between gap-4 px-4 sm:px-6">
@@ -104,8 +105,13 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
           Ver cardápio completo <ArrowRight className="size-4" aria-hidden />
         </Link>
       </div>
-      {hasPizzas ? <PizzaCallout /> : null}
-      <ul className="flex flex-col gap-1.5" data-testid="category-bands">
+      <div className="flex flex-col gap-1.5">
+        {groups.map((g) => (
+          <MenuCallout key={g.key} group={g} />
+        ))}
+      </div>
+      {tiles.length > 0 ? (
+      <ul className="mt-1.5 flex flex-col gap-1.5" data-testid="category-bands">
         {tiles.map(({ category, count, image, ownPhoto }, i) => {
           const crop = ownPhoto ? null : BAND_CROPS[i % BAND_CROPS.length]!;
           return (
@@ -146,35 +152,33 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
           );
         })}
       </ul>
+      ) : null}
     </section>
   );
 }
 
-/** Bloco das pizzas: o texto (que é o próprio botão) à esquerda e a pizza à direita; leva à página /pizzas. */
-function PizzaCallout() {
+/** Bloco de um grupo do cardápio: o texto (que é o próprio botão) à esquerda e a foto à direita. */
+function MenuCallout({ group }: { group: MenuGroup }) {
   return (
-    <div className="relative mb-1.5 overflow-hidden bg-[radial-gradient(ellipse_55%_80%_at_72%_55%,var(--color-wine-500)_0%,var(--color-wine-700)_45%,var(--color-wine-900)_100%)]">
+    <div
+      className="relative overflow-hidden bg-[radial-gradient(ellipse_55%_80%_at_72%_55%,var(--color-wine-500)_0%,var(--color-wine-700)_45%,var(--color-wine-900)_100%)]"
+      data-testid="menu-callout"
+    >
       <div className="mx-auto grid max-w-7xl items-center gap-2 px-4 pb-10 pt-6 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:py-14">
-        <div className="relative order-1 aspect-[2/1] w-full lg:order-2">
-          <Image
-            src="/destaques/pizza-pepperoni.webp"
-            alt="Pizza de pepperoni com queijo puxando ao tirar uma fatia"
-            fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-contain drop-shadow-[0_30px_40px_rgba(0,0,0,0.5)]"
-          />
+        <div className="relative order-1 aspect-[3/2] w-full lg:order-2">
+          <Image src={group.image} alt={group.imageAlt} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-contain drop-shadow-[0_30px_40px_rgba(0,0,0,0.5)]" />
         </div>
         <div className="order-2 lg:order-1">
           <Link
-            href="/pizzas"
-            className="group/pizzas inline-flex items-center gap-4 rounded-full bg-brand-600 py-3 pl-8 pr-3 font-display text-4xl font-bold text-white shadow-[var(--shadow-float)] transition-colors hover:bg-brand-700 sm:text-5xl lg:py-4 lg:pl-10 lg:text-6xl"
+            href={group.path}
+            className="group/callout inline-flex items-center gap-4 rounded-full bg-brand-600 py-3 pl-8 pr-3 font-display text-[2rem] font-bold leading-tight text-white shadow-[var(--shadow-float)] transition-colors hover:bg-brand-700 sm:text-5xl lg:py-4 lg:pl-10 lg:text-[3.25rem]"
           >
-            Pedir pizzas
-            <span className="grid size-12 place-items-center rounded-full bg-white/15 transition-transform group-hover/pizzas:translate-x-1 sm:size-14 lg:size-16" aria-hidden>
+            {group.cta}
+            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white/15 transition-transform group-hover/callout:translate-x-1 sm:size-14 lg:size-16" aria-hidden>
               <ArrowRight className="size-6 lg:size-7" />
             </span>
           </Link>
-          <p className="mt-5 text-lg text-white/80 sm:text-xl">Tradicionais · Especiais · Premium · Doces</p>
+          <p className="mt-5 text-lg text-white/80 sm:text-xl">{group.line}</p>
         </div>
       </div>
     </div>
