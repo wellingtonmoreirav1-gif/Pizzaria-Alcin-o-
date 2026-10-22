@@ -14,7 +14,7 @@ Tudo abaixo é preenchido **pelo painel**, sem mexer no código.
 | Molhos | — | **confirmados como grátis** (R$ 0,00) em 21/10/2026 |
 | **Preços das bebidas** | **Conferência de preços** | **a definir** (ver abaixo) |
 | **Marcas/tamanhos de cerveja** | Cardápio → Cerveja → Tamanhos/variantes | **não informados** |
-| Pizza meio a meio (2+ sabores) | Cardápio → pizza → tamanhos | não informado: hoje todas as pizzas são de 1 sabor |
+| Pizza meio a meio (2 sabores) | — | **definido** em 21/10/2026: só G, GG e F, vale o sabor mais caro, pode misturar tipos (ver REGRAS-DE-PRECO.md). Em aberto: permitir metade doce + metade salgada? (hoje permite) |
 | Sobremesas, almoço, churrasco, combos | Cardápio | não informados (categorias antigas ficaram ocultas, não apagadas) |
 | Taxas de entrega / bairros atendidos | Entrega e pagamento | pendente (opcional; senão a taxa é sempre confirmada pela equipe) |
 | Horários por dia da semana | Horários | hoje todos os dias ativos com 10h30 (almoço até encerrar) e 18h30–23h |
