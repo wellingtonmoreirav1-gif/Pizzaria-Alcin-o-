@@ -44,6 +44,7 @@ const nextConfig: NextConfig = {
       // = arquivos novos; quem já tem os antigos recebe os novos em até 7 dias, ou na hora
       // se os nomes mudarem).
       { source: '/hero/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }] },
+      { source: '/destaques/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }] },
     ];
   },
 };

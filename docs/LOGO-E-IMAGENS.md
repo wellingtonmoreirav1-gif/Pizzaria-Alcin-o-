@@ -43,7 +43,7 @@ Cada um dos 46 produtos do cardápio oficial (40 + 6 bebidas) tem uma **ilustra�
 ### Destaque da semana (página inicial)
 
 Logo depois do topo, uma faixa com a foto grande do lanche à direita e, à esquerda, "Destaque da semana: …" com o botão **Pedir agora** (abre o produto para pedir).
-- Hoje: **X Frango Assado**, que abre o **X-Frango** do cardápio. Foto em `public/destaques/x-frango-assado.webp`, enviada pelo restaurante.
+- Hoje: **X Frango Assado**, que abre o **X-Frango** do cardápio. Vídeo em loop (`public/destaques/x-frango-loop.mp4` e `.webm`, sem som, feito no Google Flow e enviado pelo restaurante em 26/10/2026; tocado para frente e para trás, para o loop não ter corte) com a imagem parada `x-frango-poster.webp` (1º quadro), que aparece na hora e fica no lugar do vídeo para quem pede menos movimento. O vídeo só baixa quando o cliente rola perto do destaque. Para trocar: mandar o vídeo novo (de preferência 16:9, fundo vermelho escuro).
 - Para trocar o destaque: altere `WEEKLY_FEATURE` em `components/storefront/home-showcase.tsx` (nome, produto e foto) e coloque a nova foto em `public/destaques/`. Use foto horizontal com fundo escuro/vermelho, de preferência 1600 px de largura.
 
 ### Blocos "Pedir …" (página inicial)

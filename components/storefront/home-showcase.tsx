@@ -25,7 +25,8 @@ const BAND_CROPS = [
 const WEEKLY_FEATURE: WeeklyFeatureConfig = {
   title: 'X Frango Assado',
   productSlug: 'x-frango',
-  image: '/destaques/x-frango-assado.webp',
+  image: '/destaques/x-frango-poster.webp',
+  video: { mp4: '/destaques/x-frango-loop.mp4', webm: '/destaques/x-frango-loop.webm' },
   imageAlt: 'Lanche de frango grelhado com queijo derretido, alface, tomate e cebola roxa no pão com gergelim',
 };
 

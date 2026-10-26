@@ -53,6 +53,11 @@ test('destaque da semana abre o lanche para pedir', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('hero')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
   const weekly = page.locator('#em-alta');
+  // Vídeo em loop, sem som, que só começa perto da tela.
+  await weekly.scrollIntoViewIfNeeded();
+  const video = weekly.getByTestId('weekly-video');
+  await expect(video).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
+  expect(await video.evaluate((v: HTMLVideoElement) => v.muted && v.loop && !v.paused)).toBe(true);
   await weekly.getByRole('link', { name: /Pedir agora/ }).click();
   await expect(page.getByRole('dialog', { name: 'X-Frango' })).toBeVisible();
 });
