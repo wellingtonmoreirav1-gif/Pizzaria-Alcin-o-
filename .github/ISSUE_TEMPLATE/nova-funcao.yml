@@ -1,0 +1,24 @@
+name: Nova função
+description: Algo novo para o site ou para o painel.
+title: "Nova função: "
+labels: ["nova função"]
+body:
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que é
+    validations:
+      required: true
+  - type: textarea
+    id: quem
+    attributes:
+      label: Para quem e por quê
+      description: Cliente, equipe, gerente… e qual problema resolve.
+    validations:
+      required: true
+  - type: textarea
+    id: tarefas
+    attributes:
+      label: Tarefas e critério de aceite
+      value: |
+        - [ ]
