@@ -1,0 +1,31 @@
+name: Correção
+description: Algo não funciona como deveria.
+title: "Correção: "
+labels: ["correção"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: O que acontece
+      description: Descreva o problema. Se puder, diga a página, o aparelho e anexe um print.
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que deveria acontecer
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Como reproduzir
+      placeholder: |
+        1. Abrir …
+        2. Tocar em …
+  - type: textarea
+    id: tarefas
+    attributes:
+      label: Tarefas e critério de aceite
+      value: |
+        - [ ]

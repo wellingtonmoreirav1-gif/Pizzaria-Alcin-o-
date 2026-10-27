@@ -52,3 +52,6 @@ next-env.d.ts
 
 # Cache local do Supabase CLI (dados do projeto ligado; nunca enviar)
 supabase/.temp/
+
+# Relatórios da skill design-motion-principles (modo Audit)
+/motion-audits

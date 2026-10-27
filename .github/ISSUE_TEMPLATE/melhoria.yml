@@ -1,0 +1,23 @@
+name: Melhoria
+description: Algo que já existe e pode ficar melhor.
+title: "Melhoria: "
+labels: ["melhoria"]
+body:
+  - type: textarea
+    id: oque
+    attributes:
+      label: O que melhorar
+    validations:
+      required: true
+  - type: textarea
+    id: porque
+    attributes:
+      label: Por quê
+    validations:
+      required: true
+  - type: textarea
+    id: tarefas
+    attributes:
+      label: Tarefas e critério de aceite
+      value: |
+        - [ ]
