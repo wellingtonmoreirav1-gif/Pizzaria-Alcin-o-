@@ -7,7 +7,18 @@ import { archiveCategory, saveCategory } from './actions';
 
 export const metadata = { title: 'Categorias' };
 
-type Category = { id: string; name: string; slug: string; description: string | null; image_url: string | null; sort_order: number; is_active: boolean; show_on_home: boolean; section_type: string; shared_group_id: string | null };
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  sort_order: number;
+  is_active: boolean;
+  show_on_home: boolean;
+  section_type: string;
+  shared_group_id: string | null;
+};
 type SharedGroup = { id: string; name: string };
 
 function Fields({ c, groups }: { c: Category | null; groups: SharedGroup[] }) {
@@ -26,7 +37,11 @@ function Fields({ c, groups }: { c: Category | null; groups: SharedGroup[] }) {
         hint="Seção informativa mostra a tabela de valores de um grupo (ex.: bordas, molhos) em vez de produtos."
       >
         <option value="">Produtos desta categoria</option>
-        {groups.map((g) => <option key={g.id} value={g.id}>Seção informativa: {g.name}</option>)}
+        {groups.map((g) => (
+          <option key={g.id} value={g.id}>
+            Seção informativa: {g.name}
+          </option>
+        ))}
       </SelectField>
       <CheckboxField label="Ativa" name="isActive" defaultChecked={c?.is_active ?? true} className="md:col-span-2" />
       <CheckboxField label="Mostrar na página inicial" name="showOnHome" defaultChecked={c?.show_on_home ?? true} className="md:col-span-3" />
@@ -46,13 +61,19 @@ export default async function CategoriesPage() {
   return (
     <div className="space-y-4">
       <PageHeader title="Categorias" description="“Promoções” e “Mais vendidos” são vitrines automáticas e não precisam ser cadastradas." />
-      {(data as Category[] | null ?? []).map((c) => (
+      {((data as Category[] | null) ?? []).map((c) => (
         <Card key={c.id} title={c.name}>
           <ActionForm action={saveCategory.bind(null, c.id)} size="sm">
             <Fields c={c} groups={groups} />
           </ActionForm>
           <div className="mt-2">
-            <ActionForm action={archiveCategory.bind(null, c.id)} submitLabel="Arquivar categoria" size="sm" variant="ghost" confirm="Arquivar esta categoria?" />
+            <ActionForm
+              action={archiveCategory.bind(null, c.id)}
+              submitLabel="Arquivar categoria"
+              size="sm"
+              variant="ghost"
+              confirm="Arquivar esta categoria?"
+            />
           </div>
         </Card>
       ))}

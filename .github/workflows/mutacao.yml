@@ -1,0 +1,37 @@
+# Teste de mutação (Stryker) das regras de negócio. Demora alguns minutos, por isso
+# roda toda segunda-feira e quando alguém aciona (Actions → Teste de mutação → Run workflow).
+name: Teste de mutação
+
+on:
+  schedule:
+    - cron: '17 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: '0'
+
+jobs:
+  stryker:
+    name: Stryker
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:mutation
+      - name: Relatório
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-mutacao
+          path: reports/mutation/
+          retention-days: 30

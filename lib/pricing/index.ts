@@ -5,15 +5,7 @@
  * recalcula a partir do banco; o valor enviado pelo navegador nunca é aceito.
  * Regras documentadas em docs/REGRAS-DE-PRECO.md.
  */
-import type {
-  CatalogOptionGroup,
-  CatalogOptionValue,
-  CatalogProduct,
-  CatalogVariant,
-  LineSelection,
-  OptionGroupKind,
-  ServiceShift,
-} from '@/types/catalog';
+import type { CatalogOptionGroup, CatalogOptionValue, CatalogProduct, CatalogVariant, LineSelection, OptionGroupKind, ServiceShift } from '@/types/catalog';
 import type { Cents } from '@/lib/money';
 import { findBestPromotion } from './promotions';
 
@@ -192,9 +184,7 @@ export function startingPrice(product: CatalogProduct, now: Date): { regular: Ce
       let regular = variant.price;
       if (product.kind === 'pizza' && variant.flavorPriceRule !== 'fixed') {
         const flavorGroup = product.groups.find((g) => g.kind === 'flavor');
-        const prices = (flavorGroup?.values ?? [])
-          .filter((v) => v.isAvailable && isOptionOfferedFor(v, variant))
-          .map((v) => flavorPriceFor(v, variant));
+        const prices = (flavorGroup?.values ?? []).filter((v) => v.isAvailable && isOptionOfferedFor(v, variant)).map((v) => flavorPriceFor(v, variant));
         if (prices.length > 0) regular = Math.min(...prices);
       }
       consider(variant.id, regular);
@@ -210,12 +200,7 @@ export function startingPrice(product: CatalogProduct, now: Date): { regular: Ce
  * Preço de um item. Na pizza metade/metade, `half` é o produto do outro sabor: vale o
  * preço do sabor mais caro no tamanho escolhido (borda e adicionais seguem o 1º sabor).
  */
-export function priceLine(
-  product: CatalogProduct | undefined,
-  selection: LineSelection,
-  ctx: PricingContext,
-  half?: CatalogProduct,
-): PricingResult {
+export function priceLine(product: CatalogProduct | undefined, selection: LineSelection, ctx: PricingContext, half?: CatalogProduct): PricingResult {
   if (!product) return fail('PRODUCT_NOT_FOUND', 'Produto não encontrado ou retirado do cardápio.');
   const name = product.name;
 
@@ -265,7 +250,7 @@ export function priceLine(
       return fail('SHIFT_NOT_OPEN', `${halfName} não é servido neste horário.`);
     }
     halfVariant = half.variants.find((v) => v.sizeCode === variant?.sizeCode) ?? null;
-    if (!halfVariant || !halfVariant.isAvailable) {
+    if (!halfVariant?.isAvailable) {
       return fail('HALF_UNAVAILABLE', `${halfName} não tem o tamanho ${variant?.name ?? ''} agora.`.trim());
     }
   }
@@ -316,7 +301,7 @@ export function priceLine(
     const chosen: CatalogOptionValue[] = [];
     for (const id of chosenIds) {
       const value = group.values.find((v) => v.id === id);
-      if (!value || !value.isAvailable) {
+      if (!value?.isAvailable) {
         return fail('OPTION_UNAVAILABLE', `${name}: "${value?.name ?? 'opção'}" não está disponível.`);
       }
       if (!isOptionOfferedFor(value, variant)) {
@@ -360,7 +345,10 @@ export function priceLine(
   let base: Cents;
   let rule: string | undefined;
   if (product.kind === 'pizza' && variant) {
-    base = computePizzaBase(variant, (flavorPrices ?? []).map((f) => f.price));
+    base = computePizzaBase(
+      variant,
+      (flavorPrices ?? []).map((f) => f.price),
+    );
     rule = variant.flavorPriceRule;
   } else if (variant) {
     base = variant.price;

@@ -9,7 +9,19 @@ import { deleteBanner, saveBanner } from './actions';
 
 export const metadata = { title: 'Banners' };
 
-type Banner = { id: string; title: string; body: string | null; image_url: string | null; image_alt: string | null; cta_label: string | null; cta_href: string | null; starts_at: string | null; ends_at: string | null; is_active: boolean; sort_order: number };
+type Banner = {
+  id: string;
+  title: string;
+  body: string | null;
+  image_url: string | null;
+  image_alt: string | null;
+  cta_label: string | null;
+  cta_href: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  is_active: boolean;
+  sort_order: number;
+};
 
 function Fields({ b }: { b: Banner | null }) {
   return (
@@ -21,8 +33,17 @@ function Fields({ b }: { b: Banner | null }) {
       <TextField label="Ordem" name="sortOrder" type="number" defaultValue={b?.sort_order ?? 0} />
       <CheckboxField label="Ativo" name="isActive" defaultChecked={b?.is_active ?? true} />
       <TextField label="Exibir a partir de" name="startsAt" type="datetime-local" defaultValue={toLocalInput(b?.starts_at ?? null)} className="md:col-span-3" />
-      <TextField label="Exibir até" name="endsAt" type="datetime-local" defaultValue={toLocalInput(b?.ends_at ?? null)} className="md:col-span-3" hint="Ofertas vencidas deixam de aparecer automaticamente." />
-      <div className="md:col-span-3"><ImageUpload name="imageUrl" folder="banners" defaultUrl={b?.image_url ?? null} /></div>
+      <TextField
+        label="Exibir até"
+        name="endsAt"
+        type="datetime-local"
+        defaultValue={toLocalInput(b?.ends_at ?? null)}
+        className="md:col-span-3"
+        hint="Ofertas vencidas deixam de aparecer automaticamente."
+      />
+      <div className="md:col-span-3">
+        <ImageUpload name="imageUrl" folder="banners" defaultUrl={b?.image_url ?? null} />
+      </div>
       <TextField label="Texto alternativo da imagem" name="imageAlt" defaultValue={b?.image_alt ?? ''} className="md:col-span-3" />
     </div>
   );
@@ -41,13 +62,19 @@ export default async function BannersPage() {
         const live = b.is_active && (!b.starts_at || new Date(b.starts_at) <= now) && (!b.ends_at || new Date(b.ends_at) > now);
         return (
           <Card key={b.id} title={b.title} actions={live ? <Badge tone="success">No ar</Badge> : <Badge>Fora do ar</Badge>}>
-            <ActionForm action={saveBanner.bind(null, b.id)} size="sm"><Fields b={b} /></ActionForm>
-            <div className="mt-2"><ActionForm action={deleteBanner.bind(null, b.id)} submitLabel="Excluir" size="sm" variant="ghost" confirm="Excluir este banner?" /></div>
+            <ActionForm action={saveBanner.bind(null, b.id)} size="sm">
+              <Fields b={b} />
+            </ActionForm>
+            <div className="mt-2">
+              <ActionForm action={deleteBanner.bind(null, b.id)} submitLabel="Excluir" size="sm" variant="ghost" confirm="Excluir este banner?" />
+            </div>
           </Card>
         );
       })}
       <Card title="Novo banner">
-        <ActionForm action={saveBanner.bind(null, null)} submitLabel="Criar banner" resetOnSuccess><Fields b={null} /></ActionForm>
+        <ActionForm action={saveBanner.bind(null, null)} submitLabel="Criar banner" resetOnSuccess>
+          <Fields b={null} />
+        </ActionForm>
       </Card>
     </div>
   );

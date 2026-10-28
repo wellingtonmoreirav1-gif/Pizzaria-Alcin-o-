@@ -57,12 +57,19 @@ async function ProductContent({ params }: { params: Promise<{ slug: string }> })
     image: product.imageUrl ?? undefined,
     url: `${SITE_URL}/produto/${product.slug}`,
     // Só publica oferta (Google) quando o preço foi conferido pelo restaurante.
-    offers: price && product.priceConfirmed
-      ? { '@type': 'Offer', price: centsToDecimal(price.current), priceCurrency: 'BRL', availability: product.isAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }
-      : undefined,
+    offers:
+      price && product.priceConfirmed
+        ? {
+            '@type': 'Offer',
+            price: centsToDecimal(price.current),
+            priceCurrency: 'BRL',
+            availability: product.isAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          }
+        : undefined,
   };
   return (
     <>
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD gerado no servidor, com '<' escapado. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       <ProductPageClient product={product} fetchedAt={data.fetchedAt} />
     </>

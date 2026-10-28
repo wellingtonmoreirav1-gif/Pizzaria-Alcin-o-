@@ -19,7 +19,7 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
   globalSetup: './tests/e2e/global-setup.ts',
-  reporter: [['list']],
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: `http://localhost:${port}`,
     locale: 'pt-BR',
@@ -27,9 +27,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
     launchOptions: { executablePath },
   },
-  projects: [
-    { name: 'mobile', use: { ...devices['Pixel 7'], launchOptions: { executablePath } } },
-  ],
+  projects: [{ name: 'mobile', use: { ...devices['Pixel 7'], launchOptions: { executablePath } } }],
   webServer: {
     command: process.env.E2E_SERVER_COMMAND ?? `npx next start -p ${port}`,
     url: `http://localhost:${port}`,

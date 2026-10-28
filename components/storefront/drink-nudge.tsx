@@ -14,15 +14,7 @@ const VISIBLE_MS = 10_000;
  * Logo depois de adicionar um lanche ou uma pizza: "Vai uma bebida gelada?" com até 3
  * bebidas que dá para pedir agora. Nunca adiciona nada sem o toque do cliente.
  */
-export function DrinkNudge({
-  drinks,
-  onPick,
-  onClose,
-}: {
-  drinks: CatalogProduct[];
-  onPick: (drink: CatalogProduct) => void;
-  onClose: () => void;
-}) {
+export function DrinkNudge({ drinks, onPick, onClose }: { drinks: CatalogProduct[]; onPick: (drink: CatalogProduct) => void; onClose: () => void }) {
   useEffect(() => {
     const t = window.setTimeout(onClose, VISIBLE_MS);
     return () => window.clearTimeout(t);

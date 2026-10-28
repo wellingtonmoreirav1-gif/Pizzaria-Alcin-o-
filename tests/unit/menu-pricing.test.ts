@@ -4,10 +4,25 @@ import type { CatalogOptionGroup, CatalogProduct, CatalogVariant } from '@/types
 
 const now = new Date('2026-10-20T20:00:00Z');
 const ctx = { now, openShifts: null };
-const SIZES: [string, string, number][] = [['P', 'Pequena (P)', 2500], ['M', 'Média (M)', 3900], ['G', 'Grande (G)', 5000], ['GG', 'Gigante (GG)', 6000], ['F', 'Família (F)', 7500]];
+const SIZES: [string, string, number][] = [
+  ['P', 'Pequena (P)', 2500],
+  ['M', 'Média (M)', 3900],
+  ['G', 'Grande (G)', 5000],
+  ['GG', 'Gigante (GG)', 6000],
+  ['F', 'Família (F)', 7500],
+];
 
 const variants: CatalogVariant[] = SIZES.map(([code, name, price], i) => ({
-  id: `v-${code}`, sizeCode: code, name, description: null, price, maxFlavors: 1, flavorPriceRule: 'fixed', allowMixedFlavorTags: true, sortOrder: i, isAvailable: true,
+  id: `v-${code}`,
+  sizeCode: code,
+  name,
+  description: null,
+  price,
+  maxFlavors: 1,
+  flavorPriceRule: 'fixed',
+  allowMixedFlavorTags: true,
+  sortOrder: i,
+  isAvailable: true,
 }));
 
 const crustTable: Record<string, number[]> = {
@@ -15,27 +30,97 @@ const crustTable: Record<string, number[]> = {
   'Catupiry Original': [800, 1000, 1600, 1800, 2000],
 };
 const crusts: CatalogOptionGroup = {
-  id: 'g-bordas', kind: 'crust', name: 'Bordas recheadas', description: null, minSelect: 0, maxSelect: 1, sortOrder: 10, sharedKey: 'bordas-recheadas',
+  id: 'g-bordas',
+  kind: 'crust',
+  name: 'Bordas recheadas',
+  description: null,
+  minSelect: 0,
+  maxSelect: 1,
+  sortOrder: 10,
+  sharedKey: 'bordas-recheadas',
   values: Object.entries(crustTable).map(([name, prices], i) => ({
-    id: `c-${i}`, groupId: 'g-bordas', name, description: null, imageUrl: null, price: 0, combinationTag: null, sortOrder: i, isAvailable: true, priceConfirmed: true,
-    variantRules: {}, sizeRules: Object.fromEntries(SIZES.map(([code], j) => [code, { price: prices[j] ?? 0, isOffered: true }])),
+    id: `c-${i}`,
+    groupId: 'g-bordas',
+    name,
+    description: null,
+    imageUrl: null,
+    price: 0,
+    combinationTag: null,
+    sortOrder: i,
+    isAvailable: true,
+    priceConfirmed: true,
+    variantRules: {},
+    sizeRules: Object.fromEntries(SIZES.map(([code], j) => [code, { price: prices[j] ?? 0, isOffered: true }])),
   })),
 };
 const sauces: CatalogOptionGroup = {
-  id: 'g-molhos', kind: 'extra', name: 'Molhos', description: null, minSelect: 0, maxSelect: 4, sortOrder: 20, sharedKey: 'molhos',
-  values: [{ id: 'm-1', groupId: 'g-molhos', name: 'Maionese verde', description: null, imageUrl: null, price: 0, combinationTag: null, sortOrder: 1, isAvailable: true, priceConfirmed: false, variantRules: {}, sizeRules: {} }],
+  id: 'g-molhos',
+  kind: 'extra',
+  name: 'Molhos',
+  description: null,
+  minSelect: 0,
+  maxSelect: 4,
+  sortOrder: 20,
+  sharedKey: 'molhos',
+  values: [
+    {
+      id: 'm-1',
+      groupId: 'g-molhos',
+      name: 'Maionese verde',
+      description: null,
+      imageUrl: null,
+      price: 0,
+      combinationTag: null,
+      sortOrder: 1,
+      isAvailable: true,
+      priceConfirmed: false,
+      variantRules: {},
+      sizeRules: {},
+    },
+  ],
 };
 
 function pizza(overrides: Partial<CatalogProduct> = {}): CatalogProduct {
   return {
-    id: 'p-calabresa', categoryId: 'c', categorySlug: 'pizzas-tradicionais', categoryName: 'Pizzas tradicionais', kind: 'pizza', slug: 'pizza-calabresa', name: 'Pizza Calabresa',
-    shortDescription: null, description: 'Molho, calabresa e orégano.', imageUrl: null, imageAlt: null, images: [], basePrice: null, isAvailable: true, isFeatured: false, featuredOrder: null,
-    sortOrder: 0, shiftRestriction: 'any', availableFrom: null, availableUntil: null, tags: [], serves: null, maxQuantity: 30, isDemo: false, priceConfirmed: true,
-    variants, groups: [crusts], promotions: [], comboItems: [], ...overrides,
+    id: 'p-calabresa',
+    categoryId: 'c',
+    categorySlug: 'pizzas-tradicionais',
+    categoryName: 'Pizzas tradicionais',
+    kind: 'pizza',
+    slug: 'pizza-calabresa',
+    name: 'Pizza Calabresa',
+    shortDescription: null,
+    description: 'Molho, calabresa e orégano.',
+    imageUrl: null,
+    imageAlt: null,
+    images: [],
+    basePrice: null,
+    isAvailable: true,
+    isFeatured: false,
+    featuredOrder: null,
+    sortOrder: 0,
+    shiftRestriction: 'any',
+    availableFrom: null,
+    availableUntil: null,
+    tags: [],
+    serves: null,
+    maxQuantity: 30,
+    isDemo: false,
+    priceConfirmed: true,
+    variants,
+    groups: [crusts],
+    promotions: [],
+    comboItems: [],
+    ...overrides,
   };
 }
 
-const sel = (variantId: string | null, crustId?: string, quantity = 1) => ({ productId: 'p-calabresa', variantId, options: (crustId ? { 'g-bordas': [crustId] } : {}) as Record<string, string[]>, quantity });
+const sel = (variantId: string | null, crustId?: string, quantity = 1) => ({
+  productId: 'p-calabresa',
+  variantId,
+  options: (crustId ? { 'g-bordas': [crustId] } : {}) as Record<string, string[]>,
+  quantity,
+});
 const ok = (r: ReturnType<typeof priceLine>): PricedLine => {
   if (!r.ok) throw new Error(r.error.message);
   return r.line;

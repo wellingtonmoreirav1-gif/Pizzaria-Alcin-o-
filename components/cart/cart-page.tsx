@@ -14,7 +14,11 @@ export function CartPageView() {
   if (!cart.hydrated) return <Skeleton className="h-64" />;
   if (cart.lines.length === 0) {
     return (
-      <EmptyState icon={<ShoppingBag className="size-6" aria-hidden />} title="Seu carrinho está vazio" action={<ButtonLink href="/cardapio">Ver cardápio</ButtonLink>}>
+      <EmptyState
+        icon={<ShoppingBag className="size-6" aria-hidden />}
+        title="Seu carrinho está vazio"
+        action={<ButtonLink href="/cardapio">Ver cardápio</ButtonLink>}
+      >
         Escolha seus pratos favoritos.
       </EmptyState>
     );
@@ -25,7 +29,11 @@ export function CartPageView() {
       <div className="min-w-0 space-y-4">
         {quote.error ? <Notice tone="warning">{quote.error}</Notice> : null}
         {quote.pricesChanged ? <Notice>Os preços foram atualizados com os valores atuais do cardápio.</Notice> : null}
-        {quote.status && !quote.status.acceptingOrders ? <Notice tone="warning" title="Fora do horário">{quote.status.message}</Notice> : null}
+        {quote.status && !quote.status.acceptingOrders ? (
+          <Notice tone="warning" title="Fora do horário">
+            {quote.status.message}
+          </Notice>
+        ) : null}
         <CartLines lineErrors={quote.lineErrors} />
       </div>
       <aside className="h-fit space-y-3 rounded-[var(--radius-card)] bg-surface p-6 ring-1 ring-line">
@@ -41,7 +49,9 @@ export function CartPageView() {
         ) : null}
         <div className="flex justify-between border-t border-line pt-3 text-lg font-bold">
           <span>Total dos itens</span>
-          <span className="tabular-nums text-gold" data-testid="cart-page-total">{formatBRL(quote.totals?.itemsSubtotal ?? cart.estimatedTotal)}</span>
+          <span className="tabular-nums text-gold" data-testid="cart-page-total">
+            {formatBRL(quote.totals?.itemsSubtotal ?? cart.estimatedTotal)}
+          </span>
         </div>
         <p className="text-xs text-muted">Taxa de entrega, quando houver, é confirmada pela equipe.</p>
         <ButtonLink href="/checkout" size="lg" className="w-full" aria-disabled={hasErrors} onClick={(e) => hasErrors && e.preventDefault()}>

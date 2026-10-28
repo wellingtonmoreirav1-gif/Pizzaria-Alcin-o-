@@ -11,12 +11,7 @@ export function isPromotionActive(promo: CatalogPromotion, now: Date): boolean {
  * Melhor promoção válida para o produto/tamanho. Uma promoção só é considerada
  * quando o preço promocional é MENOR que o preço normal (evita "promoções" falsas).
  */
-export function findBestPromotion(
-  product: CatalogProduct,
-  variantId: string | null,
-  regularBase: Cents,
-  now: Date,
-): CatalogPromotion | null {
+export function findBestPromotion(product: CatalogProduct, variantId: string | null, regularBase: Cents, now: Date): CatalogPromotion | null {
   let best: CatalogPromotion | null = null;
   for (const promo of product.promotions) {
     if (!isPromotionActive(promo, now)) continue;

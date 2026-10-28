@@ -40,7 +40,13 @@ function Stat({ label, value, hint, href, tone }: { label: string; value: string
       {hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}
     </div>
   );
-  return href ? <Link href={href} className="block h-full">{body}</Link> : body;
+  return href ? (
+    <Link href={href} className="block h-full">
+      {body}
+    </Link>
+  ) : (
+    body
+  );
 }
 
 export default async function AdminHome() {
@@ -64,8 +70,14 @@ export default async function AdminHome() {
     <div className="space-y-6">
       <AutoRefresh seconds={60} />
       <PageHeader title="Início" description="Resumo de hoje (fuso America/Fortaleza). Cancelados não contam como vendas." />
-      <Notice tone={status.acceptingOrders ? 'success' : 'warning'} title={status.acceptingOrders ? 'Site recebendo pedidos' : 'Site NÃO está recebendo pedidos'}>
-        {status.message} <Link href="/admin/operacao" className="font-semibold underline">Operação do dia</Link>
+      <Notice
+        tone={status.acceptingOrders ? 'success' : 'warning'}
+        title={status.acceptingOrders ? 'Site recebendo pedidos' : 'Site NÃO está recebendo pedidos'}
+      >
+        {status.message}{' '}
+        <Link href="/admin/operacao" className="font-semibold underline">
+          Operação do dia
+        </Link>
       </Notice>
       {(demo.count ?? 0) > 0 && ctx.role !== 'attendant' ? (
         <Notice tone="warning" title="Há produtos de demonstração publicados">
@@ -75,18 +87,29 @@ export default async function AdminHome() {
       {pendingPrices > 0 && ctx.role !== 'attendant' ? (
         <Notice tone="warning" title={`${pendingPrices} preço(s) aguardando conferência`}>
           Esses itens aparecem no site, mas não podem ser pedidos até você confirmar o valor.{' '}
-          <Link href="/admin/precos" className="font-semibold underline">Conferir preços</Link>
+          <Link href="/admin/precos" className="font-semibold underline">
+            Conferir preços
+          </Link>
         </Notice>
       ) : null}
       {hours.data?.length && status.openShifts.includes('lunch') ? (
         <Notice tone="info">
-          <span className="inline-flex items-center gap-1"><AlertTriangle className="size-4" aria-hidden /> O almoço não tem horário de término: lembre de encerrá-lo em “Operação do dia” quando a comida acabar.</span>
+          <span className="inline-flex items-center gap-1">
+            <AlertTriangle className="size-4" aria-hidden /> O almoço não tem horário de término: lembre de encerrá-lo em “Operação do dia” quando a comida
+            acabar.
+          </span>
         </Notice>
       ) : null}
 
       <section aria-label="Pedidos de hoje" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Pedidos hoje" value={d.today_total ?? 0} href="/admin/pedidos" />
-        <Stat label="Aguardando confirmação" value={(d.registered ?? 0) + (d.customer_confirmed ?? 0)} hint="Registrados + cliente confirmou" href="/admin/pedidos?status=abertos" tone="brand" />
+        <Stat
+          label="Aguardando confirmação"
+          value={(d.registered ?? 0) + (d.customer_confirmed ?? 0)}
+          hint="Registrados + cliente confirmou"
+          href="/admin/pedidos?status=abertos"
+          tone="brand"
+        />
         <Stat label="Taxa de entrega a confirmar" value={d.pending_fee ?? 0} href="/admin/pedidos?status=abertos" />
         <Stat label="Aguardando aprovação do total" value={d.needs_approval ?? 0} href="/admin/pedidos?status=abertos" />
         <Stat label="Aceitos" value={d.accepted ?? 0} href="/admin/pedidos?status=accepted" />
@@ -104,7 +127,9 @@ export default async function AdminHome() {
             <Stat label="Ticket médio (mês)" value={m(d.average_ticket_month)} />
             <Stat label="Registrado hoje" value={m(d.registered_value_today)} hint="Pedidos não cancelados, ainda não concluídos inclusive" />
           </div>
-          <Link href="/admin/relatorios" className="mt-4 inline-block text-sm font-semibold text-brand-700 underline">Ver relatórios completos</Link>
+          <Link href="/admin/relatorios" className="mt-4 inline-block text-sm font-semibold text-brand-700 underline">
+            Ver relatórios completos
+          </Link>
         </Card>
       ) : null}
     </div>

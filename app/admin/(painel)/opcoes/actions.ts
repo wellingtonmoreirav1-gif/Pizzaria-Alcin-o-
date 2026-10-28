@@ -40,7 +40,15 @@ export async function saveSharedGroup(groupId: string | null, _prev: ActionResul
       const min = Math.max(0, int(form, 'minSelect'));
       const max = Math.max(1, int(form, 'maxSelect', 1));
       if (max < min) throw new ActionError('O máximo deve ser maior ou igual ao mínimo.');
-      const fields = { name, kind, description: str(form, 'description'), min_select: min, max_select: max, sort_order: int(form, 'sortOrder'), is_active: bool(form, 'isActive') };
+      const fields = {
+        name,
+        kind,
+        description: str(form, 'description'),
+        min_select: min,
+        max_select: max,
+        sort_order: int(form, 'sortOrder'),
+        is_active: bool(form, 'isActive'),
+      };
       if (groupId) {
         await requireSharedGroup(db, groupId);
         check(await db.from('option_groups').update(fields).eq('id', groupId));
@@ -48,7 +56,13 @@ export async function saveSharedGroup(groupId: string | null, _prev: ActionResul
       }
       const key = slugify(str(form, 'sharedKey') ?? name);
       if (!key) throw new ActionError('Código do grupo inválido.');
-      const { data } = check(await db.from('option_groups').insert({ ...fields, shared_key: key, product_id: null }).select('id').single());
+      const { data } = check(
+        await db
+          .from('option_groups')
+          .insert({ ...fields, shared_key: key, product_id: null })
+          .select('id')
+          .single(),
+      );
       return { ok: true, message: done('Grupo criado. Cadastre as opções e ligue aos produtos.'), id: data!.id };
     },
     ['catalog'],
@@ -118,7 +132,12 @@ export async function saveSharedSizePrices(groupId: string, _prev: ActionResult 
         if (!m) continue;
         const [, valueId, code] = m as unknown as [string, string, string];
         if (!allowed.has(valueId) || !SIZE_CODE_PATTERN.test(code)) throw new ActionError('Tabela de valores inválida.');
-        rows.push({ option_value_id: valueId, size_code: code, price: money(form, `size:${valueId}:${code}`), is_offered: bool(form, `offered:${valueId}:${code}`) });
+        rows.push({
+          option_value_id: valueId,
+          size_code: code,
+          price: money(form, `size:${valueId}:${code}`),
+          is_offered: bool(form, `offered:${valueId}:${code}`),
+        });
       }
       const custom = rows.filter((r) => r.price !== null || !r.is_offered);
       const defaults = rows.filter((r) => r.price === null && r.is_offered);

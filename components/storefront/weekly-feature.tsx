@@ -124,7 +124,10 @@ export function WeeklyFeature({ config, product, fetchedAt }: { config: WeeklyFe
                 Pedir agora <ArrowRight className="size-5" aria-hidden />
               </Link>
             ) : (
-              <Link href="/cardapio?categoria=lanches-tradicionais" className={buttonClasses('primary', 'lg', 'shadow-[var(--shadow-float)] lg:h-16 lg:px-9 lg:text-lg')}>
+              <Link
+                href="/cardapio?categoria=lanches-tradicionais"
+                className={buttonClasses('primary', 'lg', 'shadow-[var(--shadow-float)] lg:h-16 lg:px-9 lg:text-lg')}
+              >
                 Pedir agora <ArrowRight className="size-5" aria-hidden />
               </Link>
             )}

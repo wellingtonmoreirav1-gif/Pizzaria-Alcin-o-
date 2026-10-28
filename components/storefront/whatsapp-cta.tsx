@@ -16,7 +16,10 @@ export function WhatsAppCta({ settings }: { settings: SiteSettings }) {
           <p className="mt-2 text-white/85">Monte seu pedido no site e envie para a equipe em poucos toques. Ficou com alguma dúvida? Chame a gente.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href="/cardapio" className="inline-flex h-12 items-center gap-2 rounded-2xl bg-white px-5 font-semibold text-[#0a3520] transition-colors hover:bg-white/90">
+          <Link
+            href="/cardapio"
+            className="inline-flex h-12 items-center gap-2 rounded-2xl bg-white px-5 font-semibold text-[#0a3520] transition-colors hover:bg-white/90"
+          >
             Montar meu pedido <ArrowRight className="size-5" aria-hidden />
           </Link>
           <a

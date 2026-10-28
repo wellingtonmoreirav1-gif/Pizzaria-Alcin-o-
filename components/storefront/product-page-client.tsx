@@ -11,7 +11,7 @@ export function ProductPageClient({ product, fetchedAt }: { product: CatalogProd
   const router = useRouter();
   const cart = useCart();
   const editId = params.get('editar');
-  const editLine = editId ? cart.lines.find((l) => l.lineId === editId && l.productId === product.id) ?? null : null;
+  const editLine = editId ? (cart.lines.find((l) => l.lineId === editId && l.productId === product.id) ?? null) : null;
   if (editId && !cart.hydrated) return null;
   return (
     <div className="space-y-4">

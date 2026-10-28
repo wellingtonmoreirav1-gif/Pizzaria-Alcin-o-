@@ -36,7 +36,10 @@ export function ProductImage({
       ) : null}
       {/* Ilustração provisória: o aviso fica legível aqui, não escrito dentro do desenho. */}
       {src?.startsWith('/images/products/') ? (
-        <span aria-hidden className="pointer-events-none absolute bottom-2 left-2 rounded-full bg-black/65 px-2.5 py-1 text-[0.7rem] font-semibold leading-none text-white/90 backdrop-blur-sm">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute bottom-2 left-2 rounded-full bg-black/65 px-2.5 py-1 text-[0.7rem] font-semibold leading-none text-white/90 backdrop-blur-sm"
+        >
           Imagem ilustrativa
         </span>
       ) : null}

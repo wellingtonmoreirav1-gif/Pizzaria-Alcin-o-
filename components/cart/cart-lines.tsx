@@ -37,17 +37,23 @@ export function CartLines({ lineErrors, onNavigate, compact }: { lineErrors: Rec
                 ) : null}
               </div>
               <p className="shrink-0 text-right tabular-nums">
-                {line.unitRegular > line.unitPrice ? (
-                  <s className="block text-xs text-muted">{formatBRL(line.unitRegular * line.quantity)}</s>
-                ) : null}
-                <span className="block font-semibold text-gold" data-testid="line-subtotal">{formatBRL(line.unitPrice * line.quantity)}</span>
+                {line.unitRegular > line.unitPrice ? <s className="block text-xs text-muted">{formatBRL(line.unitRegular * line.quantity)}</s> : null}
+                <span className="block font-semibold text-gold" data-testid="line-subtotal">
+                  {formatBRL(line.unitPrice * line.quantity)}
+                </span>
                 <span className="block text-xs text-muted" data-testid="line-unit">
                   {line.quantity > 1 ? `${formatBRL(line.unitPrice)} cada` : 'preço unitário'}
                 </span>
               </p>
             </div>
             <div className="mt-3 flex items-center justify-between gap-2">
-              <QuantityStepper size="sm" value={line.quantity} max={line.maxQuantity} onChange={(q) => setQuantity(line.lineId, q)} label={`Quantidade de ${line.name}`} />
+              <QuantityStepper
+                size="sm"
+                value={line.quantity}
+                max={line.maxQuantity}
+                onChange={(q) => setQuantity(line.lineId, q)}
+                label={`Quantidade de ${line.name}`}
+              />
               <div className="flex items-center gap-1">
                 {!compact || line.summary.length || line.variantName ? (
                   <Link

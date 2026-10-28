@@ -8,7 +8,6 @@ import { CartDrawer } from '@/components/cart/cart-drawer';
 import { MobileCartBar } from '@/components/cart/mobile-cart-bar';
 import { DRINK_CATEGORY } from '@/lib/catalog/groups';
 
-
 export default async function SiteLayout({ children }: LayoutProps<'/'>) {
   const { data: catalog } = await getCatalog();
   // Bebidas saem do cardápio e são oferecidas no carrinho e depois de adicionar um item.
@@ -18,19 +17,19 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
     // O tema escuro envolve também as janelas (escolher produto), que ficam no provedor.
     <div className="theme-dark flex min-h-screen flex-col">
       <StoreProviders drinks={drinks} pizzas={pizzas}>
-      <Suspense fallback={null}>
-        <ClosedBanner />
-      </Suspense>
-      <SiteHeader />
-      <main id="conteudo" className="flex-1">
-        {children}
-      </main>
-      <SiteFooter />
-      {/* Leem a URL atual (usePathname): ficam fora do HTML estático e carregam no cliente. */}
-      <Suspense fallback={null}>
-        <CartDrawer suggestions={drinks} fetchedAt={catalog.fetchedAt} />
-        <MobileCartBar />
-      </Suspense>
+        <Suspense fallback={null}>
+          <ClosedBanner />
+        </Suspense>
+        <SiteHeader />
+        <main id="conteudo" className="flex-1">
+          {children}
+        </main>
+        <SiteFooter />
+        {/* Leem a URL atual (usePathname): ficam fora do HTML estático e carregam no cliente. */}
+        <Suspense fallback={null}>
+          <CartDrawer suggestions={drinks} fetchedAt={catalog.fetchedAt} />
+          <MobileCartBar />
+        </Suspense>
       </StoreProviders>
     </div>
   );

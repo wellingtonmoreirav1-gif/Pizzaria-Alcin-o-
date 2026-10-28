@@ -38,7 +38,18 @@ describe('pizza pricing', () => {
   });
 
   it('applies "average" rule with half-up rounding in cents', () => {
-    const v: CatalogVariant = { id: 'x', sizeCode: 'G', name: 'G', description: null, price: 5000, maxFlavors: 3, flavorPriceRule: 'average', allowMixedFlavorTags: true, sortOrder: 1, isAvailable: true };
+    const v: CatalogVariant = {
+      id: 'x',
+      sizeCode: 'G',
+      name: 'G',
+      description: null,
+      price: 5000,
+      maxFlavors: 3,
+      flavorPriceRule: 'average',
+      allowMixedFlavorTags: true,
+      sortOrder: 1,
+      isAvailable: true,
+    };
     expect(computePizzaBase(v, [5000, 6000])).toBe(5500);
     expect(computePizzaBase(v, [5000, 5000, 5001])).toBe(5000);
     expect(computePizzaBase(v, [1000, 1001])).toBe(1001);
@@ -46,7 +57,11 @@ describe('pizza pricing', () => {
   });
 
   it('rejects more flavors than the size allows', () => {
-    const r = priceLine(pizzaProduct(), { productId: IDS.pizza, variantId: IDS.small, options: { [IDS.flavorGroup]: [IDS.flavorA, IDS.flavorB] }, quantity: 1 }, ctx);
+    const r = priceLine(
+      pizzaProduct(),
+      { productId: IDS.pizza, variantId: IDS.small, options: { [IDS.flavorGroup]: [IDS.flavorA, IDS.flavorB] }, quantity: 1 },
+      ctx,
+    );
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error.code).toBe('TOO_MANY_OPTIONS');
   });
@@ -64,28 +79,55 @@ describe('pizza pricing', () => {
   });
 
   it('blocks mixing combination tags when the size forbids it', () => {
-    const r = priceLine(pizzaProduct(), { productId: IDS.pizza, variantId: IDS.large, options: { [IDS.flavorGroup]: [IDS.flavorA, IDS.flavorSweet] }, quantity: 1 }, ctx);
+    const r = priceLine(
+      pizzaProduct(),
+      { productId: IDS.pizza, variantId: IDS.large, options: { [IDS.flavorGroup]: [IDS.flavorA, IDS.flavorSweet] }, quantity: 1 },
+      ctx,
+    );
     expect(!r.ok && r.error.code).toBe('FLAVOR_MIX_NOT_ALLOWED');
   });
 
   it('rejects unavailable extras, duplicates and unknown groups', () => {
-    const unavailable = priceLine(pizzaProduct(), { productId: IDS.pizza, variantId: IDS.small, options: { [IDS.flavorGroup]: [IDS.flavorA], [IDS.extraGroup]: [IDS.extra2] }, quantity: 1 }, ctx);
+    const unavailable = priceLine(
+      pizzaProduct(),
+      { productId: IDS.pizza, variantId: IDS.small, options: { [IDS.flavorGroup]: [IDS.flavorA], [IDS.extraGroup]: [IDS.extra2] }, quantity: 1 },
+      ctx,
+    );
     expect(!unavailable.ok && unavailable.error.code).toBe('OPTION_UNAVAILABLE');
-    const dup = priceLine(pizzaProduct(), { productId: IDS.pizza, variantId: IDS.large, options: { [IDS.flavorGroup]: [IDS.flavorA, IDS.flavorA] }, quantity: 1 }, ctx);
+    const dup = priceLine(
+      pizzaProduct(),
+      { productId: IDS.pizza, variantId: IDS.large, options: { [IDS.flavorGroup]: [IDS.flavorA, IDS.flavorA] }, quantity: 1 },
+      ctx,
+    );
     expect(!dup.ok && dup.error.code).toBe('DUPLICATE_OPTION');
-    const unknown = priceLine(pizzaProduct(), { productId: IDS.pizza, variantId: IDS.small, options: { [IDS.flavorGroup]: [IDS.flavorA], [IDS.category]: [IDS.extra] }, quantity: 1 }, ctx);
+    const unknown = priceLine(
+      pizzaProduct(),
+      { productId: IDS.pizza, variantId: IDS.small, options: { [IDS.flavorGroup]: [IDS.flavorA], [IDS.category]: [IDS.extra] }, quantity: 1 },
+      ctx,
+    );
     expect(!unknown.ok && unknown.error.code).toBe('UNKNOWN_GROUP');
   });
 
   it('only allows one crust', () => {
-    const r = priceLine(pizzaProduct(), { productId: IDS.pizza, variantId: IDS.small, options: { [IDS.flavorGroup]: [IDS.flavorA], [IDS.crustGroup]: [IDS.crust, IDS.extra] }, quantity: 1 }, ctx);
+    const r = priceLine(
+      pizzaProduct(),
+      { productId: IDS.pizza, variantId: IDS.small, options: { [IDS.flavorGroup]: [IDS.flavorA], [IDS.crustGroup]: [IDS.crust, IDS.extra] }, quantity: 1 },
+      ctx,
+    );
     expect(!r.ok && r.error.code).toBe('TOO_MANY_OPTIONS');
   });
 });
 
 describe('promotions', () => {
   const promo = (o: Partial<import('@/types/catalog').CatalogPromotion> = {}) => ({
-    id: 'p1', title: 'Promo', description: null, variantId: IDS.bottle, promoPrice: 1200, startsAt: null, endsAt: null, ...o,
+    id: 'p1',
+    title: 'Promo',
+    description: null,
+    variantId: IDS.bottle,
+    promoPrice: 1200,
+    startsAt: null,
+    endsAt: null,
+    ...o,
   });
 
   it('applies an active promotion and reports the discount', () => {
@@ -129,7 +171,9 @@ describe('simple products, lunch and combos', () => {
   it('validates required choices and adds option prices', () => {
     const missing = priceLine(lunchProduct(), { productId: IDS.lunch, variantId: null, options: {}, quantity: 1 }, ctx);
     expect(!missing.ok && missing.error.code).toBe('TOO_FEW_OPTIONS');
-    const line = ok(priceLine(lunchProduct(), { productId: IDS.lunch, variantId: null, options: { [IDS.sidesGroup]: [IDS.side1, IDS.side3] }, quantity: 1 }, ctx));
+    const line = ok(
+      priceLine(lunchProduct(), { productId: IDS.lunch, variantId: null, options: { [IDS.sidesGroup]: [IDS.side1, IDS.side3] }, quantity: 1 }, ctx),
+    );
     expect(line.unitPrice).toBe(2500);
   });
 

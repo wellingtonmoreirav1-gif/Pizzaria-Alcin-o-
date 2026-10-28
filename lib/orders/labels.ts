@@ -1,22 +1,8 @@
-export type OrderStatus =
-  | 'registered'
-  | 'customer_confirmed'
-  | 'accepted'
-  | 'preparing'
-  | 'ready'
-  | 'out_for_delivery'
-  | 'completed'
-  | 'cancelled';
+export type OrderStatus = 'registered' | 'customer_confirmed' | 'accepted' | 'preparing' | 'ready' | 'out_for_delivery' | 'completed' | 'cancelled';
 export type Fulfillment = 'delivery' | 'pickup' | 'dine_in';
 export type PaymentMethod = 'pix' | 'cash' | 'credit_card' | 'debit_card' | 'on_delivery';
 export type DeliveryFeeStatus = 'not_applicable' | 'pending' | 'estimated' | 'confirmed';
-export type CancelReason =
-  | 'out_of_area'
-  | 'unavailable'
-  | 'customer_request'
-  | 'no_customer_response'
-  | 'duplicate'
-  | 'other';
+export type CancelReason = 'out_of_area' | 'unavailable' | 'customer_request' | 'no_customer_response' | 'duplicate' | 'other';
 
 export const ORDER_STATUSES: OrderStatus[] = [
   'registered',

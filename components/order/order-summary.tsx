@@ -16,7 +16,9 @@ export function OrderSummary({ order }: { order: OrderView }) {
                 {item.variantName ? <span className="font-normal text-muted"> — {item.variantName}</span> : null}
               </p>
               {item.summary.map((s) => (
-                <p key={s} className="text-xs text-muted">{s}</p>
+                <p key={s} className="text-xs text-muted">
+                  {s}
+                </p>
               ))}
               {item.notes ? <p className="text-xs italic text-muted">Obs.: {item.notes}</p> : null}
             </div>
@@ -38,12 +40,18 @@ export function OrderSummary({ order }: { order: OrderView }) {
         ) : null}
         <div className="flex justify-between border-t border-line pt-2 text-base font-bold">
           <dt>{t.totalIsFinal ? 'Total' : t.deliveryFeeStatus === 'estimated' ? 'Total estimado (a confirmar)' : 'Total dos itens (taxa a confirmar)'}</dt>
-          <dd className="tabular-nums text-gold" data-testid="order-total">{formatBRL(t.total)}</dd>
+          <dd className="tabular-nums text-gold" data-testid="order-total">
+            {formatBRL(t.total)}
+          </dd>
         </div>
       </dl>
       <dl className="grid gap-2 rounded-2xl bg-mist p-4 text-sm sm:grid-cols-2">
         <Row label="Modalidade" value={`${FULFILLMENT_LABEL[order.fulfillment]}${order.tableLabel ? ` · Mesa ${order.tableLabel}` : ''}`} stacked />
-        <Row label="Pagamento" value={`${PAYMENT_LABEL[order.paymentMethod]}${order.cashChangeFor ? ` · troco para ${formatBRL(order.cashChangeFor)}` : ''}`} stacked />
+        <Row
+          label="Pagamento"
+          value={`${PAYMENT_LABEL[order.paymentMethod]}${order.cashChangeFor ? ` · troco para ${formatBRL(order.cashChangeFor)}` : ''}`}
+          stacked
+        />
         {order.address ? (
           <Row
             stacked

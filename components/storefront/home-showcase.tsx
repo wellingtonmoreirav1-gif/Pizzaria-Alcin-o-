@@ -44,7 +44,15 @@ export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: 
       <WeeklyFeature config={WEEKLY_FEATURE} product={weeklyProduct} fetchedAt={catalog.fetchedAt} />
       <CategoryTiles catalog={catalog} />
       <BannerStrip banners={banners} now={now} />
-      <ProductRail id="promocoes" eyebrow="Por tempo limitado" title="Promoções" products={promos.slice(0, 8)} fetchedAt={catalog.fetchedAt} href="/cardapio?colecao=promocoes" tone="wine" />
+      <ProductRail
+        id="promocoes"
+        eyebrow="Por tempo limitado"
+        title="Promoções"
+        products={promos.slice(0, 8)}
+        fetchedAt={catalog.fetchedAt}
+        href="/cardapio?colecao=promocoes"
+        tone="wine"
+      />
     </>
   );
 }
@@ -72,7 +80,9 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
       <div className="mx-auto mb-6 flex max-w-7xl items-end justify-between gap-4 px-4 sm:px-6">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Cardápio</p>
-          <h2 id="categorias-titulo" className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">O que você quer hoje?</h2>
+          <h2 id="categorias-titulo" className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+            O que você quer hoje?
+          </h2>
         </div>
         <Link href="/cardapio" className="hidden shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold hover:bg-mist sm:inline-flex">
           Ver cardápio completo <ArrowRight className="size-4" aria-hidden />
@@ -84,47 +94,52 @@ function CategoryTiles({ catalog }: { catalog: Catalog }) {
         ))}
       </div>
       {tiles.length > 0 ? (
-      <ul className="mt-1.5 flex flex-col gap-1.5" data-testid="category-bands">
-        {tiles.map(({ category, count, image, ownPhoto }, i) => {
-          const crop = ownPhoto ? null : BAND_CROPS[i % BAND_CROPS.length]!;
-          return (
-          <li key={category.id}>
-            <Link
-              href={`/cardapio?categoria=${category.slug}`}
-              className="group relative flex h-24 w-full items-center overflow-hidden bg-wine sm:h-36 lg:h-40"
-            >
-              {image ? (
-                <span className="absolute inset-0" style={crop ? { transform: `scale(${crop.zoom})`, transformOrigin: crop.origin } : undefined}>
-                  <Image
-                    src={image}
-                    alt=""
-                    fill
-                    sizes="100vw"
-                    unoptimized={image.endsWith('.svg')}
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                </span>
-              ) : (
-                <Layers className="absolute right-[12%] size-16 text-gold/40 sm:size-24" aria-hidden />
-              )}
-              {/* Escurece o lado do texto para o nome ficar sempre legível sobre a foto. */}
-              <span className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/10" aria-hidden />
-              <span className="relative mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-                <span>
-                  <span className="block font-display text-[1.6rem] font-bold leading-tight text-white drop-shadow sm:text-4xl lg:text-5xl">{category.name}</span>
-                  <span className="mt-0.5 block text-sm font-semibold text-gold sm:mt-1 sm:text-base">
-                    {count} {count === 1 ? 'item' : 'itens'}
+        <ul className="mt-1.5 flex flex-col gap-1.5" data-testid="category-bands">
+          {tiles.map(({ category, count, image, ownPhoto }, i) => {
+            const crop = ownPhoto ? null : BAND_CROPS[i % BAND_CROPS.length]!;
+            return (
+              <li key={category.id}>
+                <Link
+                  href={`/cardapio?categoria=${category.slug}`}
+                  className="group relative flex h-24 w-full items-center overflow-hidden bg-wine sm:h-36 lg:h-40"
+                >
+                  {image ? (
+                    <span className="absolute inset-0" style={crop ? { transform: `scale(${crop.zoom})`, transformOrigin: crop.origin } : undefined}>
+                      <Image
+                        src={image}
+                        alt=""
+                        fill
+                        sizes="100vw"
+                        unoptimized={image.endsWith('.svg')}
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      />
+                    </span>
+                  ) : (
+                    <Layers className="absolute right-[12%] size-16 text-gold/40 sm:size-24" aria-hidden />
+                  )}
+                  {/* Escurece o lado do texto para o nome ficar sempre legível sobre a foto. */}
+                  <span className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/10" aria-hidden />
+                  <span className="relative mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
+                    <span>
+                      <span className="block font-display text-[1.6rem] font-bold leading-tight text-white drop-shadow sm:text-4xl lg:text-5xl">
+                        {category.name}
+                      </span>
+                      <span className="mt-0.5 block text-sm font-semibold text-gold sm:mt-1 sm:text-base">
+                        {count} {count === 1 ? 'item' : 'itens'}
+                      </span>
+                    </span>
+                    <span
+                      className="grid size-11 shrink-0 place-items-center rounded-full bg-black/40 text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors group-hover:bg-brand-600 sm:size-12"
+                      aria-hidden
+                    >
+                      <ArrowRight className="size-5" />
+                    </span>
                   </span>
-                </span>
-                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-black/40 text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors group-hover:bg-brand-600 sm:size-12" aria-hidden>
-                  <ArrowRight className="size-5" />
-                </span>
-              </span>
-            </Link>
-          </li>
-          );
-        })}
-      </ul>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       ) : null}
     </section>
   );
@@ -139,7 +154,13 @@ function MenuCallout({ group }: { group: MenuGroup }) {
     >
       <div className="mx-auto grid max-w-7xl items-center gap-2 px-4 pb-10 pt-6 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:py-14">
         <div className="relative order-1 aspect-[3/2] w-full lg:order-2">
-          <Image src={group.image} alt={group.imageAlt} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-contain drop-shadow-[0_30px_40px_rgba(0,0,0,0.5)]" />
+          <Image
+            src={group.image}
+            alt={group.imageAlt}
+            fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="object-contain drop-shadow-[0_30px_40px_rgba(0,0,0,0.5)]"
+          />
         </div>
         <div className="order-2 lg:order-1">
           <Link
@@ -147,7 +168,10 @@ function MenuCallout({ group }: { group: MenuGroup }) {
             className="group/callout inline-flex items-center gap-4 rounded-full bg-brand-600 py-3 pl-8 pr-3 font-display text-[2rem] font-bold leading-tight text-white shadow-[var(--shadow-float)] transition-colors hover:bg-brand-700 sm:text-5xl lg:py-4 lg:pl-10 lg:text-[3.25rem]"
           >
             {group.cta}
-            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white/15 transition-transform group-hover/callout:translate-x-1 sm:size-14 lg:size-16" aria-hidden>
+            <span
+              className="grid size-12 shrink-0 place-items-center rounded-full bg-white/15 transition-transform group-hover/callout:translate-x-1 sm:size-14 lg:size-16"
+              aria-hidden
+            >
               <ArrowRight className="size-6 lg:size-7" />
             </span>
           </Link>

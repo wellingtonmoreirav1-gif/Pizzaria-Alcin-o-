@@ -39,7 +39,10 @@ export function Hero({ settings }: { settings: SiteSettings }) {
               sizes="(max-width: 640px) 92vw, 560px"
               className="mx-auto h-auto w-full max-w-[19rem] drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)] motion-safe:animate-title-in sm:max-w-[30rem] lg:mx-0 lg:max-w-[35rem]"
             />
-            <span className="sr-only"> — pizzaria e churrascaria em {settings.city ?? 'São Bento'} ({settings.state ?? 'PB'})</span>
+            <span className="sr-only">
+              {' '}
+              — pizzaria e churrascaria em {settings.city ?? 'São Bento'} ({settings.state ?? 'PB'})
+            </span>
           </h1>
         )}
         {customTitle ? <p className="mt-5 hidden max-w-md text-pretty text-lg leading-relaxed text-white/80 sm:block">{subtitle}</p> : null}

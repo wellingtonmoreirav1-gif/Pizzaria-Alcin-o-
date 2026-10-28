@@ -32,7 +32,13 @@ export default function OrderPage({ params, searchParams }: PageProps<'/pedido/[
 
 const FLOW: OrderStatus[] = ['registered', 'customer_confirmed', 'accepted', 'preparing', 'ready', 'out_for_delivery', 'completed'];
 
-async function OrderContent({ params, searchParams }: { params: Promise<{ code: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+async function OrderContent({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ code: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { code } = await params;
   const sp = await searchParams;
   const token = typeof sp.t === 'string' ? sp.t : null;
@@ -73,7 +79,9 @@ async function OrderContent({ params, searchParams }: { params: Promise<{ code: 
       {!final ? <AutoRefresh /> : null}
       <header className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold">Pedido #{order.code}</p>
-        <h1 className="font-display text-3xl font-semibold sm:text-4xl">{isNew && order.status === 'registered' ? 'Falta só enviar no WhatsApp!' : ORDER_STATUS_LABEL[order.status]}</h1>
+        <h1 className="font-display text-3xl font-semibold sm:text-4xl">
+          {isNew && order.status === 'registered' ? 'Falta só enviar no WhatsApp!' : ORDER_STATUS_LABEL[order.status]}
+        </h1>
         <p className="text-muted">{ORDER_STATUS_CUSTOMER_TEXT[order.status]}</p>
       </header>
 
@@ -83,8 +91,12 @@ async function OrderContent({ params, searchParams }: { params: Promise<{ code: 
             1 passo para confirmar
           </h2>
           <ol className="list-decimal space-y-1 pl-5 text-sm">
-            <li>Toque em <strong>Abrir WhatsApp com o pedido</strong>.</li>
-            <li>No WhatsApp, toque em <strong>Enviar</strong>. A mensagem não é enviada automaticamente.</li>
+            <li>
+              Toque em <strong>Abrir WhatsApp com o pedido</strong>.
+            </li>
+            <li>
+              No WhatsApp, toque em <strong>Enviar</strong>. A mensagem não é enviada automaticamente.
+            </li>
             <li>Aguarde a equipe confirmar disponibilidade{order.fulfillment === 'delivery' ? ', taxa de entrega' : ''} e o pedido.</li>
           </ol>
           <WhatsAppActions code={order.code} token={token} url={waUrl} message={message} phoneDisplay={phoneDisplay} />
@@ -129,20 +141,40 @@ async function OrderContent({ params, searchParams }: { params: Promise<{ code: 
       {order.status !== 'registered' && !final ? (
         <section className="rounded-[var(--radius-card)] border border-line p-5">
           <h2 className="mb-3 font-display text-lg font-semibold">Falar com a equipe</h2>
-          <WhatsAppActions code={order.code} token={token} url={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Olá! Sobre o pedido #${order.code}:`)}`} message={message} phoneDisplay={phoneDisplay} primary={false} />
+          <WhatsAppActions
+            code={order.code}
+            token={token}
+            url={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Olá! Sobre o pedido #${order.code}:`)}`}
+            message={message}
+            phoneDisplay={phoneDisplay}
+            primary={false}
+          />
         </section>
       ) : null}
 
       {order.status === 'completed' && token ? (
         <section className="rounded-[var(--radius-card)] border border-line p-5" aria-labelledby="avaliar">
-          <h2 id="avaliar" className="mb-3 font-display text-lg font-semibold">Como foi seu pedido?</h2>
+          <h2 id="avaliar" className="mb-3 font-display text-lg font-semibold">
+            Como foi seu pedido?
+          </h2>
           <ReviewForm code={order.code} token={token} defaultName={(order.customerName ?? '').split(' ')[0] ?? ''} />
         </section>
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <RepeatOrderButton items={order.items.map((i) => ({ productId: i.productId, halfProductId: i.halfProductId, variantId: i.variantId, quantity: i.quantity, notes: i.notes, options: i.options.map((o) => ({ groupId: o.groupId, valueId: o.valueId })) }))} />
-        <ButtonLink href="/cardapio" variant="ghost">Voltar ao cardápio</ButtonLink>
+        <RepeatOrderButton
+          items={order.items.map((i) => ({
+            productId: i.productId,
+            halfProductId: i.halfProductId,
+            variantId: i.variantId,
+            quantity: i.quantity,
+            notes: i.notes,
+            options: i.options.map((o) => ({ groupId: o.groupId, valueId: o.valueId })),
+          }))}
+        />
+        <ButtonLink href="/cardapio" variant="ghost">
+          Voltar ao cardápio
+        </ButtonLink>
         {final ? null : <p className="w-full text-xs text-muted">Esta página atualiza o status sozinha.</p>}
       </div>
     </div>

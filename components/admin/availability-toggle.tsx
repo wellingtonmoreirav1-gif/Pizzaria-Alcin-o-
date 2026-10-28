@@ -6,7 +6,17 @@ import { cn } from '@/lib/utils';
 import { toggleAvailability } from '@/app/admin/(painel)/operacao/actions';
 
 /** Interruptor rápido "disponível / esgotado". */
-export function AvailabilityToggle({ entity, id, available, label }: { entity: 'product' | 'variant' | 'option_value'; id: string; available: boolean; label: string }) {
+export function AvailabilityToggle({
+  entity,
+  id,
+  available,
+  label,
+}: {
+  entity: 'product' | 'variant' | 'option_value';
+  id: string;
+  available: boolean;
+  label: string;
+}) {
   const [optimistic, setOptimistic] = useOptimistic(available);
   const [pending, start] = useTransition();
   const toast = useToast();

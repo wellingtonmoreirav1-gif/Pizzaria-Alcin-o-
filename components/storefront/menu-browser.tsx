@@ -59,8 +59,8 @@ export function MenuBrowser({
     (scope && !scope.includes(c.slug)) || MENU_HIDDEN_CATEGORIES.includes(c.slug)
       ? false
       : c.sectionType === 'options'
-      ? Boolean(c.sharedGroupId && groupsById.get(c.sharedGroupId)?.values.length)
-      : catalog.products.some((p) => p.categoryId === c.id),
+        ? Boolean(c.sharedGroupId && groupsById.get(c.sharedGroupId)?.values.length)
+        : catalog.products.some((p) => p.categoryId === c.id),
   );
   const scopedProducts = useMemo(
     () => catalog.products.filter((p) => !MENU_HIDDEN_CATEGORIES.includes(p.categorySlug) && (!scope || scope.includes(p.categorySlug))),
@@ -79,7 +79,14 @@ export function MenuBrowser({
       if (tag && !p.tags.includes(tag)) return false;
       if (q) {
         const haystack = normalizeSearch(
-          [p.name, p.shortDescription, p.description, p.categoryName, ...p.tags, ...p.groups.flatMap((g) => (g.kind === 'flavor' ? g.values.map((v) => v.name) : []))]
+          [
+            p.name,
+            p.shortDescription,
+            p.description,
+            p.categoryName,
+            ...p.tags,
+            ...p.groups.flatMap((g) => (g.kind === 'flavor' ? g.values.map((v) => v.name) : [])),
+          ]
             .filter(Boolean)
             .join(' '),
         );
@@ -94,19 +101,31 @@ export function MenuBrowser({
     .filter((c) => !category || c.slug === category)
     .map((c) => ({
       category: c,
-      group: c.sectionType === 'options' && plainView && c.sharedGroupId ? groupsById.get(c.sharedGroupId) ?? null : null,
-      products: filtered.filter((p) => p.categoryId === c.id).sort((a, b) => Number(isProductOrderable(b, now)) - Number(isProductOrderable(a, now)) || a.sortOrder - b.sortOrder),
+      group: c.sectionType === 'options' && plainView && c.sharedGroupId ? (groupsById.get(c.sharedGroupId) ?? null) : null,
+      products: filtered
+        .filter((p) => p.categoryId === c.id)
+        .sort((a, b) => Number(isProductOrderable(b, now)) - Number(isProductOrderable(a, now)) || a.sortOrder - b.sortOrder),
     }))
     .filter((g) => g.products.length > 0 || g.group);
   const shownCount = grouped.reduce((n, g) => n + g.products.length, 0);
 
   const chip = (active: boolean) =>
-    cn('shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-gold text-ink-950' : 'bg-mist text-fg hover:bg-line');
+    cn(
+      'shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors',
+      active ? 'bg-gold text-ink-950' : 'bg-mist text-fg hover:bg-line',
+    );
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
       <div className="sticky top-[6.6rem] z-20 -mx-4 bg-canvas/95 px-4 pb-3 pt-4 backdrop-blur sm:top-[4.5rem] sm:-mx-6 sm:px-6 md:top-[4.5rem]">
-        <form role="search" onSubmit={(e) => { e.preventDefault(); setParam({ q: query }); }} className="relative">
+        <form
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setParam({ q: query });
+          }}
+          className="relative"
+        >
           <label htmlFor="busca" className="sr-only">
             Buscar no cardápio
           </label>
@@ -123,27 +142,56 @@ export function MenuBrowser({
             autoComplete="off"
           />
           {query ? (
-            <button type="button" onClick={() => { setQuery(''); setParam({ q: null }); }} className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full hover:bg-mist" aria-label="Limpar busca">
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('');
+                setParam({ q: null });
+              }}
+              className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full hover:bg-mist"
+              aria-label="Limpar busca"
+            >
               <X className="size-4" aria-hidden />
             </button>
           ) : null}
         </form>
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none" role="group" aria-label="Filtrar por categoria">
-          <button type="button" className={chip(!category && !collection)} aria-pressed={!category && !collection} onClick={() => setParam({ categoria: null, colecao: null })}>
+          <button
+            type="button"
+            className={chip(!category && !collection)}
+            aria-pressed={!category && !collection}
+            onClick={() => setParam({ categoria: null, colecao: null })}
+          >
             {scope ? 'Todas' : 'Tudo'}
           </button>
           {hasPromos ? (
-            <button type="button" className={chip(collection === 'promocoes')} aria-pressed={collection === 'promocoes'} onClick={() => setParam({ colecao: collection === 'promocoes' ? null : 'promocoes', categoria: null })}>
+            <button
+              type="button"
+              className={chip(collection === 'promocoes')}
+              aria-pressed={collection === 'promocoes'}
+              onClick={() => setParam({ colecao: collection === 'promocoes' ? null : 'promocoes', categoria: null })}
+            >
               Promoções
             </button>
           ) : null}
           {scopedProducts.some((p) => best.has(p.id)) ? (
-            <button type="button" className={chip(collection === 'mais-vendidos')} aria-pressed={collection === 'mais-vendidos'} onClick={() => setParam({ colecao: collection === 'mais-vendidos' ? null : 'mais-vendidos', categoria: null })}>
+            <button
+              type="button"
+              className={chip(collection === 'mais-vendidos')}
+              aria-pressed={collection === 'mais-vendidos'}
+              onClick={() => setParam({ colecao: collection === 'mais-vendidos' ? null : 'mais-vendidos', categoria: null })}
+            >
               Mais vendidos
             </button>
           ) : null}
           {categories.map((c) => (
-            <button key={c.id} type="button" className={chip(category === c.slug)} aria-pressed={category === c.slug} onClick={() => setParam({ categoria: category === c.slug ? null : c.slug, colecao: null })}>
+            <button
+              key={c.id}
+              type="button"
+              className={chip(category === c.slug)}
+              aria-pressed={category === c.slug}
+              onClick={() => setParam({ categoria: category === c.slug ? null : c.slug, colecao: null })}
+            >
               {c.name}
             </button>
           ))}
@@ -197,19 +245,19 @@ export function MenuBrowser({
           group ? (
             <OptionInfoSection key={c.id} category={c} group={group} />
           ) : (
-          <section key={c.id} id={c.slug} aria-labelledby={`cat-${c.slug}`} className="mt-8 scroll-mt-48">
-            <h2 id={`cat-${c.slug}`} className="font-display text-2xl font-semibold sm:text-3xl">
-              {c.name}
-            </h2>
-            {c.description ? <p className="mt-1 text-muted">{c.description}</p> : null}
-            <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {products.map((p) => (
-                <li key={p.id}>
-                  <ProductCard product={p} fetchedAt={catalog.fetchedAt} badge={best.has(p.id) ? 'Mais pedido' : undefined} className="h-full" />
-                </li>
-              ))}
-            </ul>
-          </section>
+            <section key={c.id} id={c.slug} aria-labelledby={`cat-${c.slug}`} className="mt-8 scroll-mt-48">
+              <h2 id={`cat-${c.slug}`} className="font-display text-2xl font-semibold sm:text-3xl">
+                {c.name}
+              </h2>
+              {c.description ? <p className="mt-1 text-muted">{c.description}</p> : null}
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {products.map((p) => (
+                  <li key={p.id}>
+                    <ProductCard product={p} fetchedAt={catalog.fetchedAt} badge={best.has(p.id) ? 'Mais pedido' : undefined} className="h-full" />
+                  </li>
+                ))}
+              </ul>
+            </section>
           ),
         )
       )}

@@ -13,7 +13,8 @@ export function detectImageType(bytes: Uint8Array): (typeof ALLOWED_IMAGE_TYPES)
   if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
   if (b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return 'image/png';
   if (b.length >= 12 && String.fromCharCode(...b.slice(0, 4)) === 'RIFF' && String.fromCharCode(...b.slice(8, 12)) === 'WEBP') return 'image/webp';
-  if (b.length >= 12 && String.fromCharCode(...b.slice(4, 8)) === 'ftyp' && ['avif', 'avis'].includes(String.fromCharCode(...b.slice(8, 12)))) return 'image/avif';
+  if (b.length >= 12 && String.fromCharCode(...b.slice(4, 8)) === 'ftyp' && ['avif', 'avis'].includes(String.fromCharCode(...b.slice(8, 12))))
+    return 'image/avif';
   return null;
 }
 
@@ -41,13 +42,14 @@ export function isAllowedImageUrl(url: string | null, supabaseUrl: string | unde
 
 export function storagePath(folder: ImageFolder, originalName: string, type: string): string {
   const ext = type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : type === 'image/avif' ? 'avif' : 'jpg';
-  const base = originalName
-    .replace(/\.[^.]+$/, '')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 40) || 'imagem';
+  const base =
+    originalName
+      .replace(/\.[^.]+$/, '')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 40) || 'imagem';
   return `${folder}/${base}-${Date.now().toString(36)}.${ext}`;
 }

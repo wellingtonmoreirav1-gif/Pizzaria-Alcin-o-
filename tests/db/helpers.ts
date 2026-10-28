@@ -120,8 +120,6 @@ export function orderPayload(overrides: Record<string, unknown> = {}) {
 
 export async function createOrder(client: pg.Client, overrides: Record<string, unknown> = {}) {
   const payload = orderPayload(overrides);
-  const { rows } = await as(client, { role: 'service_role' }, (c) =>
-    c.query('select * from public.create_order($1)', [JSON.stringify(payload)]),
-  );
+  const { rows } = await as(client, { role: 'service_role' }, (c) => c.query('select * from public.create_order($1)', [JSON.stringify(payload)]));
   return { ...rows[0], payload } as { order_id: string; order_code: string; created: boolean; payload: typeof payload };
 }

@@ -10,7 +10,14 @@ import { confirmOptionPrice, confirmProductPrices, confirmSelectedProducts } fro
 export const metadata = { title: 'Conferência de preços' };
 
 type Variant = { id: string; name: string; size_code: string | null; price: number; sort_order: number; deleted_at: string | null };
-type PendingProduct = { id: string; name: string; base_price: number | null; is_active: boolean; categories: { name: string; sort_order: number } | null; product_variants: Variant[] };
+type PendingProduct = {
+  id: string;
+  name: string;
+  base_price: number | null;
+  is_active: boolean;
+  categories: { name: string; sort_order: number } | null;
+  product_variants: Variant[];
+};
 type PendingValue = { id: string; name: string; price: number; option_groups: { name: string; shared_key: string | null; product_id: string | null } | null };
 type Confirmed = { id: string; name: string; price_confirmed_at: string };
 
@@ -34,11 +41,16 @@ export default async function PricesPage() {
       .is('deleted_at', null)
       .is('option_groups.deleted_at', null)
       .order('sort_order'),
-    supabase.from('products').select('id, name, price_confirmed_at').eq('price_confirmed', true).not('price_confirmed_by', 'is', null).is('deleted_at', null).order('price_confirmed_at', { ascending: false }).limit(10),
+    supabase
+      .from('products')
+      .select('id, name, price_confirmed_at')
+      .eq('price_confirmed', true)
+      .not('price_confirmed_by', 'is', null)
+      .is('deleted_at', null)
+      .order('price_confirmed_at', { ascending: false })
+      .limit(10),
   ]);
-  const products = ((productsRes.data ?? []) as unknown as PendingProduct[]).sort(
-    (a, b) => (a.categories?.sort_order ?? 0) - (b.categories?.sort_order ?? 0),
-  );
+  const products = ((productsRes.data ?? []) as unknown as PendingProduct[]).sort((a, b) => (a.categories?.sort_order ?? 0) - (b.categories?.sort_order ?? 0));
   const values = (valuesRes.data ?? []) as unknown as PendingValue[];
   const recent = (recentRes.data ?? []) as Confirmed[];
   const BULK = 'confirmar-selecionados';
@@ -68,8 +80,13 @@ export default async function PricesPage() {
                       <input type="checkbox" name="product" value={p.id} form={BULK} className="size-4 accent-brand-600" aria-label={`Selecionar ${p.name}`} />
                       {p.name}
                     </label>
-                    <span className="text-xs text-muted">{p.categories?.name}{p.is_active ? '' : ' · rascunho'}</span>
-                    <Link href={`/admin/cardapio/${p.id}`} className="text-xs font-semibold underline">Editar produto</Link>
+                    <span className="text-xs text-muted">
+                      {p.categories?.name}
+                      {p.is_active ? '' : ' · rascunho'}
+                    </span>
+                    <Link href={`/admin/cardapio/${p.id}`} className="text-xs font-semibold underline">
+                      Editar produto
+                    </Link>
                   </div>
                   <ActionForm action={confirmProductPrices.bind(null, p.id)} submitLabel="Salvar e confirmar valores" size="sm" className="space-y-3">
                     <div className="flex flex-wrap gap-3">
@@ -77,13 +94,27 @@ export default async function PricesPage() {
                         variants.map((v) => (
                           <label key={v.id} className="text-xs font-medium">
                             {v.name}
-                            <input name={`variant:${v.id}`} defaultValue={Number(v.price) > 0 ? centsInput(v.price) : ''} placeholder="0,00" inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
+                            <input
+                              name={`variant:${v.id}`}
+                              defaultValue={Number(v.price) > 0 ? centsInput(v.price) : ''}
+                              placeholder="0,00"
+                              inputMode="decimal"
+                              required
+                              className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm"
+                            />
                           </label>
                         ))
                       ) : (
                         <label className="text-xs font-medium">
                           Preço
-                          <input name="basePrice" defaultValue={Number(p.base_price) > 0 ? centsInput(p.base_price) : ''} placeholder="0,00" inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
+                          <input
+                            name="basePrice"
+                            defaultValue={Number(p.base_price) > 0 ? centsInput(p.base_price) : ''}
+                            placeholder="0,00"
+                            inputMode="decimal"
+                            required
+                            className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm"
+                          />
                         </label>
                       )}
                     </div>
@@ -103,7 +134,10 @@ export default async function PricesPage() {
         )}
       </Card>
 
-      <Card title={`Opções sem valor definido (${values.length})`} description="Ex.: molhos. Digite 0,00 se a opção for grátis. Também é possível editar em “Bordas e molhos”.">
+      <Card
+        title={`Opções sem valor definido (${values.length})`}
+        description="Ex.: molhos. Digite 0,00 se a opção for grátis. Também é possível editar em “Bordas e molhos”."
+      >
         {values.length === 0 ? (
           <EmptyState title="Todas as opções têm valor definido" />
         ) : (
@@ -114,7 +148,14 @@ export default async function PricesPage() {
                   <label className="text-sm">
                     <span className="block font-semibold">{v.name}</span>
                     <span className="block text-xs text-muted">{v.option_groups?.name}</span>
-                    <input name="price" inputMode="decimal" placeholder="0,00" required aria-label={`Valor de ${v.name}`} className="mt-1 h-9 w-28 rounded-lg border border-line px-2" />
+                    <input
+                      name="price"
+                      inputMode="decimal"
+                      placeholder="0,00"
+                      required
+                      aria-label={`Valor de ${v.name}`}
+                      className="mt-1 h-9 w-28 rounded-lg border border-line px-2"
+                    />
                   </label>
                 </ActionForm>
               </li>
@@ -128,7 +169,9 @@ export default async function PricesPage() {
           <ul className="divide-y divide-line text-sm">
             {recent.map((r) => (
               <li key={r.id} className="flex flex-wrap justify-between gap-2 py-2">
-                <Link href={`/admin/cardapio/${r.id}`} className="font-medium underline-offset-2 hover:underline">{r.name}</Link>
+                <Link href={`/admin/cardapio/${r.id}`} className="font-medium underline-offset-2 hover:underline">
+                  {r.name}
+                </Link>
                 <span className="text-muted">{dateTime(r.price_confirmed_at)}</span>
               </li>
             ))}

@@ -17,9 +17,5 @@ export function slugify(input: string): string {
 
 /** Normaliza texto para busca (sem acentos, minúsculo). */
 export function normalizeSearch(input: string): string {
-  return input
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .trim();
+  return input.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
