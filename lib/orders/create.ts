@@ -1,5 +1,4 @@
 import 'server-only';
-import { randomUUID } from 'node:crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createPublicClient } from '@/lib/supabase/public';
 import { mapProduct, PRODUCT_SELECT, type ProductRow } from '@/lib/catalog/mappers';
@@ -258,8 +257,4 @@ async function buildResponse(orderId: string, whatsappNumber: string, replayed: 
     replayed,
     totals: order.totals,
   };
-}
-
-export function newIdempotencyKey() {
-  return randomUUID();
 }

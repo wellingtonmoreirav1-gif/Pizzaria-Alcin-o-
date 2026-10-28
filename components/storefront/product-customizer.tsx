@@ -16,7 +16,7 @@ import { useToast } from '@/components/ui/toast';
 import { useCart, type CartLine } from '@/components/cart/cart-context';
 import { PizzaVisual } from './pizza-visual';
 import { HalfPicker } from './half-picker';
-import { useProductDialog } from './product-dialog';
+import { useProductDialog } from './product-dialog-context';
 
 const SHIFT_NOTE = { lunch: 'Servido no horário do almoço', dinner: 'Servido no horário da noite' } as const;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import type { CatalogProduct, LineSelection } from '@/types/catalog';
 import { Dialog } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
@@ -9,6 +9,9 @@ import { useCart, type CartLine } from '@/components/cart/cart-context';
 import { ProductCustomizer } from './product-customizer';
 import { DrinkNudge, availableDrinks } from './drink-nudge';
 import { DRINK_CATEGORY } from '@/lib/catalog/groups';
+import { type AddDirectOptions, ProductDialogContext } from './product-dialog-context';
+
+export { useProductDialog } from './product-dialog-context';
 
 interface DialogState {
   product: CatalogProduct;
@@ -19,27 +22,6 @@ interface DialogState {
   /** Segundo sabor já escolhido (pizza metade/metade). */
   halfProductId?: string | null;
 }
-
-interface ProductDialogValue {
-  open: (product: CatalogProduct, fetchedAt: string, editLine?: CartLine | null, variantId?: string | null, halfProductId?: string | null) => void;
-  /** Adiciona direto quando o produto não precisa de escolhas; senão abre o montador. */
-  quickAdd: (product: CatalogProduct, fetchedAt: string) => void;
-  /** Adiciona com o tamanho escolhido, sem adicionais (pedido passo a passo). */
-  addDirect: (product: CatalogProduct, variantId: string | null, quantity?: number, opts?: AddDirectOptions) => boolean;
-  /** Sabores de pizza para a segunda metade (metade/metade). */
-  pizzas: CatalogProduct[];
-  /** Depois de adicionar um item que não é bebida: sugere uma bebida (se houver). */
-  suggestDrink: (added: CatalogProduct) => void;
-}
-
-interface AddDirectOptions {
-  silent?: boolean;
-  suggest?: boolean;
-  /** Pizza metade/metade: o outro sabor. */
-  half?: CatalogProduct | null;
-}
-
-const ProductDialogContext = createContext<ProductDialogValue | null>(null);
 
 /** Abre o montador quando há escolhas a fazer (tamanho, opções disponíveis ou obrigatórias). */
 export function needsCustomization(product: CatalogProduct): boolean {
@@ -144,10 +126,4 @@ export function ProductDialogProvider({ children, drinks = [], pizzas = [] }: { 
       ) : null}
     </ProductDialogContext>
   );
-}
-
-export function useProductDialog() {
-  const ctx = useContext(ProductDialogContext);
-  if (!ctx) throw new Error('useProductDialog precisa estar dentro de ProductDialogProvider');
-  return ctx;
 }

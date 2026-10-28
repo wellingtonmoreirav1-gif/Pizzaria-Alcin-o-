@@ -56,12 +56,15 @@ Base: skill **Design Motion Principles**. Uma tela só está pronta quando tem:
 ## 4. Verificações antes de abrir o PR
 
 ```bash
-npm run lint        # ESLint (regras do Next.js)
-npm run typecheck   # TypeScript
-npm test            # testes unitários (Vitest)
+npm run check       # Biome + ESLint + TypeScript + Knip + Arch-Contract + testes unitários
 ```
 
-Testes de banco e ponta a ponta: veja `docs/TESTES.md`. Quando o PR mexer em fluxo de pedido, preço, login ou painel, rode também `npm run test:db` e `npm run test:e2e`.
+- **Commits** no padrão Conventional Commits, em português: `feat: …`, `fix: …`, `docs: …` (Commitlint confere no commit e no CI). Mencione a Issue no corpo (`Closes #N`).
+- **Formatação**: `npm run biome:fix` antes do commit (o hook do Husky já formata os arquivos do commit).
+- **Arquitetura**: respeite `arch-contract.yaml`. Componentes nunca importam `lib/supabase/admin.ts` nem `lib/env.ts`. Regras de negócio (`lib/pricing`, `lib/money.ts`…) não importam Next.js, React nem Supabase.
+- **Código sem uso** apontado pelo Knip: remova-o, não silencie.
+- **Testes**: toda regra de negócio nova ou alterada ganha teste unitário em `tests/unit/`. Mudanças em pedido, preço, login ou painel: rode também `npm run test:db` e `npm run test:e2e` (`docs/TESTES.md`). O CI roda tudo isso em cada PR, com cobertura enviada ao Codecov.
+- Detalhes das ferramentas: `docs/QUALIDADE.md`.
 
 ## 5. Observabilidade
 
@@ -73,6 +76,6 @@ Sentry, Datadog, New Relic e OpenTelemetry já estão integrados e ligam só por
 ## 6. Documentação do projeto
 
 - `README.md` — visão geral, publicação e uso.
-- `docs/ARQUITETURA.md`, `docs/PERMISSOES.md`, `docs/REGRAS-DE-PRECO.md`, `docs/LGPD.md`, `docs/TESTES.md`, `docs/CUSTOS.md`, `docs/OBSERVABILIDADE.md`, `docs/PENDENCIAS.md`.
+- `docs/ARQUITETURA.md`, `docs/PERMISSOES.md`, `docs/REGRAS-DE-PRECO.md`, `docs/LGPD.md`, `docs/TESTES.md`, `docs/CUSTOS.md`, `docs/OBSERVABILIDADE.md`, `docs/QUALIDADE.md`, `docs/PENDENCIAS.md`.
 
 Mantenha a documentação atualizada no mesmo PR da mudança.

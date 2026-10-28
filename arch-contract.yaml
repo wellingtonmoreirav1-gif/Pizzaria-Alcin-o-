@@ -1,0 +1,72 @@
+# Contrato de arquitetura do Alcinão (arch-contract). Rode: npm run arch
+# Regras de quem pode importar quem. Explicação de cada camada: docs/QUALIDADE.md.
+version: 1
+project:
+  name: alcinao-pedidos
+  packageManager: npm
+  tsconfig: tsconfig.json
+
+paths:
+  include: [app, components, lib, types, config]
+  exclude: ["**/*.d.ts"]
+
+layers:
+  # Server actions: funções do servidor chamadas pelos formulários dos componentes.
+  - name: acoes
+    match: ["app/**/actions.ts"]
+  # Páginas, layouts, rotas de API e server actions (Next.js App Router).
+  - name: rotas
+    match: ["app/**/*.{ts,tsx}"]
+  # Componentes de interface (servidor e navegador).
+  - name: componentes
+    match: ["components/**/*.{ts,tsx}"]
+  # Regras de negócio puras: preço, dinheiro, telefone, horários, validação, WhatsApp.
+  - name: dominio
+    match:
+      - "lib/pricing/**/*.ts"
+      - "lib/money.ts"
+      - "lib/phone.ts"
+      - "lib/business-hours/**/*.ts"
+      - "lib/validation/**/*.ts"
+      - "lib/whatsapp/**/*.ts"
+      - "lib/utils.ts"
+      - "lib/orders/labels.ts"
+      - "types/**/*.ts"
+      - "config/**/*.ts"
+  # Acesso com chave secreta (ignora RLS): só o servidor pode usar.
+  - name: segredos
+    match: ["lib/supabase/admin.ts", "lib/env.ts"]
+  # Demais módulos de servidor e infraestrutura.
+  - name: servidor
+    match: ["lib/**/*.{ts,tsx}"]
+
+ruleset:
+  dominio: { mayDependOn: [dominio] }
+  segredos: { mayDependOn: [dominio, servidor] }
+  servidor: { mayDependOn: [dominio, segredos, servidor] }
+  acoes: { mayDependOn: [acoes, dominio, servidor, segredos] }
+  componentes: { mayDependOn: [componentes, acoes, dominio, servidor] }
+  rotas: { mayDependOn: [rotas, acoes, componentes, dominio, servidor, segredos] }
+
+rules:
+  - name: componentes-nao-usam-chave-secreta
+    type: forbidden-import
+    from: { layer: componentes }
+    to: { layer: segredos }
+    severity: error
+  - name: sem-ciclos-entre-arquivos
+    type: no-cycles
+    scope: file
+    severity: error
+
+expectations:
+  - name: dominio-sem-framework
+    expect: { layer: dominio }
+    to:
+      notDependOnPackages: ["next", "next/*", "react", "react-dom", "@supabase/*", "server-only"]
+    severity: error
+  - name: chave-secreta-so-no-servidor
+    expect: { layer: segredos }
+    to:
+      notDependOnPackages: ["react", "react-dom"]
+    severity: error

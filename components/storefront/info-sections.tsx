@@ -34,6 +34,9 @@ export function ReviewsSection({ reviews }: { reviews: PublicReview[] }) {
   );
 }
 
+/**
+ * @public Fora da página inicial desde que ela passou a terminar em "Bom saber"; mantida para reuso.
+ */
 export function InfoSections({ settings, hours }: { settings: SiteSettings; hours: BusinessHourRow[] }) {
   const address = [settings.addressLine, settings.city, settings.state].filter(Boolean).join(', ');
   const mapsQuery = encodeURIComponent(`${settings.businessName}, ${address}`);

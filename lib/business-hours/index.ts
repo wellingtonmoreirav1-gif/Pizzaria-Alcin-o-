@@ -244,5 +244,4 @@ export function computeStoreStatus(config: HoursConfig, now: Date): StoreStatus 
   };
 }
 
-export const SHIFT_LABELS = SHIFT_LABEL;
 export const WEEKDAY_LABELS = WEEKDAYS;

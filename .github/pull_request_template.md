@@ -12,9 +12,8 @@ Closes #
 
 ## Como foi verificado
 
-- [ ] `npm run lint`
-- [ ] `npm run typecheck`
-- [ ] `npm test`
+- [ ] `npm run check` (Biome, ESLint, TypeScript, Knip, Arch-Contract, unitários)
+- [ ] Commits no padrão `tipo: descrição` (Commitlint)
 - [ ] Testes de banco / ponta a ponta (quando mexe em pedido, preço, login ou painel)
 - [ ] Conferido no celular (prévia da Vercel)
 

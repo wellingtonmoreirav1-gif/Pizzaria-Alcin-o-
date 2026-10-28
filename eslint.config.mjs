@@ -19,6 +19,12 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     '.local-supabase/**',
     'test-results/**',
+    'playwright-report/**',
+    'coverage/**',
+    'coverage-db/**',
+    'reports/**',
+    '.stryker-tmp/**',
+    '.svc/**',
     '.shot.mjs',
     // Skills do assistente (código de terceiros, fora do site).
     '.claude/**',
