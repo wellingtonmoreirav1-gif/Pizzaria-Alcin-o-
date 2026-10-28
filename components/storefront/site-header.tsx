@@ -28,7 +28,7 @@ export async function SiteHeader() {
       >
         Pular para o conteúdo
       </a>
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:h-[4.5rem] sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 min-[360px]:gap-4 sm:h-[4.5rem] sm:px-6">
         <Link href="/" className="shrink-0">
           <BrandLogo logoUrl={operation.settings.logoUrl} name={operation.settings.businessName} />
           <span className="sr-only">, página inicial</span>

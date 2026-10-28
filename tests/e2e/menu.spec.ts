@@ -226,7 +226,9 @@ test('telas pequenas (320 px): cardápio, produto e carrinho sem rolagem horizon
   for (const path of ['/cardapio', '/produto/pizza-calabresa', '/produto/lasanha-mista', '/carrinho', '/']) {
     await page.goto(path);
     await page.waitForLoadState('networkidle');
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    // Mede contra a área visível: se a página passar da tela, o celular reduz o zoom e
+    // window.innerWidth cresce junto, escondendo a rolagem horizontal.
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - (window.visualViewport?.width ?? window.innerWidth));
     expect(overflow, path).toBeLessThanOrEqual(1);
   }
 });

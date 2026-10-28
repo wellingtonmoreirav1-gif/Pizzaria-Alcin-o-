@@ -442,7 +442,7 @@ test('almoço encerrado bloqueia itens do almoço', async ({ request }) => {
 test('layout móvel sem rolagem horizontal', async ({ page }) => {
   for (const path of ['/', '/cardapio', '/produto/exemplo-pizza', '/checkout', '/conta']) {
     await page.goto(path);
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - (window.visualViewport?.width ?? window.innerWidth));
     expect(overflow, path).toBeLessThanOrEqual(1);
   }
 });
