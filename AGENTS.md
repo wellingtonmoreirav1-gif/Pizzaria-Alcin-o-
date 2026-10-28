@@ -63,9 +63,16 @@ npm test            # testes unitários (Vitest)
 
 Testes de banco e ponta a ponta: veja `docs/TESTES.md`. Quando o PR mexer em fluxo de pedido, preço, login ou painel, rode também `npm run test:db` e `npm run test:e2e`.
 
-## 5. Documentação do projeto
+## 5. Observabilidade
+
+Sentry, Datadog, New Relic e OpenTelemetry já estão integrados e ligam só por variável de ambiente (`docs/OBSERVABILIDADE.md`). Ao escrever código:
+
+- Erro capturado em `try/catch` para mostrar mensagem amigável → registre com `reportError('escopo', erro)` de `lib/observability/report.ts` (não use só `console.error`).
+- Nunca envie dados pessoais (telefone, nome, endereço, e-mail) ou tokens para atributos de span, tags ou mensagens de erro. A limpeza automática (`lib/observability/scrub.ts`) é uma rede de segurança, não um convite.
+
+## 6. Documentação do projeto
 
 - `README.md` — visão geral, publicação e uso.
-- `docs/ARQUITETURA.md`, `docs/PERMISSOES.md`, `docs/REGRAS-DE-PRECO.md`, `docs/LGPD.md`, `docs/TESTES.md`, `docs/CUSTOS.md`, `docs/PENDENCIAS.md`.
+- `docs/ARQUITETURA.md`, `docs/PERMISSOES.md`, `docs/REGRAS-DE-PRECO.md`, `docs/LGPD.md`, `docs/TESTES.md`, `docs/CUSTOS.md`, `docs/OBSERVABILIDADE.md`, `docs/PENDENCIAS.md`.
 
 Mantenha a documentação atualizada no mesmo PR da mudança.

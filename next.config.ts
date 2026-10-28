@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs/config';
 
 const supabaseHost = (() => {
   try {
@@ -49,4 +50,17 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/*
+ * Envio dos source maps ao Sentry (erros com o código legível) só quando o token existe
+ * na Vercel. Sem SENTRY_AUTH_TOKEN o build fica exatamente como antes.
+ */
+export default process.env.SENTRY_AUTH_TOKEN
+  ? withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      silent: !process.env.CI,
+      telemetry: false,
+      sourcemaps: { deleteSourcemapsAfterUpload: true },
+    })
+  : nextConfig;
