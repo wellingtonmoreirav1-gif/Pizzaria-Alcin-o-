@@ -3,6 +3,7 @@ import { updateTag } from 'next/cache';
 import { requireStaff, type AppRole, type StaffContext } from '@/lib/auth/session';
 import { createSessionClient } from '@/lib/supabase/server';
 import { friendlyDbError } from '@/lib/orders/labels';
+import { reportError } from '@/lib/observability/report';
 import { CACHE_TAGS } from '@/lib/catalog/queries';
 
 export type ActionResult = { ok: boolean; message: string; id?: string };
@@ -29,7 +30,7 @@ export async function runAdminAction(
   } catch (error) {
     if (error instanceof ActionError) return { ok: false, message: error.message };
     const message = error && typeof error === 'object' && 'message' in error ? String((error as { message: string }).message) : '';
-    console.error('[admin] falha', message.slice(0, 200));
+    reportError('admin', error instanceof Error ? error : new Error(message.slice(0, 200)));
     return { ok: false, message: friendlyDbError({ message }) };
   }
 }

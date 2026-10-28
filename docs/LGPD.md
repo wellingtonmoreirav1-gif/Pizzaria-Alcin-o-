@@ -20,6 +20,10 @@ Não há rastreamento contínuo, localização em segundo plano, cookies de publ
 - A localização é opcional, pedida apenas quando o cliente toca no botão, uma única vez, e explicada na tela.
 - Cadastro é opcional.
 
+## Serviços de monitoramento (opcionais)
+
+Sentry, Datadog e New Relic, quando ligados (veja [OBSERVABILIDADE.md](OBSERVABILIDADE.md)), recebem só dados técnicos: rota acessada, tempo, código de status e mensagem de erro. Query strings (onde ficam o token do pedido e filtros com telefone), cookies, corpo das requisições e campos de contato são removidos antes do envio. Se algum for ligado, cite-o na política de privacidade como operador de dados técnicos.
+
 ## Atendimento aos titulares
 
 | Pedido do titular | Como atender |

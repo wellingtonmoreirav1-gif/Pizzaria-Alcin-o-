@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createPublicClient } from '@/lib/supabase/public';
 import { mapProduct, PRODUCT_SELECT, type ProductRow } from '@/lib/catalog/mappers';
+import { reportError } from '@/lib/observability/report';
 import { getOperationFresh } from '@/lib/catalog/queries';
 import { computeStoreStatus } from '@/lib/business-hours';
 import { priceLine, sumLines, type PricedLine, type PricingError } from '@/lib/pricing';
@@ -242,7 +243,7 @@ export async function createOrder(
 
   const { data, error } = await admin.rpc('create_order', { p_order: payload });
   if (error || !data?.[0]) {
-    console.error('[pedido] falha ao gravar', error?.code, error?.message);
+    reportError('pedido', new Error(`falha ao gravar: ${error?.message ?? 'sem retorno'}`), { code: error?.code });
     throw new OrderError(503, 'ORDER_NOT_SAVED', 'Não conseguimos registrar seu pedido agora. Seu carrinho foi mantido; tente novamente.');
   }
   const row = data[0] as { order_id: string; created: boolean; stored_request_hash: string };

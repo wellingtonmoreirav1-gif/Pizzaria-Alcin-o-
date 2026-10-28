@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
+import { reportError } from '@/lib/observability/report';
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    console.error(error.digest ?? 'erro');
+    reportError('pagina', error, { digest: error.digest });
   }, [error]);
   return (
     <main className="grid min-h-[60vh] place-items-center px-4 text-center">

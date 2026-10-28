@@ -263,5 +263,6 @@ Não há promessa de custo zero. Análise completa, o que acontece ao atingir li
 - [docs/LGPD.md](docs/LGPD.md) — dados coletados, retenção, como atender pedidos dos titulares.
 - [docs/LOGO-E-IMAGENS.md](docs/LOGO-E-IMAGENS.md) — logo oficial, direção de arte e produção das fotos.
 - [docs/CUSTOS.md](docs/CUSTOS.md) — custos, limites e backups.
+- [docs/OBSERVABILIDADE.md](docs/OBSERVABILIDADE.md) — Sentry, Datadog, New Relic e OpenTelemetry (desligados até configurar).
 - [docs/TESTES.md](docs/TESTES.md) — como rodar e o que os testes cobrem.
 - [docs/PENDENCIAS.md](docs/PENDENCIAS.md) — informações que faltam e checklist de publicação.
