@@ -1,13 +1,5 @@
 import { toCents, toCentsOrNull } from '@/lib/money';
-import type {
-  CatalogCategory,
-  CatalogOptionGroup,
-  CatalogProduct,
-  FlavorPriceRule,
-  OptionGroupKind,
-  ProductKind,
-  ShiftRestriction,
-} from '@/types/catalog';
+import type { CatalogCategory, CatalogOptionGroup, CatalogProduct, FlavorPriceRule, OptionGroupKind, ProductKind, ShiftRestriction } from '@/types/catalog';
 
 /* Tipos das linhas retornadas pelo PostgREST (somente o que usamos). */
 export interface VariantRow {
@@ -236,8 +228,8 @@ export function mapProduct(row: ProductRow): CatalogProduct {
       description: c.description,
       productName: c.item?.name ?? 'Item',
       isAvailable:
-        Boolean(c.item && c.item.is_available && c.item.is_active && !c.item.deleted_at) &&
-        (c.item_variant_id === null || Boolean(c.variant && c.variant.is_available && c.variant.is_active && !c.variant.deleted_at)),
+        Boolean(c.item?.is_available && c.item.is_active && !c.item.deleted_at) &&
+        (c.item_variant_id === null || Boolean(c.variant?.is_available && c.variant.is_active && !c.variant.deleted_at)),
     })),
   };
 }

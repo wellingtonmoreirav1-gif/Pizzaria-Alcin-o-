@@ -51,10 +51,12 @@ export async function addException(_prev: ActionResult | null, form: FormData): 
       const closes = time(str(form, 'closesAt'));
       if (!closed && (!shift || !opens)) throw new ActionError('Horário especial precisa de turno e horário de abertura.');
       check(
-        await db.from('business_hour_exceptions').upsert(
-          { date, shift: shift || null, is_closed: closed, opens_at: closed ? null : opens, closes_at: closed ? null : closes, note: str(form, 'note') },
-          { onConflict: 'date,shift' },
-        ),
+        await db
+          .from('business_hour_exceptions')
+          .upsert(
+            { date, shift: shift || null, is_closed: closed, opens_at: closed ? null : opens, closes_at: closed ? null : closes, note: str(form, 'note') },
+            { onConflict: 'date,shift' },
+          ),
       );
       revalidatePath('/admin/horarios');
       return 'Exceção registrada.';

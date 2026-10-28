@@ -18,7 +18,7 @@ export async function POST(request: Request, ctx: RouteContext<'/api/orders/[cod
     return jsonError(404, 'NOT_FOUND', 'Pedido não encontrado.');
   }
   const order = await getOrderSnapshot(orderId);
-  if (!order || order.status !== 'completed') {
+  if (order?.status !== 'completed') {
     return jsonError(409, 'NOT_COMPLETED', 'Só é possível avaliar pedidos concluídos.');
   }
   const { error } = await createAdminClient().from('reviews').insert({

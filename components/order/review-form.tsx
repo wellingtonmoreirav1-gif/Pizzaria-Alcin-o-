@@ -12,7 +12,12 @@ export function ReviewForm({ code, token, defaultName }: { code: string; token: 
   const [comment, setComment] = useState('');
   const [state, setState] = useState<{ status: 'idle' | 'sending' | 'done' | 'error'; message?: string }>({ status: 'idle' });
 
-  if (state.status === 'done') return <Notice tone="success" live>Obrigado! Sua avaliação será publicada após a moderação da equipe.</Notice>;
+  if (state.status === 'done')
+    return (
+      <Notice tone="success" live>
+        Obrigado! Sua avaliação será publicada após a moderação da equipe.
+      </Notice>
+    );
 
   return (
     <form
@@ -40,21 +45,38 @@ export function ReviewForm({ code, token, defaultName }: { code: string; token: 
             <label key={n} className="cursor-pointer">
               <input type="radio" name="rating" value={n} className="sr-only" checked={rating === n} onChange={() => setRating(n)} />
               <Star className={cn('size-8', n <= rating ? 'fill-brand-600 text-brand-600' : 'text-line')} aria-hidden />
-              <span className="sr-only">{n} {n === 1 ? 'estrela' : 'estrelas'}</span>
+              <span className="sr-only">
+                {n} {n === 1 ? 'estrela' : 'estrelas'}
+              </span>
             </label>
           ))}
         </div>
       </fieldset>
       <label className="block text-sm font-semibold">
         Nome exibido
-        <input value={name} onChange={(e) => setName(e.target.value.slice(0, 60))} className="mt-1 h-11 w-full rounded-xl border border-line px-3 font-normal" required />
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value.slice(0, 60))}
+          className="mt-1 h-11 w-full rounded-xl border border-line px-3 font-normal"
+          required
+        />
       </label>
       <label className="block text-sm font-semibold">
         Comentário (opcional)
-        <textarea value={comment} onChange={(e) => setComment(e.target.value.slice(0, 1000))} className="mt-1 min-h-20 w-full rounded-xl border border-line px-3 py-2 font-normal" />
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value.slice(0, 1000))}
+          className="mt-1 min-h-20 w-full rounded-xl border border-line px-3 py-2 font-normal"
+        />
       </label>
-      {state.status === 'error' ? <Notice tone="danger" live>{state.message}</Notice> : null}
-      <Button type="submit" loading={state.status === 'sending'}>Enviar avaliação</Button>
+      {state.status === 'error' ? (
+        <Notice tone="danger" live>
+          {state.message}
+        </Notice>
+      ) : null}
+      <Button type="submit" loading={state.status === 'sending'}>
+        Enviar avaliação
+      </Button>
     </form>
   );
 }

@@ -76,7 +76,10 @@ export function ProductCard({
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <h3 className="font-display text-lg font-semibold leading-snug">
-          <Link href={`/produto/${product.slug}`} className="after:absolute after:inset-0 after:rounded-[var(--radius-card)] after:content-[''] focus-visible:outline-none focus-visible:after:outline-3 focus-visible:after:-outline-offset-3 focus-visible:after:outline-gold">
+          <Link
+            href={`/produto/${product.slug}`}
+            className="after:absolute after:inset-0 after:rounded-[var(--radius-card)] after:content-[''] focus-visible:outline-none focus-visible:after:outline-3 focus-visible:after:-outline-offset-3 focus-visible:after:outline-gold"
+          >
             {product.name}
           </Link>
         </h3>

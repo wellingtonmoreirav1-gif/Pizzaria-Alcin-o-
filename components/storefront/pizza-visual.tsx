@@ -19,7 +19,12 @@ export function PizzaVisual({ flavors, maxFlavors, hasCrust }: { flavors: string
   });
   return (
     <figure className="flex flex-col items-center gap-2">
-      <svg viewBox="0 0 200 200" className="size-40 drop-shadow-[0_10px_25px_rgba(12,10,9,0.35)] sm:size-48" role="img" aria-label={flavors.length ? `Pizza com ${flavors.join(', ')}` : 'Escolha os sabores'}>
+      <svg
+        viewBox="0 0 200 200"
+        className="size-40 drop-shadow-[0_10px_25px_rgba(12,10,9,0.35)] sm:size-48"
+        role="img"
+        aria-label={flavors.length ? `Pizza com ${flavors.join(', ')}` : 'Escolha os sabores'}
+      >
         <circle cx={cx} cy={cy} r={96} fill={hasCrust ? '#e9b26a' : '#d99a52'} />
         <circle cx={cx} cy={cy} r={hasCrust ? 86 : 90} fill="#f3d9a4" />
         {flavors.length === 0 ? (
@@ -33,9 +38,14 @@ export function PizzaVisual({ flavors, maxFlavors, hasCrust }: { flavors: string
             ),
           )
         )}
-        {[[70, 70], [130, 85], [95, 130], [125, 125], [75, 115], [105, 60]].map(([x, y], i) =>
-          flavors.length ? <circle key={i} cx={x} cy={y} r={5} fill="#fff" fillOpacity={0.55} /> : null,
-        )}
+        {[
+          [70, 70],
+          [130, 85],
+          [95, 130],
+          [125, 125],
+          [75, 115],
+          [105, 60],
+        ].map(([x, y], i) => (flavors.length ? <circle key={i} cx={x} cy={y} r={5} fill="#fff" fillOpacity={0.55} /> : null))}
       </svg>
       <figcaption className="text-center text-xs text-muted-strong">
         {flavors.length === 0

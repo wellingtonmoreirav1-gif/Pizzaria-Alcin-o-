@@ -69,9 +69,22 @@ describe('create_order', () => {
     expect(rows[0].n).toBe(0);
     await expect(
       createOrder(client, {
-        items: [{ product_id: '00000000-0000-4000-8000-000000000002', product_kind: 'simple', product_name: 'x', quantity: 2,
-                  unit_regular_price: '1.00', unit_discount: '0', unit_price: '1.00', line_total: '5.00' }],
-        gross_subtotal: '5.00', discount_total: '0', items_subtotal: '5.00', total: '5.00',
+        items: [
+          {
+            product_id: '00000000-0000-4000-8000-000000000002',
+            product_kind: 'simple',
+            product_name: 'x',
+            quantity: 2,
+            unit_regular_price: '1.00',
+            unit_discount: '0',
+            unit_price: '1.00',
+            line_total: '5.00',
+          },
+        ],
+        gross_subtotal: '5.00',
+        discount_total: '0',
+        items_subtotal: '5.00',
+        total: '5.00',
       }),
     ).rejects.toThrow(/check constraint/);
   });
@@ -82,8 +95,14 @@ describe('create_order', () => {
 
   it('pedido de retirada tem total final', async () => {
     const r = await createOrder(client, {
-      fulfillment: 'pickup', delivery_fee_status: 'not_applicable', address_street: null, address_number: null,
-      address_neighborhood: null, latitude: null, longitude: null, location_source: null,
+      fulfillment: 'pickup',
+      delivery_fee_status: 'not_applicable',
+      address_street: null,
+      address_number: null,
+      address_neighborhood: null,
+      latitude: null,
+      longitude: null,
+      location_source: null,
     });
     const { rows } = await client.query('select total_is_final, approved_total from public.orders where id = $1', [r.order_id]);
     expect(rows[0]).toEqual({ total_is_final: true, approved_total: '18.00' });
@@ -119,7 +138,9 @@ describe('status e taxa de entrega', () => {
     await expect(
       as(client, { role: 'authenticated', userId: manager }, (c) => c.query(`select public.set_delivery_fee($1, 7.00, true, null)`, [r.order_id])),
     ).rejects.toThrow(/note_required/);
-    await as(client, { role: 'authenticated', userId: manager }, (c) => c.query(`select public.set_delivery_fee($1, 7.00, true, 'Erro de digitação')`, [r.order_id]));
+    await as(client, { role: 'authenticated', userId: manager }, (c) =>
+      c.query(`select public.set_delivery_fee($1, 7.00, true, 'Erro de digitação')`, [r.order_id]),
+    );
     ({ rows } = await client.query('select total, needs_customer_approval from public.orders where id = $1', [r.order_id]));
     expect(rows[0]).toEqual({ total: '25.00', needs_customer_approval: true });
   });
@@ -133,14 +154,23 @@ describe('status e taxa de entrega', () => {
 
   it('fluxo completo registra quem alterou cada status', async () => {
     const r = await createOrder(client, {
-      fulfillment: 'pickup', delivery_fee_status: 'not_applicable', address_street: null, address_number: null,
-      address_neighborhood: null, latitude: null, longitude: null, location_source: null,
+      fulfillment: 'pickup',
+      delivery_fee_status: 'not_applicable',
+      address_street: null,
+      address_number: null,
+      address_neighborhood: null,
+      latitude: null,
+      longitude: null,
+      location_source: null,
     });
     for (const s of ['accepted', 'preparing', 'ready']) await status(r.order_id, s);
     await expect(status(r.order_id, 'out_for_delivery')).rejects.toThrow(/invalid_transition/);
     await status(r.order_id, 'completed');
     await expect(status(r.order_id, 'cancelled', `null, 'other'`)).rejects.toThrow(/invalid_transition/);
-    const hist = await client.query('select from_status, to_status, changed_by, changed_by_role from public.order_status_history where order_id = $1 order by id', [r.order_id]);
+    const hist = await client.query(
+      'select from_status, to_status, changed_by, changed_by_role from public.order_status_history where order_id = $1 order by id',
+      [r.order_id],
+    );
     expect(hist.rows.map((h) => h.to_status)).toEqual(['registered', 'accepted', 'preparing', 'ready', 'completed']);
     expect(hist.rows[4]).toMatchObject({ from_status: 'ready', changed_by: attendant, changed_by_role: 'attendant' });
   });
@@ -182,7 +212,9 @@ describe('operação', () => {
 
   it('limpa coordenadas antigas e anonimiza pedidos', async () => {
     const r = await createOrder(client, { customer_phone: '83911112222' });
-    await client.query(`update public.orders set status = 'cancelled', cancel_reason = 'other', created_at = now() - interval '200 days' where id = $1`, [r.order_id]);
+    await client.query(`update public.orders set status = 'cancelled', cancel_reason = 'other', created_at = now() - interval '200 days' where id = $1`, [
+      r.order_id,
+    ]);
     const purged = await as(client, { role: 'service_role' }, (c) => c.query('select public.purge_expired_personal_data() as n'));
     expect(purged.rows[0].n).toBeGreaterThanOrEqual(1);
     const anon = await as(client, { role: 'service_role' }, (c) => c.query(`select public.anonymize_customer_orders(null, '83911112222') as n`));

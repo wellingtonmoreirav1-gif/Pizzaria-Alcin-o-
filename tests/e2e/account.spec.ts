@@ -99,6 +99,8 @@ test('cliente exclui a conta e os pedidos ficam anonimizados', async ({ page }) 
   await page.getByRole('button', { name: 'Sim, excluir definitivamente' }).click();
   await expect(page).toHaveURL(/conta=excluida/);
   expect(await sql('select id from auth.users where id = $1', [user?.id])).toHaveLength(0);
-  const orders = await sql<{ customer_name: string | null; total: string }>(`select customer_name, total from public.orders where customer_phone is null and anonymized_at is not null`);
+  const orders = await sql<{ customer_name: string | null; total: string }>(
+    `select customer_name, total from public.orders where customer_phone is null and anonymized_at is not null`,
+  );
   expect(orders.some((o) => o.total === '12.00' && o.customer_name === null)).toBe(true);
 });

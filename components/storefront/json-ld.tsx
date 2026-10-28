@@ -31,5 +31,6 @@ export function RestaurantJsonLd({ settings, hours }: { settings: SiteSettings; 
     .filter((h) => h.isActive && h.closesAt)
     .map((h) => ({ '@type': 'OpeningHoursSpecification', dayOfWeek: DAYS[h.weekday], opens: h.opensAt.slice(0, 5), closes: h.closesAt?.slice(0, 5) }));
   if (spec.length) data.openingHoursSpecification = spec;
+  // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD gerado no servidor, com '<' escapado.
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, '\\u003c') }} />;
 }

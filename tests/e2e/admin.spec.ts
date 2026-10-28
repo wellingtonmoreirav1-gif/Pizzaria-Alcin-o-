@@ -69,9 +69,15 @@ test('atendente: fluxo do pedido com taxa auditável; sem acesso a cardápio e r
   await page.getByRole('button', { name: 'Concluir pedido' }).click();
   await expect(page.getByText('Concluído').first()).toBeVisible();
 
-  const [row] = await sql<{ status: string; total: string; delivery_fee_status: string }>('select status, total, delivery_fee_status from public.orders where code = $1', [code]);
+  const [row] = await sql<{ status: string; total: string; delivery_fee_status: string }>(
+    'select status, total, delivery_fee_status from public.orders where code = $1',
+    [code],
+  );
   expect(row).toEqual({ status: 'completed', total: '17.00', delivery_fee_status: 'confirmed' });
-  const history = await sql<{ changed_by_role: string | null }>(`select h.changed_by_role from public.order_status_history h join public.orders o on o.id = h.order_id where o.code = $1 order by h.id`, [code]);
+  const history = await sql<{ changed_by_role: string | null }>(
+    `select h.changed_by_role from public.order_status_history h join public.orders o on o.id = h.order_id where o.code = $1 order by h.id`,
+    [code],
+  );
   expect(history.map((h) => h.changed_by_role)).toEqual([null, 'attendant', 'attendant', 'attendant', 'attendant', 'attendant', 'attendant']);
   const adjustments = await sql(`select a.kind from public.order_adjustments a join public.orders o on o.id = a.order_id where o.code = $1`, [code]);
   expect(adjustments).toHaveLength(2);
@@ -104,7 +110,9 @@ test('gerente cadastra produto, publica, vê no site e marca como esgotado', asy
   await page.getByLabel('Publicado no site').filter({ visible: true }).check();
   await page.getByRole('button', { name: 'Salvar produto' }).filter({ visible: true }).click();
   await expect(page.getByText('Publicado no site.')).toBeVisible();
-  const [audit] = await sql<{ n: number }>(`select count(*)::int as n from public.audit_logs where table_name = 'products' and new_data->>'name' = 'Suco Teste E2E'`);
+  const [audit] = await sql<{ n: number }>(
+    `select count(*)::int as n from public.audit_logs where table_name = 'products' and new_data->>'name' = 'Suco Teste E2E'`,
+  );
   expect(audit?.n).toBeGreaterThanOrEqual(2);
 
   // Produto novo entra com "preço em conferência": aparece, mas não pode ser pedido.
@@ -153,7 +161,9 @@ test('relatórios mostram dados reais e exportam CSV', async ({ page }) => {
   await login(page, USERS.manager);
   await page.goto('/admin/relatorios?periodo=30');
   await expect(page.getByRole('heading', { name: 'Relatórios' })).toBeVisible();
-  const [o] = await sql<{ revenue: string }>(`select coalesce(sum(total), 0)::text as revenue from public.orders where status = 'completed' and created_at > now() - interval '30 days'`);
+  const [o] = await sql<{ revenue: string }>(
+    `select coalesce(sum(total), 0)::text as revenue from public.orders where status = 'completed' and created_at > now() - interval '30 days'`,
+  );
   const reais = Number(o?.revenue ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
   await expect(page.getByText('Faturamento (concluídos)').locator('..')).toContainText(reais);
   const csv = await page.request.get('/admin/relatorios/exportar?tipo=produtos&periodo=30');

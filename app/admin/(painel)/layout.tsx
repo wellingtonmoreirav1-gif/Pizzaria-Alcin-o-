@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
-import { can, getSessionUser, getStaffContext, PERMISSIONS, ROLE_LABEL } from '@/lib/auth/session';
+import { can, getSessionUser, getStaffContext, type PERMISSIONS, ROLE_LABEL } from '@/lib/auth/session';
 import { createSessionClient } from '@/lib/supabase/server';
 import { AdminNav, type NavItem } from '@/components/admin/admin-nav';
 import { Skeleton } from '@/components/ui/feedback';

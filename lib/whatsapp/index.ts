@@ -5,13 +5,7 @@
  */
 import { formatBRL, type Cents } from '@/lib/money';
 import { formatBrazilPhone } from '@/lib/phone';
-import {
-  FULFILLMENT_LABEL,
-  PAYMENT_LABEL,
-  type DeliveryFeeStatus,
-  type Fulfillment,
-  type PaymentMethod,
-} from '@/lib/orders/labels';
+import { FULFILLMENT_LABEL, PAYMENT_LABEL, type DeliveryFeeStatus, type Fulfillment, type PaymentMethod } from '@/lib/orders/labels';
 
 export interface WhatsAppOrderItem {
   quantity: number;

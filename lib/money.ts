@@ -36,7 +36,10 @@ export function formatBRL(cents: Cents): string {
 
 /** Lê um valor digitado pelo usuário ("12,50", "R$ 1.234,00") e devolve centavos. */
 export function parseBRLInput(input: string): Cents | null {
-  const cleaned = input.replace(/[R$\s]/g, '').replace(/\./g, '').replace(',', '.');
+  const cleaned = input
+    .replace(/[R$\s]/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.');
   if (cleaned === '') return null;
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
   return toCents(cleaned);

@@ -3,15 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Check, Clock, ShoppingBag } from 'lucide-react';
 import type { CatalogOptionGroup, CatalogOptionValue, CatalogProduct, CatalogVariant, LineSelection } from '@/types/catalog';
-import {
-  canBeHalved,
-  flavorLimitsFor,
-  flavorPriceFor,
-  isOptionOfferedFor,
-  optionPriceFor,
-  isProductOrderable,
-  priceLine,
-} from '@/lib/pricing';
+import { canBeHalved, flavorLimitsFor, flavorPriceFor, isOptionOfferedFor, optionPriceFor, isProductOrderable, priceLine } from '@/lib/pricing';
 import { findBestPromotion } from '@/lib/pricing/promotions';
 import { formatBRL } from '@/lib/money';
 import { cn } from '@/lib/utils';
@@ -49,7 +41,7 @@ function pruneForVariant(product: CatalogProduct, options: Record<string, string
   for (const group of product.groups) {
     let ids = (options[group.id] ?? []).filter((id) => {
       const value = group.values.find((v) => v.id === id);
-      return value && value.isAvailable && isOptionOfferedFor(value, variant);
+      return value?.isAvailable && isOptionOfferedFor(value, variant);
     });
     if (group.kind === 'flavor') ids = ids.slice(0, flavorLimitsFor(group, variant).max);
     if (ids.length) next[group.id] = ids;
@@ -89,7 +81,11 @@ export function ProductCustomizer({
   const variant = product.variants.find((v) => v.id === variantId) ?? null;
   const orderable = isProductOrderable(product, now);
   const selection: LineSelection = { productId: product.id, variantId, options, quantity, notes: notes.trim() || undefined, halfProductId: halfId };
-  const result = useMemo(() => priceLine(product, selection, { now, openShifts: null }, half ?? undefined), [product, variantId, options, quantity, notes, now, half]); // eslint-disable-line react-hooks/exhaustive-deps
+  const result = useMemo(
+    () => priceLine(product, selection, { now, openShifts: null }, half ?? undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [product, variantId, options, quantity, notes, now, half],
+  );
 
   const groups = [...product.groups].sort((a, b) => a.sortOrder - b.sortOrder);
   const flavorGroup = groups.find((g) => g.kind === 'flavor');
@@ -190,18 +186,31 @@ export function ProductCustomizer({
       <div className={cn(layout === 'page' ? 'lg:w-[44%]' : '', 'flex flex-col gap-4')}>
         {product.kind === 'pizza' && flavorGroup ? (
           <div className="flex flex-col items-center gap-3 rounded-[var(--radius-card)] bg-surface p-6 ring-1 ring-line">
-            <PizzaVisual flavors={chosenFlavorNames} maxFlavors={variant?.maxFlavors ?? 1} hasCrust={Boolean(crustGroup && (options[crustGroup.id] ?? []).length)} />
+            <PizzaVisual
+              flavors={chosenFlavorNames}
+              maxFlavors={variant?.maxFlavors ?? 1}
+              hasCrust={Boolean(crustGroup && (options[crustGroup.id] ?? []).length)}
+            />
           </div>
         ) : (
-          <ProductImage src={product.imageUrl} alt={product.imageAlt} name={product.name} sizes="(max-width: 1024px) 100vw, 40vw" className="rounded-[var(--radius-card)]" priority={layout === 'page'} />
+          <ProductImage
+            src={product.imageUrl}
+            alt={product.imageAlt}
+            name={product.name}
+            sizes="(max-width: 1024px) 100vw, 40vw"
+            className="rounded-[var(--radius-card)]"
+            priority={layout === 'page'}
+          />
         )}
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
-            {!product.priceConfirmed ? <Badge className="bg-gold-soft text-gold">Preço em conferência</Badge> : !orderable ? <Badge tone="dark">Esgotado</Badge> : null}
-            {product.tags.includes('especial-da-casa') ? <Badge className="bg-gold text-ink-950">Especial da casa</Badge> : null}
-            {result.ok && result.line.unitDiscount > 0 ? (
-              <Badge tone="brand">Promoção</Badge>
+            {!product.priceConfirmed ? (
+              <Badge className="bg-gold-soft text-gold">Preço em conferência</Badge>
+            ) : !orderable ? (
+              <Badge tone="dark">Esgotado</Badge>
             ) : null}
+            {product.tags.includes('especial-da-casa') ? <Badge className="bg-gold text-ink-950">Especial da casa</Badge> : null}
+            {result.ok && result.line.unitDiscount > 0 ? <Badge tone="brand">Promoção</Badge> : null}
             {product.shiftRestriction !== 'any' ? (
               <Badge>
                 <Clock className="size-3" aria-hidden /> {SHIFT_NOTE[product.shiftRestriction]}
@@ -240,7 +249,9 @@ export function ProductCustomizer({
         {product.variants.length > 0 ? (
           <fieldset className="space-y-2">
             <legend className="mb-2 flex w-full items-center justify-between">
-              <span className="font-display text-lg font-semibold">{product.kind === 'pizza' || product.variants.some((v) => v.sizeCode) ? 'Tamanho' : 'Escolha uma opção'}</span>
+              <span className="font-display text-lg font-semibold">
+                {product.kind === 'pizza' || product.variants.some((v) => v.sizeCode) ? 'Tamanho' : 'Escolha uma opção'}
+              </span>
               <Badge tone="dark">Obrigatório</Badge>
             </legend>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -253,8 +264,20 @@ export function ProductCustomizer({
                     !v.isAvailable && 'cursor-not-allowed opacity-50',
                   )}
                 >
-                  <input type="radio" name="variant" className="sr-only" checked={variantId === v.id} disabled={!v.isAvailable} onChange={() => selectVariant(v.id)} />
-                  <span className={cn('grid size-5 shrink-0 place-items-center rounded-full border-2', variantId === v.id ? 'border-brand-600 bg-brand-600' : 'border-line')}>
+                  <input
+                    type="radio"
+                    name="variant"
+                    className="sr-only"
+                    checked={variantId === v.id}
+                    disabled={!v.isAvailable}
+                    onChange={() => selectVariant(v.id)}
+                  />
+                  <span
+                    className={cn(
+                      'grid size-5 shrink-0 place-items-center rounded-full border-2',
+                      variantId === v.id ? 'border-brand-600 bg-brand-600' : 'border-line',
+                    )}
+                  >
                     {variantId === v.id ? <span className="size-2 rounded-full bg-surface" /> : null}
                   </span>
                   <span className="flex-1">
@@ -285,9 +308,7 @@ export function ProductCustomizer({
                 ? { min: Math.min(group.minSelect, 1), max: 1 }
                 : { min: group.minSelect, max: group.maxSelect };
           const single = limits.max === 1;
-          const chosenTags = new Set(
-            chosen.map((id) => group.values.find((v) => v.id === id)?.combinationTag ?? ''),
-          );
+          const chosenTags = new Set(chosen.map((id) => group.values.find((v) => v.id === id)?.combinationTag ?? ''));
           const helper =
             group.kind === 'flavor'
               ? `Escolha ${limits.max > 1 ? `de 1 a ${limits.max} sabores` : '1 sabor'}${variant && !variant.allowMixedFlavorTags && limits.max > 1 ? ' do mesmo tipo' : ''}${variant?.flavorPriceRule === 'highest' && limits.max > 1 ? ' · vale o preço do sabor mais caro' : variant?.flavorPriceRule === 'average' && limits.max > 1 ? ' · preço pela média dos sabores' : ''}`
@@ -324,7 +345,12 @@ export function ProductCustomizer({
                   const offered = isOptionOfferedFor(value, variant);
                   const isChosen = chosen.includes(value.id);
                   const tagBlocked =
-                    group.kind === 'flavor' && variant && !variant.allowMixedFlavorTags && chosen.length > 0 && !isChosen && !chosenTags.has(value.combinationTag ?? '');
+                    group.kind === 'flavor' &&
+                    variant &&
+                    !variant.allowMixedFlavorTags &&
+                    chosen.length > 0 &&
+                    !isChosen &&
+                    !chosenTags.has(value.combinationTag ?? '');
                   const full = !single && !isChosen && chosen.length >= limits.max;
                   const disabled = !value.priceConfirmed || !value.isAvailable || !offered || Boolean(tagBlocked) || full;
                   const price = !value.priceConfirmed
@@ -413,8 +439,12 @@ export function ProductCustomizer({
           </p>
         )}
 
-        {layout === 'page' ? <div className="sticky bottom-0 -mx-4 border-t border-line bg-canvas/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:p-0">{footer}</div> : null}
-        {layout === 'dialog' ? <div className="sticky bottom-0 -mx-5 -mb-4 border-t border-line bg-surface px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">{footer}</div> : null}
+        {layout === 'page' ? (
+          <div className="sticky bottom-0 -mx-4 border-t border-line bg-canvas/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:p-0">{footer}</div>
+        ) : null}
+        {layout === 'dialog' ? (
+          <div className="sticky bottom-0 -mx-5 -mb-4 border-t border-line bg-surface px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">{footer}</div>
+        ) : null}
       </form>
     </div>
   );

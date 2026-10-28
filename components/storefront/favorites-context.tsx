@@ -37,7 +37,10 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       setUserId(uid);
       if (!uid) return;
       if (local.length > 0) {
-        await supabase.from('favorites').upsert(local.map((product_id) => ({ user_id: uid, product_id })), { ignoreDuplicates: true });
+        await supabase.from('favorites').upsert(
+          local.map((product_id) => ({ user_id: uid, product_id })),
+          { ignoreDuplicates: true },
+        );
       }
       const { data } = await supabase.from('favorites').select('product_id');
       if (data) {
@@ -79,10 +82,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     [ids, userId],
   );
 
-  const value = useMemo(
-    () => ({ ids, isFavorite: (id: string) => ids.has(id), toggle, signedIn: Boolean(userId) }),
-    [ids, toggle, userId],
-  );
+  const value = useMemo(() => ({ ids, isFavorite: (id: string) => ids.has(id), toggle, signedIn: Boolean(userId) }), [ids, toggle, userId]);
   return <FavoritesContext value={value}>{children}</FavoritesContext>;
 }
 

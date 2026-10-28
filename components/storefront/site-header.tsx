@@ -18,12 +18,14 @@ export async function SiteHeader() {
   const [{ data: catalog }, { data: operation }] = await Promise.all([getCatalog(), getOperation()]);
   const categories = catalog.categories.filter(
     (c) =>
-      !MENU_HIDDEN_CATEGORIES.includes(c.slug) &&
-      (catalog.products.some((p) => p.categoryId === c.id) || (c.sectionType === 'options' && c.sharedGroupId)),
+      !MENU_HIDDEN_CATEGORIES.includes(c.slug) && (catalog.products.some((p) => p.categoryId === c.id) || (c.sectionType === 'options' && c.sharedGroupId)),
   );
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-canvas/90 backdrop-blur-md transition-[background-color,border-color] duration-300 over-hero:border-transparent over-hero:bg-transparent over-hero:bg-gradient-to-b over-hero:from-black/60 over-hero:to-transparent over-hero:backdrop-blur-none">
-      <a href="#conteudo" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-white">
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-white"
+      >
         Pular para o conteúdo
       </a>
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:h-[4.5rem] sm:px-6">
@@ -68,7 +70,10 @@ export async function SiteHeader() {
           <ul className="flex gap-1.5 text-sm">
             {categories.map((c) => (
               <li key={c.id}>
-                <Link href={`/cardapio?categoria=${c.slug}`} className="block whitespace-nowrap rounded-full bg-mist px-3 py-1.5 font-medium over-hero:bg-black/35 over-hero:backdrop-blur-sm">
+                <Link
+                  href={`/cardapio?categoria=${c.slug}`}
+                  className="block whitespace-nowrap rounded-full bg-mist px-3 py-1.5 font-medium over-hero:bg-black/35 over-hero:backdrop-blur-sm"
+                >
                   {c.name}
                 </Link>
               </li>

@@ -68,7 +68,13 @@ export async function createProduct(_prev: ActionResult | null, form: FormData):
       const fields = productFields(form);
       // Produto novo entra com "preço em conferência": só pode ser pedido depois que o
       // administrador conferir os valores (evita publicar preço digitado às pressas).
-      const { data } = check(await db.from('products').insert({ ...fields, price_confirmed: false }).select('id').single());
+      const { data } = check(
+        await db
+          .from('products')
+          .insert({ ...fields, price_confirmed: false })
+          .select('id')
+          .single(),
+      );
       if (fields.kind === 'pizza') {
         // Pizzas do cardápio usam a tabela única de bordas recheadas (grupo compartilhado).
         const { data: bordas } = await db.from('option_groups').select('id').eq('shared_key', 'bordas-recheadas').is('deleted_at', null).maybeSingle();
@@ -167,7 +173,9 @@ export async function archiveVariant(productId: string, variantId: string, _prev
     async (_ctx, db) => {
       requireId(productId);
       requireId(variantId);
-      check(await db.from('product_variants').update({ deleted_at: new Date().toISOString(), is_active: false }).eq('id', variantId).eq('product_id', productId));
+      check(
+        await db.from('product_variants').update({ deleted_at: new Date().toISOString(), is_active: false }).eq('id', variantId).eq('product_id', productId),
+      );
       revalidatePath(`/admin/cardapio/${productId}`);
       return 'Tamanho removido.';
     },
@@ -188,7 +196,15 @@ export async function saveGroup(productId: string, groupId: string | null, _prev
       const min = Math.max(0, int(form, 'minSelect'));
       const max = Math.max(1, int(form, 'maxSelect', 1));
       if (max < min) throw new ActionError('O máximo deve ser maior ou igual ao mínimo.');
-      const fields = { name, kind, description: str(form, 'description'), min_select: min, max_select: max, sort_order: int(form, 'sortOrder'), is_active: bool(form, 'isActive') };
+      const fields = {
+        name,
+        kind,
+        description: str(form, 'description'),
+        min_select: min,
+        max_select: max,
+        sort_order: int(form, 'sortOrder'),
+        is_active: bool(form, 'isActive'),
+      };
       if (groupId) {
         requireId(groupId);
         check(await db.from('option_groups').update(fields).eq('id', groupId).eq('product_id', productId));
@@ -216,7 +232,13 @@ export async function archiveGroup(productId: string, groupId: string, _prev: Ac
   );
 }
 
-export async function saveOptionValue(productId: string, groupId: string, valueId: string | null, _prev: ActionResult | null, form: FormData): Promise<ActionResult> {
+export async function saveOptionValue(
+  productId: string,
+  groupId: string,
+  valueId: string | null,
+  _prev: ActionResult | null,
+  form: FormData,
+): Promise<ActionResult> {
   return runAdminAction(
     roles,
     async (_ctx, db) => {

@@ -48,15 +48,7 @@ export function needsCustomization(product: CatalogProduct): boolean {
   return product.groups.some((g) => g.minSelect > 0 || g.values.some((v) => v.isAvailable && v.priceConfirmed));
 }
 
-export function ProductDialogProvider({
-  children,
-  drinks = [],
-  pizzas = [],
-}: {
-  children: ReactNode;
-  drinks?: CatalogProduct[];
-  pizzas?: CatalogProduct[];
-}) {
+export function ProductDialogProvider({ children, drinks = [], pizzas = [] }: { children: ReactNode; drinks?: CatalogProduct[]; pizzas?: CatalogProduct[] }) {
   const [state, setState] = useState<DialogState | null>(null);
   const [nudge, setNudge] = useState<CatalogProduct[] | null>(null);
   const cart = useCart();

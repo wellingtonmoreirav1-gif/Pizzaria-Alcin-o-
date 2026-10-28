@@ -6,7 +6,8 @@ import { Notice, Skeleton } from '@/components/ui/feedback';
 
 export const metadata: Metadata = {
   title: 'Cardápio',
-  description: 'Cardápio completo do Alcinão em São Bento (PB): pizzas tradicionais, especiais, premium e doces, bordas recheadas, lanches, Beirute, petiscos, pratos da casa e lasanhas.',
+  description:
+    'Cardápio completo do Alcinão em São Bento (PB): pizzas tradicionais, especiais, premium e doces, bordas recheadas, lanches, Beirute, petiscos, pratos da casa e lasanhas.',
   alternates: { canonical: '/cardapio' },
 };
 

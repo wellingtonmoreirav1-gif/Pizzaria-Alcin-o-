@@ -37,11 +37,7 @@ export async function loadProductsForCart(productIds: string[]): Promise<Map<str
   if (ids.length === 0) return new Map();
   const { data, error } = await createPublicClient().from('products').select(PRODUCT_SELECT).in('id', ids);
   if (error) throw new OrderError(503, 'CATALOG_UNAVAILABLE', 'Não foi possível consultar o cardápio agora. Tente novamente.');
-  return new Map(
-    (data as unknown as ProductRow[])
-      .filter((row) => row.is_active && !row.deleted_at)
-      .map((row) => [row.id, mapProduct(row)]),
-  );
+  return new Map((data as unknown as ProductRow[]).filter((row) => row.is_active && !row.deleted_at).map((row) => [row.id, mapProduct(row)]));
 }
 
 /** Produtos que o carrinho usa (inclui o 2º sabor das pizzas metade/metade). */
@@ -94,10 +90,7 @@ export interface CreatedOrder {
  * 4. limite de pedidos por IP;
  * 5. gravação atômica e idempotente (create_order).
  */
-export async function createOrder(
-  input: CheckoutPayload,
-  opts: { customerId: string | null; ip: string; now?: Date },
-): Promise<CreatedOrder> {
+export async function createOrder(input: CheckoutPayload, opts: { customerId: string | null; ip: string; now?: Date }): Promise<CreatedOrder> {
   const now = opts.now ?? new Date();
   const operation = await getOperationFresh();
   const { settings } = operation;
@@ -106,11 +99,7 @@ export async function createOrder(
   // Reenvio da mesma solicitação (ex.: clique duplo ou rede instável): devolve o mesmo pedido.
   const requestHash = hashPayload({ ...input, idempotencyKey: undefined, confirmed: undefined });
   const admin = createAdminClient();
-  const existing = await admin
-    .from('orders')
-    .select('id, request_hash')
-    .eq('idempotency_key', input.idempotencyKey)
-    .maybeSingle();
+  const existing = await admin.from('orders').select('id, request_hash').eq('idempotency_key', input.idempotencyKey).maybeSingle();
   if (existing.data) {
     if (existing.data.request_hash !== requestHash) {
       throw new OrderError(409, 'IDEMPOTENCY_CONFLICT', 'Este pedido já foi enviado com outros dados. Atualize a página.');
@@ -270,7 +259,6 @@ async function buildResponse(orderId: string, whatsappNumber: string, replayed: 
     totals: order.totals,
   };
 }
-
 
 export function newIdempotencyKey() {
   return randomUUID();

@@ -55,7 +55,12 @@ function reducer(state: CartState, action: Action): CartState {
         return {
           lines: state.lines.map((l) =>
             l.lineId === existing.lineId
-              ? { ...l, quantity: Math.min(l.maxQuantity, l.quantity + action.line.quantity), unitPrice: action.line.unitPrice, unitRegular: action.line.unitRegular }
+              ? {
+                  ...l,
+                  quantity: Math.min(l.maxQuantity, l.quantity + action.line.quantity),
+                  unitPrice: action.line.unitPrice,
+                  unitRegular: action.line.unitRegular,
+                }
               : l,
           ),
         };
@@ -66,9 +71,7 @@ function reducer(state: CartState, action: Action): CartState {
       return { lines: state.lines.map((l) => (l.lineId === action.lineId ? { ...action.line, lineId: action.lineId } : l)) };
     case 'quantity':
       return {
-        lines: state.lines.map((l) =>
-          l.lineId === action.lineId ? { ...l, quantity: Math.max(1, Math.min(l.maxQuantity, action.quantity)) } : l,
-        ),
+        lines: state.lines.map((l) => (l.lineId === action.lineId ? { ...l, quantity: Math.max(1, Math.min(l.maxQuantity, action.quantity)) } : l)),
       };
     case 'remove':
       return { lines: state.lines.filter((l) => l.lineId !== action.lineId) };

@@ -117,11 +117,19 @@ export function ColumnChart({ data, money = true, title }: { data: ColumnDatum[]
       {showTable ? (
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-muted"><th className="py-1">Período</th><th className="text-right">Valor</th><th className="text-right">Detalhe</th></tr>
+            <tr className="text-left text-xs text-muted">
+              <th className="py-1">Período</th>
+              <th className="text-right">Valor</th>
+              <th className="text-right">Detalhe</th>
+            </tr>
           </thead>
           <tbody>
             {data.map((d) => (
-              <tr key={d.label} className="border-t border-line"><td className="py-1">{d.label}</td><td className="text-right tabular-nums">{fmt(d.value)}</td><td className="text-right text-muted">{d.detail ?? ''}</td></tr>
+              <tr key={d.label} className="border-t border-line">
+                <td className="py-1">{d.label}</td>
+                <td className="text-right tabular-nums">{fmt(d.value)}</td>
+                <td className="text-right text-muted">{d.detail ?? ''}</td>
+              </tr>
             ))}
           </tbody>
         </table>
@@ -143,7 +151,11 @@ export function BarList({ data, money = false, empty = 'Sem dados no período.' 
   return (
     <ul className="space-y-2.5">
       {data.map((d) => (
-        <li key={d.label} className="group" title={`${d.label}: ${money ? formatBRL(d.value) : d.value.toLocaleString('pt-BR')}${d.secondary ? ` · ${d.secondary}` : ''}`}>
+        <li
+          key={d.label}
+          className="group"
+          title={`${d.label}: ${money ? formatBRL(d.value) : d.value.toLocaleString('pt-BR')}${d.secondary ? ` · ${d.secondary}` : ''}`}
+        >
           <div className="flex items-baseline justify-between gap-3 text-sm">
             <span className="truncate">{d.label}</span>
             <span className="shrink-0 tabular-nums text-ink-800">
@@ -152,7 +164,10 @@ export function BarList({ data, money = false, empty = 'Sem dados no período.' 
             </span>
           </div>
           <div className="mt-1 h-2 rounded-full bg-mist">
-            <div className={cn('h-2 rounded-full transition-opacity group-hover:opacity-80')} style={{ width: `${Math.max(2, (d.value / max) * 100)}%`, background: SERIES }} />
+            <div
+              className={cn('h-2 rounded-full transition-opacity group-hover:opacity-80')}
+              style={{ width: `${Math.max(2, (d.value / max) * 100)}%`, background: SERIES }}
+            />
           </div>
         </li>
       ))}

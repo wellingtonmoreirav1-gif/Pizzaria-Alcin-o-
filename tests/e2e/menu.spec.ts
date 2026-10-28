@@ -8,8 +8,14 @@ import { PASSWORD, USERS } from './global-setup';
 const CATEGORIES: Record<string, string[]> = {
   'pizzas-tradicionais': ['Pizza Muçarela', 'Pizza Calabresa', 'Pizza Frango', 'Pizza Marguerita', 'Pizza Portuguesa', 'Pizza Bacon'],
   'pizzas-especiais': [
-    'Pizza Frango com Catupiry', 'Pizza Calabresa com Catupiry', 'Pizza Carne de Sol', 'Pizza Carne de Sol com Queijo Coalho',
-    'Pizza Quatro Queijos', 'Pizza Frango com Cheddar', 'Pizza Pepperoni', 'Pizza Costela',
+    'Pizza Frango com Catupiry',
+    'Pizza Calabresa com Catupiry',
+    'Pizza Carne de Sol',
+    'Pizza Carne de Sol com Queijo Coalho',
+    'Pizza Quatro Queijos',
+    'Pizza Frango com Cheddar',
+    'Pizza Pepperoni',
+    'Pizza Costela',
   ],
   'pizzas-premium': ['Pizza Camarão com Catupiry', 'Pizza Camarão aos Quatro Queijos'],
   'pizzas-doces': ['Pizza Chocolate', 'Pizza Banana com Canela', 'Pizza Prestígio', 'Pizza Romeu e Julieta'],
@@ -63,7 +69,9 @@ test('todas as categorias e produtos aparecem no cardápio, na ordem e sem dupli
     const section = page.locator(`section#${slug}`);
     await expect(section.getByTestId('product-card').first()).toBeVisible();
     // Ignora os itens criados só para os testes ("[EXEMPLO]" e o produto do teste do painel).
-    const shown = (await section.getByTestId('product-card').locator('h3').allTextContents()).map((t) => t.trim()).filter((t) => !t.startsWith('[EXEMPLO]') && t !== 'Suco Teste E2E');
+    const shown = (await section.getByTestId('product-card').locator('h3').allTextContents())
+      .map((t) => t.trim())
+      .filter((t) => !t.startsWith('[EXEMPLO]') && t !== 'Suco Teste E2E');
     expect(shown, slug).toEqual(names);
   }
   // Bordas e molhos aparecem como seções informativas.
@@ -79,7 +87,13 @@ test('todas as categorias e produtos aparecem no cardápio, na ordem e sem dupli
 
 test('pizza: tamanhos com preços corretos e borda somada conforme o tamanho', async ({ page }) => {
   await openProduct(page, 'pizza-calabresa');
-  const sizes: [string, string][] = [['Pequena (P)', 'R$ 25,00'], ['Média (M)', 'R$ 39,00'], ['Grande (G)', 'R$ 50,00'], ['Gigante (GG)', 'R$ 60,00'], ['Família (F)', 'R$ 75,00']];
+  const sizes: [string, string][] = [
+    ['Pequena (P)', 'R$ 25,00'],
+    ['Média (M)', 'R$ 39,00'],
+    ['Grande (G)', 'R$ 50,00'],
+    ['Gigante (GG)', 'R$ 60,00'],
+    ['Família (F)', 'R$ 75,00'],
+  ];
   for (const [size, price] of sizes) {
     await expect(page.getByRole('radio', { name: new RegExp(size.replace(/[()]/g, '\\$&')) }).locator('..')).toContainText(price);
   }
@@ -227,7 +241,12 @@ test('administrador define preços e fotos pelo painel, sem mexer no código', a
   await expect(page.getByText(/Sem valor cadastrado: Fanta Laranja/).first()).toBeVisible();
   // Valor zero é recusado; valores reais liberam o item.
   const coca = page.getByTestId('pending-product').filter({ hasText: 'Coca-Cola' });
-  const values: [string, string][] = [['Lata', '0,00'], ['600 ml', '8,00'], ['1 litro', '10,00'], ['2 litros', '14,00']];
+  const values: [string, string][] = [
+    ['Lata', '0,00'],
+    ['600 ml', '8,00'],
+    ['1 litro', '10,00'],
+    ['2 litros', '14,00'],
+  ];
   for (const [size, price] of values) {
     await coca.getByLabel(size, { exact: true }).fill(price);
   }

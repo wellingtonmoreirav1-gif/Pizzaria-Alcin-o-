@@ -3,7 +3,14 @@ import { detectImageType, isAllowedImageUrl, storagePath, validateImage } from '
 
 const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0]);
 const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
-const webp = new Uint8Array([...'RIFF'].map((c) => c.charCodeAt(0)).concat([0, 0, 0, 0], [...'WEBP'].map((c) => c.charCodeAt(0))));
+const webp = new Uint8Array(
+  [...'RIFF']
+    .map((c) => c.charCodeAt(0))
+    .concat(
+      [0, 0, 0, 0],
+      [...'WEBP'].map((c) => c.charCodeAt(0)),
+    ),
+);
 const exe = new Uint8Array([0x4d, 0x5a, 0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
 describe('upload de imagens', () => {

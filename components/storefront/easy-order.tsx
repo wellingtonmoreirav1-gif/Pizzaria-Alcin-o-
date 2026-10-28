@@ -65,7 +65,7 @@ export function EasyOrder({ catalog, group }: { catalog: Catalog; group: MenuGro
   for (const p of products) for (const v of p.variants) if (!sizes.has(sizeKey(v))) sizes.set(sizeKey(v), v);
   const sizeList = [...sizes.values()].sort((a, b) => b.sortOrder - a.sortOrder);
   const skipSize = sizeList.length <= 1;
-  const size = skipSize ? null : sizeList.find((v) => sizeKey(v) === params.get('tamanho')) ?? null;
+  const size = skipSize ? null : (sizeList.find((v) => sizeKey(v) === params.get('tamanho')) ?? null);
 
   const step = !category ? 'tipo' : !skipSize && !size ? 'tamanho' : 'sabor';
   // Antes de escolher o tipo, conta o passo do tamanho se algum tipo do grupo tiver tamanhos.
@@ -73,7 +73,14 @@ export function EasyOrder({ catalog, group }: { catalog: Catalog; group: MenuGro
   const sizeStep = category ? !skipSize : categories.some((c) => hasSizes(c.id));
   const steps = [!skipType && 'tipo', sizeStep && 'tamanho', 'sabor'].filter(Boolean) as string[];
   const stepNumber = steps.indexOf(step) + 1;
-  const back = step === 'sabor' && !skipSize ? () => go({ tamanho: null }) : step === 'sabor' && !skipType ? () => go({ tipo: null }) : step === 'tamanho' && !skipType ? () => go({ tipo: null, tamanho: null }) : null;
+  const back =
+    step === 'sabor' && !skipSize
+      ? () => go({ tamanho: null })
+      : step === 'sabor' && !skipType
+        ? () => go({ tipo: null })
+        : step === 'tamanho' && !skipType
+          ? () => go({ tipo: null, tamanho: null })
+          : null;
   const [one, many] = group.key === 'pizzas' ? ['sabor', 'sabores'] : ['item', 'itens'];
 
   return (
@@ -114,7 +121,8 @@ export function EasyOrder({ catalog, group }: { catalog: Catalog; group: MenuGro
         <Step title="Qual tamanho?" hint={category.name}>
           {sizeList.map((v) => {
             const price = minPrice(products.map((p) => priceOf(p, p.variants.find((x) => sizeKey(x) === sizeKey(v)) ?? null)));
-            const allSame = new Set(products.map((p) => priceOf(p, p.variants.find((x) => sizeKey(x) === sizeKey(v)) ?? null)).filter((x) => x != null)).size <= 1;
+            const allSame =
+              new Set(products.map((p) => priceOf(p, p.variants.find((x) => sizeKey(x) === sizeKey(v)) ?? null)).filter((x) => x != null)).size <= 1;
             return (
               <BigChoice
                 key={sizeKey(v)}
@@ -130,7 +138,7 @@ export function EasyOrder({ catalog, group }: { catalog: Catalog; group: MenuGro
       {step === 'sabor' && category ? (
         <Step title={group.key === 'pizzas' ? 'Qual sabor?' : 'O que vai ser?'} hint={[category.name, size?.name].filter(Boolean).join(' · ')}>
           {products.map((p) => {
-            const variant = size ? p.variants.find((v) => sizeKey(v) === sizeKey(size)) ?? null : p.variants[0] ?? null;
+            const variant = size ? (p.variants.find((v) => sizeKey(v) === sizeKey(size)) ?? null) : (p.variants[0] ?? null);
             const price = size && !variant ? null : priceOf(p, variant);
             return (
               <li key={p.id}>
@@ -240,7 +248,13 @@ function AddSheet({
   const unitPrice = priceFor(half);
   const hasExtras = product.groups.some((g) => g.values.some((v) => v.isAvailable));
   return (
-    <Dialog open onClose={onClose} title={product.name} description={variant && product.variants.length > 1 ? variant.name : product.categoryName} side="bottom">
+    <Dialog
+      open
+      onClose={onClose}
+      title={product.name}
+      description={variant && product.variants.length > 1 ? variant.name : product.categoryName}
+      side="bottom"
+    >
       <div className="space-y-5 pb-2">
         {description ? <p className="text-lg text-muted">{description}</p> : null}
         <HalfPicker product={product} variant={variant} pizzas={pizzas} value={halfId} onChange={setHalfId} now={now} />

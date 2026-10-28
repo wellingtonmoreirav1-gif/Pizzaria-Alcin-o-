@@ -8,7 +8,21 @@ import { Button } from '@/components/ui/button';
  * Abre o WhatsApp com a mensagem pronta. O site NÃO envia a mensagem: o cliente
  * precisa tocar em "Enviar" no WhatsApp. Se não abrir, dá para copiar o texto.
  */
-export function WhatsAppActions({ code, token, url, message, phoneDisplay, primary = true }: { code: string; token: string | null; url: string; message: string; phoneDisplay: string; primary?: boolean }) {
+export function WhatsAppActions({
+  code,
+  token,
+  url,
+  message,
+  phoneDisplay,
+  primary = true,
+}: {
+  code: string;
+  token: string | null;
+  url: string;
+  message: string;
+  phoneDisplay: string;
+  primary?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const [showText, setShowText] = useState(false);
 
@@ -61,7 +75,13 @@ export function WhatsAppActions({ code, token, url, message, phoneDisplay, prima
         O WhatsApp não abriu? Copie a mensagem e envie para {phoneDisplay}. Seu pedido já está registrado com o código <strong>#{code}</strong>.
       </p>
       {showText ? (
-        <textarea readOnly value={message} className="h-64 w-full rounded-xl border border-line bg-mist p-3 font-mono text-xs" aria-label="Mensagem do pedido" onFocus={(e) => e.currentTarget.select()} />
+        <textarea
+          readOnly
+          value={message}
+          className="h-64 w-full rounded-xl border border-line bg-mist p-3 font-mono text-xs"
+          aria-label="Mensagem do pedido"
+          onFocus={(e) => e.currentTarget.select()}
+        />
       ) : null}
     </div>
   );

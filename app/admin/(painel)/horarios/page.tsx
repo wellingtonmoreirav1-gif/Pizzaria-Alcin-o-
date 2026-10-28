@@ -22,7 +22,10 @@ export default async function HoursPage() {
   const hhmm = (t: string | null | undefined) => (t ? t.slice(0, 5) : '');
   return (
     <div className="space-y-6">
-      <PageHeader title="Horários" description="Fuso America/Fortaleza. Almoço sem horário de fechamento fica aberto até ser encerrado em “Operação do dia” (ou até o início do turno da noite)." />
+      <PageHeader
+        title="Horários"
+        description="Fuso America/Fortaleza. Almoço sem horário de fechamento fica aberto até ser encerrado em “Operação do dia” (ou até o início do turno da noite)."
+      />
       <Card title="Grade semanal">
         <ActionForm action={saveWeek} submitLabel="Salvar horários">
           <div className="overflow-x-auto">
@@ -37,15 +40,35 @@ export default async function HoursPage() {
               <tbody>
                 {[1, 2, 3, 4, 5, 6, 0].map((d) => (
                   <tr key={d} className="border-t border-line">
-                    <th scope="row" className="py-2 pr-3 text-left font-medium capitalize">{WEEKDAY_LABELS[d]}</th>
+                    <th scope="row" className="py-2 pr-3 text-left font-medium capitalize">
+                      {WEEKDAY_LABELS[d]}
+                    </th>
                     {(['lunch', 'dinner'] as const).map((s) => {
                       const h = find(d, s);
                       return (
                         <td key={s} className="py-2 pr-4">
                           <div className="flex items-center gap-2">
-                            <input type="checkbox" name={`active:${d}:${s}`} defaultChecked={h?.is_active ?? false} className="size-4 accent-brand-600" aria-label={`${WEEKDAY_LABELS[d]} ${s === 'lunch' ? 'almoço' : 'noite'} ativo`} />
-                            <input type="time" name={`open:${d}:${s}`} defaultValue={hhmm(h?.opens_at)} className="h-9 rounded-lg border border-line px-2" aria-label="Abre" />
-                            <input type="time" name={`close:${d}:${s}`} defaultValue={hhmm(h?.closes_at)} className="h-9 rounded-lg border border-line px-2" aria-label="Fecha (vazio = até encerrar)" />
+                            <input
+                              type="checkbox"
+                              name={`active:${d}:${s}`}
+                              defaultChecked={h?.is_active ?? false}
+                              className="size-4 accent-brand-600"
+                              aria-label={`${WEEKDAY_LABELS[d]} ${s === 'lunch' ? 'almoço' : 'noite'} ativo`}
+                            />
+                            <input
+                              type="time"
+                              name={`open:${d}:${s}`}
+                              defaultValue={hhmm(h?.opens_at)}
+                              className="h-9 rounded-lg border border-line px-2"
+                              aria-label="Abre"
+                            />
+                            <input
+                              type="time"
+                              name={`close:${d}:${s}`}
+                              defaultValue={hhmm(h?.closes_at)}
+                              className="h-9 rounded-lg border border-line px-2"
+                              aria-label="Fecha (vazio = até encerrar)"
+                            />
                           </div>
                         </td>
                       );
@@ -55,7 +78,16 @@ export default async function HoursPage() {
               </tbody>
             </table>
           </div>
-          <TextField label="Tolerância após o fechamento (minutos)" name="grace" type="number" min={0} max={60} defaultValue={settings.data?.order_grace_minutes ?? 0} className="max-w-xs" hint="Pedidos ENVIADOS até X minutos depois do fechamento ainda são aceitos. O que vale é o horário do envio." />
+          <TextField
+            label="Tolerância após o fechamento (minutos)"
+            name="grace"
+            type="number"
+            min={0}
+            max={60}
+            defaultValue={settings.data?.order_grace_minutes ?? 0}
+            className="max-w-xs"
+            hint="Pedidos ENVIADOS até X minutos depois do fechamento ainda são aceitos. O que vale é o horário do envio."
+          />
         </ActionForm>
       </Card>
 
@@ -65,7 +97,8 @@ export default async function HoursPage() {
             <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
               <span>
                 <strong>{new Date(`${e.date}T12:00:00Z`).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}</strong> —{' '}
-                {e.shift ? (e.shift === 'lunch' ? 'almoço' : 'noite') : 'dia inteiro'}: {e.is_closed ? 'fechado' : `${hhmm(e.opens_at)}–${hhmm(e.closes_at) || 'até encerrar'}`}
+                {e.shift ? (e.shift === 'lunch' ? 'almoço' : 'noite') : 'dia inteiro'}:{' '}
+                {e.is_closed ? 'fechado' : `${hhmm(e.opens_at)}–${hhmm(e.closes_at) || 'até encerrar'}`}
                 {e.note ? ` · ${e.note}` : ''}
               </span>
               <ActionForm action={removeException.bind(null, e.id)} submitLabel="Remover" size="sm" variant="ghost" inline />

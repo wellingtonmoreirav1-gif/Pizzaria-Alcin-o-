@@ -38,9 +38,21 @@ export function InfoSections({ settings, hours }: { settings: SiteSettings; hour
   const address = [settings.addressLine, settings.city, settings.state].filter(Boolean).join(', ');
   const mapsQuery = encodeURIComponent(`${settings.businessName}, ${address}`);
   const modes = [
-    settings.deliveryEnabled && { icon: <Bike className="size-5" aria-hidden />, title: 'Entrega', text: 'Informe o endereço e, se quiser, marque o local no mapa. A taxa é confirmada pela equipe no WhatsApp.' },
-    settings.pickupEnabled && { icon: <ShoppingBag className="size-5" aria-hidden />, title: 'Retirada', text: 'Faça o pedido pelo site e retire no restaurante quando a equipe avisar que está pronto.' },
-    settings.dineInEnabled && { icon: <Utensils className="size-5" aria-hidden />, title: 'Consumo no local', text: 'Já está no Alcinão? Faça o pedido pelo celular e informe a mesa.' },
+    settings.deliveryEnabled && {
+      icon: <Bike className="size-5" aria-hidden />,
+      title: 'Entrega',
+      text: 'Informe o endereço e, se quiser, marque o local no mapa. A taxa é confirmada pela equipe no WhatsApp.',
+    },
+    settings.pickupEnabled && {
+      icon: <ShoppingBag className="size-5" aria-hidden />,
+      title: 'Retirada',
+      text: 'Faça o pedido pelo site e retire no restaurante quando a equipe avisar que está pronto.',
+    },
+    settings.dineInEnabled && {
+      icon: <Utensils className="size-5" aria-hidden />,
+      title: 'Consumo no local',
+      text: 'Já está no Alcinão? Faça o pedido pelo celular e informe a mesa.',
+    },
   ].filter(Boolean) as { icon: React.ReactNode; title: string; text: string }[];
 
   return (

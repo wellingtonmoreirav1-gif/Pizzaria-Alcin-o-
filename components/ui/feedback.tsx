@@ -10,9 +10,24 @@ const tones: Record<Tone, { box: string; icon: ReactNode }> = {
   danger: { box: 'bg-brand-50 text-danger border-brand-200', icon: <XCircle className="size-5 shrink-0" aria-hidden /> },
 };
 
-export function Notice({ tone = 'info', title, children, className, live }: { tone?: Tone; title?: string; children?: ReactNode; className?: string; live?: boolean }) {
+export function Notice({
+  tone = 'info',
+  title,
+  children,
+  className,
+  live,
+}: {
+  tone?: Tone;
+  title?: string;
+  children?: ReactNode;
+  className?: string;
+  live?: boolean;
+}) {
   return (
-    <div className={cn('flex gap-3 rounded-2xl border p-4 text-sm', tones[tone].box, className)} role={live ? (tone === 'danger' ? 'alert' : 'status') : undefined}>
+    <div
+      className={cn('flex gap-3 rounded-2xl border p-4 text-sm', tones[tone].box, className)}
+      role={live ? (tone === 'danger' ? 'alert' : 'status') : undefined}
+    >
       {tones[tone].icon}
       <div className="space-y-1">
         {title ? <p className="font-semibold">{title}</p> : null}
@@ -22,7 +37,15 @@ export function Notice({ tone = 'info', title, children, className, live }: { to
   );
 }
 
-export function Badge({ children, tone = 'neutral', className }: { children: ReactNode; tone?: 'neutral' | 'brand' | 'dark' | 'success' | 'warning'; className?: string }) {
+export function Badge({
+  children,
+  tone = 'neutral',
+  className,
+}: {
+  children: ReactNode;
+  tone?: 'neutral' | 'brand' | 'dark' | 'success' | 'warning';
+  className?: string;
+}) {
   const styles = {
     neutral: 'bg-mist text-muted-strong',
     brand: 'bg-brand-600 text-white',

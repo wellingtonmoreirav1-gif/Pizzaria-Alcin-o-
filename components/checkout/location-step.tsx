@@ -63,8 +63,8 @@ export function LocationStep({
       <div>
         <p className="font-semibold">Localização no mapa (opcional)</p>
         <p className="text-sm text-muted">
-          Ajuda o entregador a achar você. Usamos apenas para este pedido e ela não substitui o endereço escrito. A localização do celular pode
-          ser imprecisa: confira o marcador.
+          Ajuda o entregador a achar você. Usamos apenas para este pedido e ela não substitui o endereço escrito. A localização do celular pode ser imprecisa:
+          confira o marcador.
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -96,11 +96,7 @@ export function LocationStep({
       ) : null}
       {showMap ? (
         <>
-          <MapPicker
-            center={defaultCenter}
-            position={value}
-            onChange={(p) => onChange({ ...p, accuracy: null, source: 'map_pin' })}
-          />
+          <MapPicker center={defaultCenter} position={value} onChange={(p) => onChange({ ...p, accuracy: null, source: 'map_pin' })} />
           <p className="text-xs text-muted" aria-live="polite">
             {value
               ? `Ponto marcado${value.source === 'gps' && value.accuracy ? ` (precisão aproximada de ${value.accuracy} m)` : ''}. Toque no mapa ou arraste o marcador para corrigir.`

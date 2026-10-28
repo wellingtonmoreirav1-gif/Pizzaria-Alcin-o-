@@ -45,7 +45,10 @@ test('página inicial mostra vitrine, status e chamada para pedir', async ({ pag
   await expect(fechamento).toContainText('Fechamos às terças');
   // As vitrines de produtos saíram da página inicial (ficam no cardápio).
   await expect(page.getByRole('heading', { name: 'Lanches', level: 2, exact: true })).toHaveCount(0);
-  await hero.getByRole('link', { name: /Pedir agora/ }).first().click();
+  await hero
+    .getByRole('link', { name: /Pedir agora/ })
+    .first()
+    .click();
   await expect(page).toHaveURL(/\/cardapio$/);
 });
 
@@ -64,7 +67,10 @@ test('destaque da semana abre o lanche para pedir', async ({ page }) => {
 
 test('Pedir pizzas: passo a passo tipo → tamanho → sabor', async ({ page }) => {
   await page.goto('/');
-  await page.locator('#categorias').getByRole('link', { name: /Pedir pizzas/ }).click();
+  await page
+    .locator('#categorias')
+    .getByRole('link', { name: /Pedir pizzas/ })
+    .click();
   await expect(page).toHaveURL(/\/pizzas$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Pizzas' })).toBeVisible();
   // 1) Tipo
@@ -101,7 +107,10 @@ test('metadinha: 2 sabores na G, vale o preço do mais caro', async ({ page }) =
   await sheet.getByTestId('half-two').click();
   await expect(sheet).toContainText('A outra metade vai ser de quê?');
   // Pode misturar tipos: a especial (R$ 55,00 na G) aparece junto das tradicionais.
-  await sheet.getByTestId('half-option').filter({ hasText: /^Frango com Catupiry/ }).click();
+  await sheet
+    .getByTestId('half-option')
+    .filter({ hasText: /^Frango com Catupiry/ })
+    .click();
   await expect(sheet.getByTestId('half-chosen')).toContainText('½ Calabresa + ½ Frango com Catupiry');
   await expect(sheet).toContainText('R$ 55,00');
   await sheet.getByTestId('easy-add').click();
@@ -178,7 +187,10 @@ test('busca e filtros do cardápio funcionam (bebidas ficam fora do cardápio)',
 test('depois de adicionar um lanche, sugere uma bebida; o carrinho também oferece', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('hero')).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
-  await page.locator('#em-alta').getByRole('link', { name: /Pedir agora/ }).click();
+  await page
+    .locator('#em-alta')
+    .getByRole('link', { name: /Pedir agora/ })
+    .click();
   const dialog = page.getByRole('dialog', { name: 'X-Frango' });
   await dialog.getByTestId('add-to-cart').click();
   const nudge = page.getByTestId('drink-nudge');
@@ -186,7 +198,10 @@ test('depois de adicionar um lanche, sugere uma bebida; o carrinho também ofere
   await expect(nudge).toContainText('Refrigerante');
   await nudge.getByRole('button', { name: 'Agora não' }).click();
   await expect(nudge).toHaveCount(0);
-  await page.getByRole('button', { name: /carrinho/i }).first().click();
+  await page
+    .getByRole('button', { name: /carrinho/i })
+    .first()
+    .click();
   await expect(page.getByRole('dialog', { name: 'Seu carrinho' })).toContainText('Vai uma bebida gelada?');
 });
 
@@ -268,15 +283,28 @@ test('checkout de entrega com GPS registra o pedido e gera mensagem do WhatsApp'
   expect(text).toContain('Troco para: R$ 100,00');
   expect(text).toContain('Localização: https://www.google.com/maps?q=');
 
-  const [order] = await sql<{ status: string; total: string; delivery_fee_status: string; latitude: string | null; location_source: string; customer_phone: string }>(
-    'select status, total, delivery_fee_status, latitude, location_source, customer_phone from public.orders where code = $1',
-    [code],
-  );
-  expect(order).toMatchObject({ status: 'registered', total: '69.00', delivery_fee_status: 'pending', location_source: 'map_pin', customer_phone: '83988887777' });
+  const [order] = await sql<{
+    status: string;
+    total: string;
+    delivery_fee_status: string;
+    latitude: string | null;
+    location_source: string;
+    customer_phone: string;
+  }>('select status, total, delivery_fee_status, latitude, location_source, customer_phone from public.orders where code = $1', [code]);
+  expect(order).toMatchObject({
+    status: 'registered',
+    total: '69.00',
+    delivery_fee_status: 'pending',
+    location_source: 'map_pin',
+    customer_phone: '83988887777',
+  });
   expect(order?.latitude).not.toBeNull();
 
   // O carrinho foi limpo e o clique no WhatsApp é registrado (sem afirmar que a mensagem foi enviada).
-  await page.getByTestId('open-whatsapp').click({ modifiers: [] }).catch(() => undefined);
+  await page
+    .getByTestId('open-whatsapp')
+    .click({ modifiers: [] })
+    .catch(() => undefined);
   await expect.poll(async () => (await sql('select whatsapp_opened_at from public.orders where code = $1', [code]))[0]?.whatsapp_opened_at).not.toBeNull();
 });
 
@@ -425,7 +453,15 @@ test('acessibilidade essencial (axe) sem violações graves', async ({ page }) =
     await page.waitForLoadState('networkidle');
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     const serious = results.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious');
-    expect(serious.map((v) => `${path}: ${v.id} — ${v.nodes.slice(0, 3).map((n) => `${n.target.join(' ')} ${n.failureSummary ?? ''}`).join(' | ')}`)).toEqual([]);
+    expect(
+      serious.map(
+        (v) =>
+          `${path}: ${v.id} — ${v.nodes
+            .slice(0, 3)
+            .map((n) => `${n.target.join(' ')} ${n.failureSummary ?? ''}`)
+            .join(' | ')}`,
+      ),
+    ).toEqual([]);
   }
 });
 
@@ -448,7 +484,15 @@ test('falha de rede ou do servidor no envio: mensagem clara e carrinho preservad
   // 2) Banco indisponível (resposta 503 do servidor).
   await page.unroute('**/api/orders');
   await page.route('**/api/orders', (route) =>
-    route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ ok: false, code: 'ORDER_NOT_SAVED', message: 'Não conseguimos registrar seu pedido agora. Seu carrinho foi mantido; tente novamente.' }) }),
+    route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: false,
+        code: 'ORDER_NOT_SAVED',
+        message: 'Não conseguimos registrar seu pedido agora. Seu carrinho foi mantido; tente novamente.',
+      }),
+    }),
   );
   await page.getByTestId('submit-order').click();
   await expect(page.getByText('Não conseguimos registrar seu pedido agora.')).toBeVisible();

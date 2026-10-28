@@ -20,7 +20,9 @@ export default async function OperationPage() {
     supabase.from('business_settings').select('accepting_orders, paused_until, lunch_closed_on, pause_message').eq('id', 1).single(),
     supabase
       .from('products')
-      .select('id, name, is_available, is_active, categories(name, sort_order), product_variants(id, name, is_available, deleted_at), option_groups!option_groups_product_id_fkey(id, name, kind, deleted_at, option_values(id, name, is_available, deleted_at))')
+      .select(
+        'id, name, is_available, is_active, categories(name, sort_order), product_variants(id, name, is_available, deleted_at), option_groups!option_groups_product_id_fkey(id, name, kind, deleted_at, option_values(id, name, is_available, deleted_at))',
+      )
       .is('deleted_at', null)
       .eq('is_active', true)
       .order('sort_order')
@@ -40,20 +42,35 @@ export default async function OperationPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Operação do dia" description="Controles rápidos para a equipe: pausar pedidos, encerrar o almoço e marcar itens esgotados." />
-      <Notice tone={status.acceptingOrders ? 'success' : 'warning'} title={status.acceptingOrders ? 'Recebendo pedidos pelo site' : 'Pedidos pelo site bloqueados'}>
+      <Notice
+        tone={status.acceptingOrders ? 'success' : 'warning'}
+        title={status.acceptingOrders ? 'Recebendo pedidos pelo site' : 'Pedidos pelo site bloqueados'}
+      >
         {status.message}
       </Notice>
       <div className="grid gap-4 lg:grid-cols-3">
         <Card title="Recebimento de pedidos" description="Desliga os pedidos pelo site mesmo dentro do horário.">
           {s?.accepting_orders ? (
-            <ActionForm action={setAccepting.bind(null, false)} submitLabel="Suspender pedidos" variant="danger" confirm="Suspender o recebimento de pedidos pelo site?">
+            <ActionForm
+              action={setAccepting.bind(null, false)}
+              submitLabel="Suspender pedidos"
+              variant="danger"
+              confirm="Suspender o recebimento de pedidos pelo site?"
+            >
               <TextField label="Mensagem para os clientes (opcional)" name="message" maxLength={200} placeholder="Ex.: Voltamos em breve!" />
             </ActionForm>
           ) : (
             <ActionForm action={setAccepting.bind(null, true)} submitLabel="Reativar pedidos" />
           )}
         </Card>
-        <Card title="Pausa temporária" description={pausedUntil ? `Pausado até ${pausedUntil.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Fortaleza' })}.` : 'Útil em horários de pico.'}>
+        <Card
+          title="Pausa temporária"
+          description={
+            pausedUntil
+              ? `Pausado até ${pausedUntil.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Fortaleza' })}.`
+              : 'Útil em horários de pico.'
+          }
+        >
           <div className="flex flex-wrap gap-2">
             {[15, 30, 60].map((m) => (
               <ActionForm key={m} action={pauseOrders.bind(null, m)} submitLabel={`Pausar ${m} min`} variant="outline" size="sm" inline />
@@ -97,7 +114,9 @@ export default async function OperationPage() {
         <ul className="divide-y divide-line">
           {(products.data ?? []).map((p) => {
             const variants = (p.product_variants ?? []).filter((v) => !v.deleted_at);
-            const values = (p.option_groups ?? []).filter((g) => !g.deleted_at).flatMap((g) => (g.option_values ?? []).filter((v) => !v.deleted_at).map((v) => ({ ...v, group: g.name })));
+            const values = (p.option_groups ?? [])
+              .filter((g) => !g.deleted_at)
+              .flatMap((g) => (g.option_values ?? []).filter((v) => !v.deleted_at).map((v) => ({ ...v, group: g.name })));
             return (
               <li key={p.id} className="py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -118,7 +137,9 @@ export default async function OperationPage() {
                       ))}
                       {values.map((v) => (
                         <li key={v.id} className="flex items-center justify-between gap-2 rounded-xl bg-mist px-3 py-2 text-sm">
-                          <span>{v.group}: {v.name}</span>
+                          <span>
+                            {v.group}: {v.name}
+                          </span>
                           <AvailabilityToggle entity="option_value" id={v.id} available={v.is_available} label={`${p.name} ${v.name}`} />
                         </li>
                       ))}

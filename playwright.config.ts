@@ -27,9 +27,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
     launchOptions: { executablePath },
   },
-  projects: [
-    { name: 'mobile', use: { ...devices['Pixel 7'], launchOptions: { executablePath } } },
-  ],
+  projects: [{ name: 'mobile', use: { ...devices['Pixel 7'], launchOptions: { executablePath } } }],
   webServer: {
     command: process.env.E2E_SERVER_COMMAND ?? `npx next start -p ${port}`,
     url: `http://localhost:${port}`,
