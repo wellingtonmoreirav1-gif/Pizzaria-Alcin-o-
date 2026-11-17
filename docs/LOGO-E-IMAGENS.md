@@ -14,19 +14,14 @@ Para colocar a logo:
 
 Para a imagem de compartilhamento (WhatsApp/redes), o arquivo `app/opengraph-image.tsx` gera uma arte só com texto; quando houver logo/foto oficial, pode-se trocar por um arquivo `app/opengraph-image.png` (1200×630).
 
-## Animação do topo (pizza desmontando)
+## Capa (topo da página inicial)
 
-O topo da página inicial mostra a pizza **desmontando sozinha, em loop** (como um GIF, mas em vídeo mudo, leve e sem travar), por baixo do cabeçalho transparente, com o letreiro "Sabor irresistível no ALCINÃO" e os botões.
-- **Origem:** vídeo de 8 s gerado pelo restaurante com uma ferramenta de IA paga, uso autorizado pelo dono.
-- **Arquivos:** `public/hero/pizza-loop.webm` (≈1,3 MB) e `public/hero/pizza-loop.mp4` (≈1,5 MB, para aparelhos sem WebM), 720×1280, sem som; `public/hero/pizza/001.webp` é a imagem que aparece na hora, antes de o vídeo carregar.
-- **Código:** `components/storefront/hero-loop.tsx`. O vídeo pausa quando sai da tela. Quem ativa "reduzir movimento" ou "economia de dados" vê só a imagem parada.
-- **Para trocar o vídeo:**
-
-  `ffmpeg -i video.mp4 -an -vf scale=720:1280 -c:v libvpx-vp9 -b:v 0 -crf 41 -row-mt 1 public/hero/pizza-loop.webm`
-  `ffmpeg -i video.mp4 -an -vf scale=720:1280 -c:v libx264 -preset slow -crf 26 -pix_fmt yuv420p -movflags +faststart public/hero/pizza-loop.mp4`
-  `ffmpeg -i video.mp4 -frames:v 1 -vf scale=640:-2 -c:v libwebp -quality 60 public/hero/pizza/001.webp`
-- **Cache:** os arquivos de `/hero` ficam guardados no aparelho por 7 dias (`next.config.ts`). Ao trocar o vídeo, prefira um nome de arquivo novo (e ajuste `LOOP` no código) para todos verem na hora.
-- A "foto principal" do painel não é usada no topo. O título padrão é o letreiro "Sabor irresistível no ALCINÃO" (`public/hero/sabor-irresistivel.webp`, arte do restaurante com o fundo recortado); um título próprio em texto pode ser definido em **Configurações → Chamada principal**.
+- **Arte enviada pelo restaurante em 17/11/2026:** logo "Pizzaria Alcinão" (já com fundo transparente), personagem apontando para o logo e fundo preto texturizado.
+- **Arquivos:** `public/hero/logo-alcinao.webp` (1200 px), `public/hero/personagem.webp` (recortado do fundo quadriculado que vinha desenhado na imagem) e `public/hero/fundo-preto.webp` (só o miolo da textura, sem o anel dourado da arte original).
+- **Arrumação:** logo à esquerda e personagem à direita, apontando para ele; no celular ficam lado a lado, com os botões "Pedir agora" (desce até os catálogos) e "Falar no WhatsApp" embaixo.
+- **Código:** `components/storefront/hero.tsx` e `hero-cover.tsx` (fundo e cabeçalho transparente por cima).
+- **Cache:** os arquivos de `/hero` ficam guardados no aparelho por 7 dias (`next.config.ts`). Ao trocar uma imagem, use um nome de arquivo novo para todos verem na hora.
+- A "foto principal" do painel não é usada na capa; uma frase própria em **Configurações → Chamada principal** aparece embaixo do logo.
 
 ## Fotos dos produtos
 
@@ -46,18 +41,10 @@ Logo depois do topo, uma faixa com a foto grande do lanche à direita e, à esqu
 - Hoje: **X Frango Assado**, que abre o **X-Frango** do cardápio. Vídeo em loop (`public/destaques/x-frango-loop.mp4` e `.webm`, sem som, feito no Google Flow e enviado pelo restaurante em 26/10/2026; tocado para frente e para trás, para o loop não ter corte) com a imagem parada `x-frango-poster.webp` (1º quadro), que aparece na hora e fica no lugar do vídeo para quem pede menos movimento. O vídeo só baixa quando o cliente rola perto do destaque. Para trocar: mandar o vídeo novo (de preferência 16:9, fundo vermelho escuro).
 - Para trocar o destaque: altere `WEEKLY_FEATURE` em `components/storefront/home-showcase.tsx` (nome, produto e foto) e coloque a nova foto em `public/destaques/`. Use foto horizontal com fundo escuro/vermelho, de preferência 1600 px de largura.
 
-### Blocos "Pedir …" (página inicial)
+### Catálogos (página inicial)
 
-Em "O que você quer hoje?", cada grupo do cardápio tem um bloco: o botão à esquerda e a foto à direita (fotos enviadas pelo restaurante; o fundo quadriculado foi recortado para ficar transparente).
-
-| Bloco | Leva a | Categorias | Foto |
-|---|---|---|---|
-| Pedir pizzas | /pizzas | tradicionais, especiais, premium, doces | `public/destaques/pizza-pepperoni.webp` |
-| Pedir lanches | /lanches | lanches tradicionais, especiais, Beirute | `public/destaques/lanches.webp` |
-| Pedir petiscos da casa | /petiscos | petiscos | `public/destaques/petiscos.webp` |
-| Pedir pratos | /pratos | pratos da casa, lasanhas | `public/destaques/pratos.webp` |
-
-Cada página mostra as categorias do grupo separadas. Textos, fotos e categorias ficam em `lib/catalog/groups.ts`. Bebidas não aparecem nesta área (aguardando definição do restaurante). Categorias novas criadas no painel aparecem em faixas abaixo dos blocos.
+- Logo depois do destaque da semana: Pizzas, Lanches, Petiscos da casa e Pratos, cada um com os seus produtos (fotos do Painel → Fotos e logo) separados por tipo, e um atalho para cada catálogo no topo. Bebidas ficam no carrinho.
+- As páginas /pizzas, /lanches, /petiscos e /pratos (pedido passo a passo) continuam no menu do topo.
 
 ### Nossa história (página inicial)
 
@@ -66,12 +53,9 @@ Logo abaixo dos blocos "Pedir …": linha do tempo que desce com a rolagem — "
 - Para recomprimir um vídeo novo: `ffmpeg -i entrada.mp4 -vf scale=540:960 -c:v libx264 -preset slow -crf 28 -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart public/historia/video-N.mp4`.
 - Código: `components/storefront/story-timeline.tsx`.
 
-### Fotos das categorias (faixas da página inicial)
+### Fotos das categorias
 
-Em "O que você quer hoje?", cada categoria aparece numa faixa larga, de ponta a ponta da tela. Para trocar a foto: **Painel → Fotos e logo → Fotos das categorias**.
-- Use foto **horizontal**, de preferência 1600×600.
-- O lado esquerdo da faixa fica mais escuro, para o nome aparecer.
-- Sem foto própria, a faixa usa a foto do primeiro produto da categoria, com um recorte diferente em cada faixa (a foto enviada aparece inteira).
+- Desde 17/11/2026 a página inicial mostra os produtos direto, sem faixas de categoria; as fotos de **Painel → Fotos e logo → Fotos das categorias** ficam guardadas, mas não aparecem lá.
 
 ### Direção de arte (todo o cardápio)
 

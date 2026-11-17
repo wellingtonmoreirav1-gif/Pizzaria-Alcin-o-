@@ -44,7 +44,7 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        'group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-surface shadow-[var(--shadow-card)] ring-1 ring-line transition-shadow hover:shadow-[var(--shadow-float)]',
+        'group @container relative flex flex-col overflow-hidden rounded-[var(--radius-card)] bg-surface shadow-[var(--shadow-card)] ring-1 ring-line transition-shadow hover:shadow-[var(--shadow-float)]',
         houseSpecial && 'ring-2 ring-gold/70',
         className,
       )}
@@ -74,15 +74,16 @@ export function ProductCard({
           <Heart className={cn('size-5', fav && 'fill-brand-600 text-brand-600')} aria-hidden />
         </button>
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <h3 className="font-display text-lg font-semibold leading-snug">
+      {/* Cartão estreito (2 por linha no celular): preço em cima e botão inteiro embaixo. */}
+      <div className="flex flex-1 flex-col gap-1.5 p-3 @[15rem]:p-4">
+        <h3 className="font-display text-base font-semibold leading-snug @[15rem]:text-lg">
           <Link href={`/produto/${product.slug}`} className="after:absolute after:inset-0 after:rounded-[var(--radius-card)] after:content-[''] focus-visible:outline-none focus-visible:after:outline-3 focus-visible:after:-outline-offset-3 focus-visible:after:outline-gold">
             {product.name}
           </Link>
         </h3>
         {product.shortDescription ? <p className="line-clamp-3 text-sm text-muted">{product.shortDescription}</p> : null}
         {product.serves ? <p className="text-xs font-semibold text-gold">{product.serves}</p> : null}
-        <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+        <div className="mt-auto flex flex-col gap-2 pt-3 @[15rem]:flex-row @[15rem]:items-end @[15rem]:justify-between">
           <div className="leading-tight">
             {price ? (
               <>
@@ -99,7 +100,7 @@ export function ProductCard({
             type="button"
             disabled={!orderable || !price}
             onClick={() => dialog.quickAdd(product, fetchedAt)}
-            className="relative z-10 inline-flex h-11 items-center gap-1.5 rounded-2xl bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:bg-line disabled:text-muted"
+            className="relative z-10 inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:bg-line disabled:text-muted"
             aria-label={
               reason === 'price' ? `Em breve: ${product.name}` : `${needsCustomization(product) ? 'Escolher opções de' : 'Adicionar'} ${product.name}`
             }

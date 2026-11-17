@@ -8,45 +8,46 @@ test.beforeEach(async ({ page }) => {
   await clearClientState(page);
 });
 
-test('página inicial mostra vitrine, status e chamada para pedir', async ({ page }) => {
+test('página inicial: capa, destaque da semana e catálogos com os produtos', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(/Sabor irresistível no Alcinão — pizzaria e churrascaria/i);
-  // Topo: a pizza desmonta sozinha, em loop (vídeo mudo), numa tela só.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(/Pizzaria Alcinão — pizzaria e churrascaria em/i);
+  // Capa: logo à esquerda e o personagem à direita, apontando para ele, no fundo preto.
   const hero = page.getByTestId('hero');
-  await expect(hero).toHaveAttribute('data-ready', 'true', { timeout: 20_000 });
-  const loop = hero.locator('video');
-  await expect(loop).toHaveJSProperty('loop', true);
-  await expect(loop).toHaveJSProperty('muted', true);
-  await expect.poll(() => loop.evaluate((v) => (v as HTMLVideoElement).currentTime)).toBeGreaterThan(0);
-  // No celular: a pizza em cima e o letreiro logo abaixo dela (não por cima).
-  const pizzaBottom = await hero.locator('video').evaluate((v) => v.parentElement!.getBoundingClientRect().bottom);
-  const titleTop = await page.getByRole('heading', { level: 1 }).evaluate((h) => h.getBoundingClientRect().top);
-  expect(titleTop).toBeGreaterThan(pizzaBottom - 80);
+  await expect(hero).toHaveAttribute('data-ready', 'true');
+  const logo = await hero.getByRole('img', { name: 'Pizzaria Alcinão' }).boundingBox();
+  const character = await hero.locator('img[src*="personagem"]').boundingBox();
+  expect(character!.x).toBeGreaterThan(logo!.x + logo!.width / 2);
   await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
   await expect(hero.getByRole('link', { name: 'Falar no WhatsApp' })).toHaveAttribute('href', /wa\.me\/\d+/);
   await expect(page.getByRole('heading', { name: 'Peça agora pelo WhatsApp' })).toBeVisible();
   await expect(page.getByTestId('store-status').first()).toContainText('Aberto');
   await expect(page.getByRole('heading', { name: /Destaque da semana:\s*X Frango Assado/ })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'O que você quer hoje?' })).toBeVisible();
-  // Bordas e molhos não se pedem sozinhos: não viram faixa na página inicial.
-  await expect(page.getByTestId('category-bands')).not.toContainText('Bordas recheadas');
-  // Pizzas, lanches, petiscos e pratos têm blocos próprios ("Pedir …"); bebidas ficam fora daqui.
-  const categorias = page.locator('#categorias');
-  for (const name of ['Pedir pizzas', 'Pedir lanches', 'Pedir petiscos da casa', 'Pedir pratos']) {
-    await expect(categorias.getByRole('link', { name })).toBeVisible();
+  // Logo depois do destaque: os catálogos, cada um com os seus produtos.
+  const cardapio = page.locator('#cardapio');
+  await expect(cardapio.getByRole('heading', { name: 'O que você quer hoje?' })).toBeVisible();
+  const atalhos = cardapio.getByRole('navigation', { name: 'Catálogos' });
+  for (const name of ['Pizzas', 'Lanches', 'Petiscos da casa', 'Pratos']) {
+    await expect(atalhos.getByRole('link', { name, exact: true })).toBeVisible();
   }
-  await expect(categorias).not.toContainText('Bebidas');
-  await expect(categorias).not.toContainText('Pizzas tradicionais');
+  const pizzas = page.locator('#catalogo-pizzas');
+  await expect(pizzas.getByRole('heading', { name: 'Pizzas tradicionais' })).toBeVisible();
+  await expect(pizzas.getByTestId('product-card').filter({ hasText: 'Pizza Calabresa' }).first()).toBeVisible();
+  await expect(page.locator('#catalogo-pratos').getByTestId('product-card').filter({ hasText: 'Lasanha de Carne' })).toHaveCount(1);
+  // Bebidas ficam no carrinho; bordas e molhos não se pedem sozinhos.
+  await expect(cardapio).not.toContainText('Bebidas');
+  await expect(cardapio).not.toContainText('Bordas recheadas');
   // Fim da página: história → "Bom saber" (entrega, rodízio, fechado às terças) → WhatsApp.
   const fechamento = page.getByRole('region', { name: 'Bom saber' });
   await expect(fechamento).toContainText('Fazemos entrega');
   await expect(fechamento).toContainText('Rodízio de churrasco');
   await expect(fechamento).toContainText('A partir de R$ 49,90. Presencial, no restaurante.');
   await expect(fechamento).toContainText('Fechamos às terças');
-  // As vitrines de produtos saíram da página inicial (ficam no cardápio).
-  await expect(page.getByRole('heading', { name: 'Lanches', level: 2, exact: true })).toHaveCount(0);
-  await hero.getByRole('link', { name: /Pedir agora/ }).first().click();
-  await expect(page).toHaveURL(/\/cardapio$/);
+  // "Pedir agora" desce até os catálogos; "Escolher" abre o produto.
+  await hero.getByRole('link', { name: /Pedir agora/ }).click();
+  await expect(page).toHaveURL(/#cardapio$/);
+  await expect(cardapio.getByRole('heading', { name: 'O que você quer hoje?' })).toBeInViewport();
+  await pizzas.getByRole('button', { name: 'Escolher opções de Pizza Calabresa', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Pizza Calabresa' })).toBeVisible();
 });
 
 test('destaque da semana abre o lanche para pedir', async ({ page }) => {
@@ -63,16 +64,15 @@ test('destaque da semana abre o lanche para pedir', async ({ page }) => {
 });
 
 test('Pedir pizzas: passo a passo tipo → tamanho → sabor', async ({ page }) => {
-  await page.goto('/');
-  await page.locator('#categorias').getByRole('link', { name: /Pedir pizzas/ }).click();
-  await expect(page).toHaveURL(/\/pizzas$/);
+  await page.goto('/pizzas');
+  await page.waitForLoadState('networkidle');
   await expect(page.getByRole('heading', { level: 1, name: 'Pizzas' })).toBeVisible();
   // 1) Tipo
   await expect(page.getByRole('heading', { name: 'Qual tipo você quer?' })).toBeVisible();
   for (const name of ['Pizzas tradicionais', 'Pizzas especiais', 'Pizzas premium', 'Pizzas doces']) {
     await expect(page.getByRole('button', { name: new RegExp(name) })).toBeVisible();
   }
-  await expect(page.getByText('Passo 1 de 3')).toBeVisible();
+  await expect(page.getByText('Passo 1 de 3').filter({ visible: true })).toBeVisible();
   await page.getByRole('button', { name: /Pizzas tradicionais/ }).click();
   // 2) Tamanho, do maior para o menor
   await expect(page.getByRole('heading', { name: 'Qual tamanho?' })).toBeVisible();
@@ -121,9 +121,7 @@ test('metadinha: 2 sabores na G, vale o preço do mais caro', async ({ page }) =
 });
 
 test('Pedir pratos reúne pratos da casa e lasanhas (lasanha tem tamanho)', async ({ page }) => {
-  await page.goto('/');
-  await page.locator('#categorias').getByRole('link', { name: 'Pedir pratos' }).click();
-  await expect(page).toHaveURL(/\/pratos$/);
+  await page.goto('/pratos');
   await expect(page.getByRole('button', { name: /Pratos da casa/ })).toBeVisible();
   await page.getByRole('button', { name: /Lasanhas/ }).click();
   await expect(page.getByRole('heading', { name: 'Qual tamanho?' })).toBeVisible();
@@ -147,17 +145,6 @@ test('história da Alcinão: vídeo com capa, carrossel e Instagram', async ({ p
   await carousel.getByRole('button', { name: 'Próximo vídeo' }).click();
   await expect(carousel.locator('video[controls]')).toHaveAttribute('src', '/historia/video-3.mp4');
   await expect(story.getByRole('link', { name: /Seguir @pizzariaalcinao no Instagram/ })).toHaveAttribute('href', 'https://www.instagram.com/pizzariaalcinao/');
-});
-
-test('quem pede menos movimento vê a pizza parada', async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
-  const hero = page.getByTestId('hero');
-  await expect(hero).toHaveAttribute('data-static', 'true');
-  await expect(hero.locator('video')).toHaveJSProperty('paused', true);
-  await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
-  await page.evaluate(() => window.scrollTo(0, 400));
-  await expect(hero.getByRole('link', { name: /Pedir agora/ })).toBeVisible();
 });
 
 test('busca e filtros do cardápio funcionam (bebidas ficam fora do cardápio)', async ({ page }) => {
