@@ -8,7 +8,7 @@ import { formatBRL } from '@/lib/money';
 import { isProductOrderable, startingPrice } from '@/lib/pricing';
 
 /** Quanto tempo a sugestão fica na tela (some antes se a pessoa fechar ou escolher). */
-const VISIBLE_MS = 10_000;
+const VISIBLE_MS = 25_000;
 
 /**
  * Logo depois de adicionar um lanche ou uma pizza: "Vai uma bebida gelada?" com até 3

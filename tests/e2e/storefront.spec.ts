@@ -41,7 +41,8 @@ test('página inicial: capa, destaque da semana e catálogos com os produtos', a
   await expect(fechamento).toContainText('Fazemos entrega');
   await expect(fechamento).toContainText('Rodízio de churrasco');
   await expect(fechamento).toContainText('A partir de R$ 49,90. Presencial, no restaurante.');
-  await expect(fechamento).toContainText('Fechamos às terças');
+  // O dia de folga vem do horário cadastrado: com todos os dias abertos, não aparece.
+  await expect(fechamento).not.toContainText('Fechamos');
   // "Pedir agora" desce até os catálogos; "Escolher" abre o produto.
   await hero.getByRole('link', { name: /Pedir agora/ }).click();
   await expect(page).toHaveURL(/#cardapio$/);
@@ -86,7 +87,7 @@ test('Pedir pizzas: passo a passo tipo → tamanho → sabor', async ({ page }) 
   await expect(calabresa).toContainText('R$ 50,00');
   await calabresa.click();
   await page.getByTestId('easy-add').click();
-  await expect(page.getByText('Pizza Calabresa adicionado ao carrinho')).toBeVisible();
+  await expect(page.getByText('Adicionado ao carrinho: Pizza Calabresa')).toBeVisible();
   // O voltar do celular volta um passo.
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Qual tamanho?' })).toBeVisible();
@@ -105,7 +106,7 @@ test('metadinha: 2 sabores na G, vale o preço do mais caro', async ({ page }) =
   await expect(sheet.getByTestId('half-chosen')).toContainText('½ Calabresa + ½ Frango com Catupiry');
   await expect(sheet).toContainText('R$ 55,00');
   await sheet.getByTestId('easy-add').click();
-  await expect(page.getByText('Pizza ½ Calabresa + ½ Frango com Catupiry adicionado ao carrinho')).toBeVisible();
+  await expect(page.getByText('Adicionado ao carrinho: Pizza ½ Calabresa + ½ Frango com Catupiry')).toBeVisible();
   // O servidor confere o preço do carrinho (R$ 55,00, sem erro).
   await page.goto('/carrinho');
   const lines = page.locator('#conteudo').getByTestId('cart-lines');
@@ -339,8 +340,10 @@ test('loja fechada: aviso no site e servidor recusa o pedido sem perder o carrin
   await sql(`update public.business_settings set accepting_orders = false, pause_message = 'Pausa para manutenção'`);
   await page.goto('/checkout');
   await page.waitForLoadState('networkidle');
+  // Na finalização, o aviso fica na própria página (a faixa do topo some para não repetir).
   await expect(page.getByText('Não estamos recebendo pedidos agora').first()).toBeVisible();
   await expect(page.getByText('Pausa para manutenção').first()).toBeVisible();
+  await expect(page.locator('[data-closed-banner]')).toBeHidden();
   const res = await request.post('/api/orders', {
     headers: { 'content-type': 'application/json' },
     data: {

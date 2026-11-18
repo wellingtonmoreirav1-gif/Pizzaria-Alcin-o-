@@ -53,7 +53,7 @@ export function CartLines({ lineErrors, onNavigate, compact }: { lineErrors: Rec
                   <Link
                     href={`/produto/${line.slug}?editar=${line.lineId}`}
                     onClick={onNavigate}
-                    className="inline-flex h-9 items-center gap-1 rounded-xl px-3 text-sm font-medium hover:bg-mist"
+                    className="inline-flex h-11 items-center gap-1 rounded-xl px-3 text-sm font-medium hover:bg-mist"
                     aria-label={`Editar ${line.name}`}
                   >
                     <Pencil className="size-4" aria-hidden /> Editar
@@ -62,7 +62,7 @@ export function CartLines({ lineErrors, onNavigate, compact }: { lineErrors: Rec
                 <button
                   type="button"
                   onClick={() => remove(line.lineId)}
-                  className="inline-flex h-9 items-center gap-1 rounded-xl px-3 text-sm font-medium text-danger hover:bg-brand-50"
+                  className="inline-flex h-11 items-center gap-1 rounded-xl px-3 text-sm font-medium text-danger hover:bg-brand-50"
                   aria-label={`Remover ${line.name}`}
                 >
                   <Trash2 className="size-4" aria-hidden /> Remover

@@ -101,7 +101,7 @@ export function MenuBrowser({
   const shownCount = grouped.reduce((n, g) => n + g.products.length, 0);
 
   const chip = (active: boolean) =>
-    cn('shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors', active ? 'bg-gold text-ink-950' : 'bg-mist text-fg hover:bg-line');
+    cn('inline-flex h-11 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-colors', active ? 'bg-gold text-ink-950' : 'bg-mist text-fg hover:bg-line');
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
@@ -119,11 +119,11 @@ export function MenuBrowser({
             onChange={(e) => setQuery(e.target.value)}
             onBlur={() => setParam({ q: query })}
             placeholder={scope ? 'Buscar pizza ou sabor…' : 'Buscar pizza, prato, bebida, sabor…'}
-            className="h-13 w-full rounded-2xl border border-line bg-surface pl-12 pr-12 text-base focus:border-fg focus:outline-none"
+            className="h-13 w-full rounded-2xl border border-line bg-surface pl-12 pr-12 text-base focus:border-fg focus:outline-none focus-visible:outline-3 focus-visible:outline-gold"
             autoComplete="off"
           />
           {query ? (
-            <button type="button" onClick={() => { setQuery(''); setParam({ q: null }); }} className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full hover:bg-mist" aria-label="Limpar busca">
+            <button type="button" onClick={() => { setQuery(''); setParam({ q: null }); }} className="absolute right-1.5 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full hover:bg-mist" aria-label="Limpar busca">
               <X className="size-4" aria-hidden />
             </button>
           ) : null}
@@ -150,7 +150,7 @@ export function MenuBrowser({
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
           <SlidersHorizontal className="size-4 text-muted" aria-hidden />
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-line px-3 py-1.5">
+          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-line px-3">
             <input
               type="checkbox"
               checked={onlyAvailable}
@@ -169,7 +169,7 @@ export function MenuBrowser({
                 setTag(e.target.value || null);
                 setParam({ tag: e.target.value || null });
               }}
-              className="h-9 rounded-full border border-line bg-surface px-3"
+              className="h-11 max-w-full rounded-full border border-line bg-surface px-3 text-base"
               aria-label="Filtrar por característica"
             >
               <option value="">Todas as características</option>

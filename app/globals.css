@@ -45,6 +45,16 @@
   --color-muted-strong: #4a4440;
 
   --color-success-600: #1f7a3f;
+  /* Verde do WhatsApp: botões de enviar (600/700) e a chamada final "Peça pelo WhatsApp". */
+  --color-whatsapp-100: #9ff0c0;
+  --color-whatsapp-400: #25d366;
+  --color-whatsapp-300: #3ee07a;
+  --color-whatsapp-500: #1a7a45;
+  --color-whatsapp-600: #1f8f4e;
+  --color-whatsapp-700: #18733e;
+  --color-whatsapp-800: #0f4d2c;
+  --color-whatsapp-900: #0a3520;
+  --color-whatsapp-950: #062b16;
   --color-success-50: #ecf8f0;
   --color-warning-600: #9a5b00;
   --color-warning-50: #fff6e5;
@@ -203,4 +213,9 @@ body:has(.theme-dark) {
 .leaflet-container {
   font-family: var(--font-sans);
   border-radius: 1rem;
+}
+
+/* Na finalização do pedido o aviso de fechado já aparece na página: a faixa do topo some. */
+body:has([data-checkout-page]) [data-closed-banner] {
+  display: none;
 }

@@ -43,8 +43,8 @@ export function WhatsAppActions({ code, token, url, message, phoneDisplay, prima
         data-testid="open-whatsapp"
         className={
           primary
-            ? 'flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#1f8f4e] px-6 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[#18733e]'
-            : 'inline-flex h-11 items-center gap-2 rounded-2xl bg-[#1f8f4e] px-5 text-sm font-semibold text-white hover:bg-[#18733e]'
+            ? 'flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-whatsapp-600 px-6 text-base font-semibold text-white shadow-sm transition-colors hover:bg-whatsapp-700'
+            : 'inline-flex h-11 items-center gap-2 rounded-2xl bg-whatsapp-600 px-5 text-sm font-semibold text-white hover:bg-whatsapp-700'
         }
       >
         <MessageCircle className="size-5" aria-hidden /> Abrir WhatsApp com o pedido

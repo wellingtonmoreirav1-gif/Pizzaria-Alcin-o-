@@ -104,7 +104,7 @@ export function ProductDialogProvider({
         unitRegular: result.line.unitRegular,
         maxQuantity: product.maxQuantity,
       });
-      if (!opts.silent) toast(`${result.line.productName} adicionado ao carrinho`);
+      if (!opts.silent) toast(`Adicionado ao carrinho: ${result.line.productName}`);
       if (opts.suggest !== false) suggestDrink(product);
       return true;
     },

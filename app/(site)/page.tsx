@@ -36,7 +36,7 @@ export default async function HomePage() {
       <ReviewsSection reviews={reviews} />
       {/* Fim da página: história → o que é bom saber → WhatsApp. */}
       <StoryTimeline />
-      <ClosingInfo delivery={operation.settings.deliveryEnabled} />
+      <ClosingInfo delivery={operation.settings.deliveryEnabled} hours={operation.hours.hours} />
       <WhatsAppCta settings={operation.settings} />
     </>
   );
