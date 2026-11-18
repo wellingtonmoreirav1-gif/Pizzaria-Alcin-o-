@@ -101,7 +101,7 @@ export function MenuBrowser({
   const shownCount = grouped.reduce((n, g) => n + g.products.length, 0);
 
   const chip = (active: boolean) =>
-    cn('inline-flex h-11 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-colors', active ? 'bg-gold text-ink-950' : 'bg-mist text-fg hover:bg-line');
+    cn('inline-flex h-11 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-colors', active ? 'bg-gold-bright text-ink-950' : 'bg-mist text-fg hover:bg-line');
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">

@@ -28,12 +28,14 @@
   --color-brand-800: #840b20;
 
   --color-paper: #ffffff;
-  /* Tokens semânticos (claros por padrão; a loja usa o escopo .theme-dark). */
+  /* Tokens semânticos (claros: a loja é branca; faixas escuras usam .on-dark). */
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
   --color-fg: #151211;
   --color-danger: #a50d26;
   --color-gold: #8a6416;
+  /* Amarelo da marca para PREENCHIMENTOS (botão, selo), sempre com texto escuro por cima. */
+  --color-gold-bright: #ffc72c;
   --color-gold-soft: #fbf3dc;
   /* Vermelho do vídeo da pizza (fundo da primeira dobra e das seções de destaque). */
   --color-wine-900: #380507;
@@ -110,10 +112,15 @@
   background-image: radial-gradient(ellipse 80% 70% at 50% 50%, var(--color-wine-500) 0%, var(--color-wine-700) 45%, var(--color-wine-900) 100%);
 }
 
-.theme-dark {
-  /* Fundo da loja preto quente (igual ao da capa); o vinho fica só nos blocos de destaque
-     (bg-wine: destaque da semana, ofertas, títulos das páginas). Cartões e campos em preto mais claro. */
-  --color-canvas: #0f0b0b;
+/*
+ * A loja é branca (tokens claros do @theme). Faixas escuras (capa, destaque da semana, ofertas,
+ * história, rodapé…) ganham a classe .on-dark: ela troca os tokens para a versão escura, então
+ * os componentes de dentro continuam usando text-fg, text-gold, bg-mist etc. sem mudar nada.
+ * O cabeçalho vira escuro sozinho enquanto está transparente por cima da capa.
+ */
+.on-dark,
+html:has([data-hero]:not([data-done="true"])) header {
+  --color-canvas: #0c0a09;
   --color-surface: #181212;
   --color-mist: #241b1b;
   --color-line: #3a2d2d;
@@ -131,19 +138,11 @@
   --color-success-600: #74dd9c;
   --color-warning-50: #2a1f0b;
   --color-warning-600: #f3c46a;
-  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d6cfc8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 10px 30px -18px rgb(0 0 0 / 0.9);
-  color-scheme: dark;
-  background: var(--color-canvas);
   color: var(--color-fg);
 }
 
 /* Cabeçalho transparente enquanto a animação do topo (página inicial) está na tela. */
 @custom-variant over-hero (html:has([data-hero]:not([data-done="true"])) &);
-
-body:has(.theme-dark) {
-  background: #0f0b0b;
-}
 
 @layer base {
   html {

@@ -55,7 +55,7 @@ export function ClosingInfo({ delivery, hours }: { delivery: boolean; hours: Bus
       : []),
   ];
   return (
-    <section aria-labelledby="fechamento-titulo" className="py-16 text-white sm:py-24">
+    <section aria-labelledby="fechamento-titulo" className="on-dark border-t border-white/10 bg-ink-950 py-16 text-white sm:py-24">
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <h2 id="fechamento-titulo" className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
           Bom <span className="italic text-gold">saber</span>

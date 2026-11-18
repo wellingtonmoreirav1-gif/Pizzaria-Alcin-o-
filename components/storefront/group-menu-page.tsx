@@ -21,7 +21,7 @@ export async function GroupMenuPage({ groupKey }: { groupKey: MenuGroup['key'] }
   const { data: catalog, error } = await getCatalog();
   return (
     <>
-      <div className="bg-wine border-b border-line text-white">
+      <div className="on-dark bg-wine border-b border-line text-white">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
           <h1 className="font-display text-4xl font-semibold sm:text-5xl">{group.title}</h1>
           <p className="mt-2 max-w-xl text-white/70">{group.description}</p>

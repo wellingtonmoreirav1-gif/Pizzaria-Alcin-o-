@@ -19,8 +19,7 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
     .filter((p) => p.kind === 'pizza')
     .map((p) => ({ ...p, groups: [], description: null, shortDescription: null, images: [], imageUrl: null, imageAlt: null, comboItems: [] }));
   return (
-    // O tema escuro envolve também as janelas (escolher produto), que ficam no provedor.
-    <div className="theme-dark flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col">
       <StoreProviders drinks={drinks} pizzas={pizzas}>
       <Suspense fallback={null}>
         <ClosedBanner />

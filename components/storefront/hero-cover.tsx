@@ -40,7 +40,7 @@ export function HeroCover({ children }: { children: ReactNode }) {
       ref={stageRef}
       aria-label="Apresentação"
       data-hero
-      className="relative -mt-[var(--header-h)] overflow-hidden bg-[#0b0b0b] text-white [--header-h:114px] sm:[--header-h:73px]"
+      className="on-dark relative -mt-[var(--header-h)] overflow-hidden bg-[#0b0b0b] text-white [--header-h:114px] sm:[--header-h:73px]"
       data-testid="hero"
     >
       {/* Imagem (não fundo CSS) para o navegador achar e baixar logo de cara: é o maior elemento da 1ª tela. */}

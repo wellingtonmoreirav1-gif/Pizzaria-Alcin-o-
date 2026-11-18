@@ -29,10 +29,15 @@ test('página inicial: capa, destaque da semana e catálogos com os produtos', a
   for (const name of ['Pizzas', 'Lanches', 'Petiscos da casa', 'Pratos']) {
     await expect(atalhos.getByRole('link', { name, exact: true })).toBeVisible();
   }
+  // Cada catálogo mostra só 2 produtos e o "Ver tudo" (o catálogo inteiro fica na página dele).
   const pizzas = page.locator('#catalogo-pizzas');
-  await expect(pizzas.getByRole('heading', { name: 'Pizzas tradicionais' })).toBeVisible();
-  await expect(pizzas.getByTestId('product-card').filter({ hasText: 'Pizza Calabresa' }).first()).toBeVisible();
-  await expect(page.locator('#catalogo-pratos').getByTestId('product-card').filter({ hasText: 'Lasanha de Carne' })).toHaveCount(1);
+  await expect(pizzas.getByTestId('product-card')).toHaveCount(2);
+  await expect(pizzas.getByTestId('product-card').filter({ hasText: 'Pizza Calabresa' })).toHaveCount(1);
+  await expect(pizzas.getByRole('link', { name: /Ver tudo/ })).toHaveAttribute('href', '/pizzas');
+  for (const id of ['lanches', 'petiscos', 'pratos']) {
+    await expect(page.locator(`#catalogo-${id}`).getByTestId('product-card')).toHaveCount(2);
+    await expect(page.locator(`#catalogo-${id}`).getByRole('link', { name: /Ver tudo/ })).toHaveAttribute('href', `/${id}`);
+  }
   // Bebidas ficam no carrinho; bordas e molhos não se pedem sozinhos.
   await expect(cardapio).not.toContainText('Bebidas');
   await expect(cardapio).not.toContainText('Bordas recheadas');
@@ -49,6 +54,10 @@ test('página inicial: capa, destaque da semana e catálogos com os produtos', a
   await expect(cardapio.getByRole('heading', { name: 'O que você quer hoje?' })).toBeInViewport();
   await pizzas.getByRole('button', { name: 'Escolher opções de Pizza Calabresa', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Pizza Calabresa' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  // "Ver tudo" abre o catálogo inteiro (pedido passo a passo).
+  await pizzas.getByRole('link', { name: /Ver tudo/ }).click();
+  await expect(page).toHaveURL(/\/pizzas$/);
 });
 
 test('destaque da semana abre o lanche para pedir', async ({ page }) => {

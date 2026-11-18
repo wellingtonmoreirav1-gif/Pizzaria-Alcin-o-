@@ -268,7 +268,7 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
         <ol className="hidden flex-wrap gap-2 sm:flex" aria-label="Etapas do pedido">
           {steps.map((s, i) => (
             <li key={s} className="flex shrink-0 items-center gap-2 text-sm" aria-current={i === step ? 'step' : undefined}>
-              <span className={cn('grid size-7 place-items-center rounded-full text-xs font-bold', i < step ? 'bg-gold text-ink-950' : i === step ? 'bg-brand-600 text-white' : 'bg-mist text-muted')}>
+              <span className={cn('grid size-7 place-items-center rounded-full text-xs font-bold', i < step ? 'bg-gold-bright text-ink-950' : i === step ? 'bg-brand-600 text-white' : 'bg-mist text-muted')}>
                 {i < step ? <Check className="size-4" aria-hidden /> : i + 1}
               </span>
               <span className={cn(i === step ? 'font-semibold' : 'text-muted')}>{s}</span>

@@ -43,34 +43,52 @@ export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: 
 interface CatalogSection {
   id: string;
   title: string;
-  /** Página do pedido passo a passo (pizzas, lanches, petiscos, pratos). */
-  path?: string;
-  categories: { category: CatalogCategory; products: CatalogProduct[] }[];
+  /** Página do catálogo inteiro (pizzas, lanches, petiscos, pratos) ou a categoria no cardápio. */
+  href: string;
+  /** Total de produtos do catálogo (para o "Ver tudo"). */
+  total: number;
+  /** Os poucos produtos mostrados na página inicial. */
+  featured: CatalogProduct[];
 }
 
+/** Quantos produtos cada catálogo mostra na página inicial (o resto fica no "Ver tudo"). */
+const HOME_PER_CATALOG = 2;
+
 /**
- * Catálogos (pizzas, lanches, petiscos, pratos e categorias novas do painel) com os produtos
- * de cada tipo, na ordem do cardápio. Um atalho no topo leva a cada catálogo. Bebidas ficam
- * fora (são oferecidas no carrinho); bordas e molhos não se pedem sozinhos.
+ * Catálogos (pizzas, lanches, petiscos, pratos e categorias novas do painel): só 2 produtos de
+ * cada um, mais o "Ver tudo". Os dois vêm primeiro dos marcados como destaque no painel e,
+ * depois, na ordem do cardápio. Um atalho no topo leva a cada catálogo. Bebidas ficam fora
+ * (são oferecidas no carrinho); bordas e molhos não se pedem sozinhos.
  */
 function HomeCatalogs({ catalog }: { catalog: Catalog }) {
   const productsOf = (c: CatalogCategory) => catalog.products.filter((p) => p.categoryId === c.id).sort((a, b) => a.sortOrder - b.sortOrder);
-  const withProducts = (cats: CatalogCategory[]) => cats.map((category) => ({ category, products: productsOf(category) })).filter((c) => c.products.length > 0);
+  const pick = (list: CatalogProduct[]) =>
+    [...list]
+      .map((p, i) => ({ p, i }))
+      .sort((a, b) => Number(b.p.isFeatured) - Number(a.p.isFeatured) || (a.p.featuredOrder ?? 999) - (b.p.featuredOrder ?? 999) || a.i - b.i)
+      .slice(0, HOME_PER_CATALOG)
+      .map((x) => x.p);
   const sections: CatalogSection[] = [
-    ...MENU_GROUPS.map((g) => ({
-      id: `catalogo-${g.key}`,
-      title: g.title,
-      path: g.path,
-      categories: withProducts(g.slugs.map((slug) => catalog.categories.find((c) => c.slug === slug)).filter((c): c is CatalogCategory => Boolean(c))),
-    })),
-    ...withProducts(
-      catalog.categories.filter((c) => c.sectionType === 'products' && !groupOfCategory(c.slug) && !HOME_HIDDEN_CATEGORIES.includes(c.slug)),
-    ).map((c) => ({ id: `catalogo-categoria-${c.category.slug}`, title: c.category.name, categories: [c] })), // id próprio: não colide com os grupos (ex.: categoria "pizzas")
-  ].filter((s) => s.categories.length > 0);
+    ...MENU_GROUPS.map((g) => {
+      // Na ordem do cardápio: tradicionais, especiais, premium, doces…
+      const all = g.slugs.flatMap((slug) => {
+        const c = catalog.categories.find((x) => x.slug === slug);
+        return c ? productsOf(c) : [];
+      });
+      return { id: `catalogo-${g.key}`, title: g.title, href: g.path, total: all.length, featured: pick(all) };
+    }),
+    ...catalog.categories
+      .filter((c) => c.sectionType === 'products' && !groupOfCategory(c.slug) && !HOME_HIDDEN_CATEGORIES.includes(c.slug))
+      .map((c) => {
+        const all = productsOf(c);
+        // id próprio: não colide com os grupos (ex.: categoria "pizzas").
+        return { id: `catalogo-categoria-${c.slug}`, title: c.name, href: `/cardapio?categoria=${c.slug}`, total: all.length, featured: pick(all) };
+      }),
+  ].filter((s) => s.total > 0);
   if (sections.length === 0) return null;
 
   return (
-    <section id="cardapio" aria-labelledby="cardapio-titulo" className="scroll-mt-32 pb-6 pt-10 sm:pt-14">
+    <section id="cardapio" aria-labelledby="cardapio-titulo" className="scroll-mt-32 pb-10 pt-10 sm:pt-14">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Cardápio</p>
         <h2 id="cardapio-titulo" className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -80,7 +98,7 @@ function HomeCatalogs({ catalog }: { catalog: Catalog }) {
           <ul className="flex gap-2">
             {sections.map((s) => (
               <li key={s.id} className="shrink-0">
-                <a href={`#${s.id}`} className="inline-flex h-11 items-center rounded-full border border-line bg-mist px-5 text-base font-semibold text-fg transition-colors hover:border-gold hover:text-gold">
+                <a href={`#${s.id}`} className="inline-flex h-11 items-center rounded-full border border-line bg-mist px-5 text-base font-semibold text-fg transition-colors hover:border-brand-600 hover:text-brand-600">
                   {s.title}
                 </a>
               </li>
@@ -91,28 +109,27 @@ function HomeCatalogs({ catalog }: { catalog: Catalog }) {
 
       {sections.map((s) => (
         <div key={s.id} id={s.id} className="mx-auto max-w-7xl scroll-mt-32 px-4 pt-10 sm:px-6 sm:pt-14" data-testid="home-catalog">
-          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b-2 border-gold/60 pb-2">
-            <h3 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">{s.title}</h3>
-            {/* Para quem prefere uma pergunta por vez (tipo → tamanho → sabor). */}
-            {s.path ? (
-              <Link href={s.path} className="inline-flex min-h-11 items-center gap-1.5 text-base font-semibold text-gold underline-offset-4 hover:underline">
-                Pedir passo a passo <ArrowRight className="size-4" aria-hidden />
+          <h3 className="border-b-2 border-brand-600 pb-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">{s.title}</h3>
+          <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+            {s.featured.map((p) => (
+              <li key={p.id}>
+                <ProductCard product={p} fetchedAt={catalog.fetchedAt} className="h-full" headingAs="h4" />
+              </li>
+            ))}
+            {/* "Ver tudo": no celular uma faixa larga embaixo dos 2 produtos; no computador, um cartão ao lado. */}
+            <li className="col-span-2 sm:col-span-1 lg:col-span-2">
+              <Link
+                href={s.href}
+                className="group/all flex min-h-16 items-center justify-between gap-3 rounded-[var(--radius-card)] border-2 border-brand-600 bg-surface px-6 py-4 text-brand-600 transition-colors hover:bg-brand-600 hover:text-white sm:h-full sm:flex-col sm:justify-center sm:text-center"
+              >
+                <span className="font-display text-2xl font-bold sm:text-3xl">Ver tudo</span>
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  {s.total} {s.total === 1 ? 'produto' : 'produtos'}
+                  <ArrowRight className="size-5 transition-transform group-hover/all:translate-x-1" aria-hidden />
+                </span>
               </Link>
-            ) : null}
-          </div>
-          {s.categories.map(({ category, products }) => (
-            <div key={category.id} className="mt-6">
-              {/* Com um tipo só (ex.: Petiscos), o nome do catálogo já basta. */}
-              {s.categories.length > 1 ? <h4 className="mb-3 text-xl font-semibold text-gold sm:text-2xl">{category.name}</h4> : null}
-              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-                {products.map((p) => (
-                  <li key={p.id}>
-                    <ProductCard product={p} fetchedAt={catalog.fetchedAt} className="h-full" headingAs={s.categories.length > 1 ? 'h5' : 'h4'} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+            </li>
+          </ul>
         </div>
       ))}
     </section>

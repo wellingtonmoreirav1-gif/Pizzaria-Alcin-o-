@@ -59,8 +59,8 @@ export function ProductCard({
           {reason === 'soldout' ? <Badge tone="dark">Esgotado</Badge> : null}
           {reason === 'period' ? <Badge tone="dark">Fora do período</Badge> : null}
           {/* Sem valor nenhum, o "Preço a definir" embaixo já diz tudo; o selo fica para o valor de referência. */}
-          {reason === 'price' && price ? <Badge className="bg-ink-950/90 text-gold ring-1 ring-gold/40">Preço em conferência</Badge> : null}
-          {houseSpecial ? <Badge className="bg-gold text-ink-950">Especial da casa</Badge> : null}
+          {reason === 'price' && price ? <Badge className="bg-ink-950/90 text-gold-bright ring-1 ring-gold/40">Preço em conferência</Badge> : null}
+          {houseSpecial ? <Badge className="bg-gold-bright text-ink-950">Especial da casa</Badge> : null}
           {orderable && promo ? <Badge tone="brand">Promoção</Badge> : null}
           {badge && orderable ? <Badge className="bg-white/95 text-ink-900">{badge}</Badge> : null}
         </div>
@@ -103,8 +103,8 @@ export function ProductCard({
             type="button"
             disabled={!orderable || !price}
             onClick={() => dialog.quickAdd(product, fetchedAt)}
-            // Contorno dourado: com 40 cartões, o vermelho cheio fica só para as ações principais (Pedir agora, Adicionar ao pedido, carrinho).
-            className="relative z-10 inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl border border-gold/70 px-4 text-sm font-semibold text-gold transition-colors hover:bg-gold hover:text-ink-950 disabled:border-line disabled:text-muted disabled:hover:bg-transparent"
+            // Contorno: com vários cartões, o vermelho cheio fica só para as ações principais (Pedir agora, Adicionar ao pedido, carrinho).
+            className="relative z-10 inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl border border-brand-600 px-4 text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-600 hover:text-white disabled:border-line disabled:text-muted disabled:hover:bg-transparent [.on-dark_&]:border-gold-bright [.on-dark_&]:text-gold-bright [.on-dark_&]:hover:bg-gold-bright [.on-dark_&]:hover:text-ink-950"
             aria-label={
               reason === 'price' ? `Em breve: ${product.name}` : `${needsCustomization(product) ? 'Escolher opções de' : 'Adicionar'} ${product.name}`
             }

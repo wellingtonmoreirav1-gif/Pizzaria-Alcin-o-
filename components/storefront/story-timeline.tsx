@@ -62,7 +62,7 @@ export function StoryTimeline() {
   }, []);
 
   return (
-    <section id="historia" aria-labelledby="historia-titulo" className="relative overflow-hidden py-16 text-white sm:py-24">
+    <section id="historia" aria-labelledby="historia-titulo" className="on-dark relative overflow-hidden bg-ink-950 py-16 text-white sm:py-24">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-4xl">
         <h2 id="historia-titulo" className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
           Nossa <span className="italic text-gold">história</span>

@@ -32,7 +32,7 @@ export function ProductRail({
 }) {
   if (products.length === 0) return null;
   return (
-    <section id={id} aria-labelledby={`${id ?? title}-titulo`} className={cn('scroll-mt-28 py-10 sm:py-14', tone === 'wine' && 'bg-wine text-white')}>
+    <section id={id} aria-labelledby={`${id ?? title}-titulo`} className={cn('scroll-mt-28 py-10 sm:py-14', tone === 'wine' && 'on-dark bg-wine text-white')}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>

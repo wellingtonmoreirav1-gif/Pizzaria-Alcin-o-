@@ -17,7 +17,7 @@ export function MobileCartBar() {
       <button
         type="button"
         onClick={() => setDrawerOpen(true)}
-        className="flex h-14 w-full animate-[var(--animate-rise)] items-center gap-3 rounded-2xl bg-wine px-5 text-white shadow-[var(--shadow-float)] ring-1 ring-gold/30"
+        className="flex h-14 w-full animate-[var(--animate-rise)] items-center gap-3 rounded-2xl on-dark bg-wine px-5 text-white shadow-[var(--shadow-float)] ring-1 ring-gold/30"
       >
         <ShoppingBag className="size-5" aria-hidden />
         <span className="font-semibold">Ver carrinho</span>
