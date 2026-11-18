@@ -61,6 +61,7 @@ Logo abaixo dos blocos "Pedir …": linha do tempo que desce com a rolagem — "
 
 - Fotografia gastronômica profissional e realista; ingredientes nítidos; queijo derretido natural; massa e borda realistas.
 - Fundo escuro (pedra/carvão fosco) com toques discretos de vermelho e dourado, coerente com a identidade do site (fundo preto, cinza, dourado nos preços, vermelho nas ações).
+- **Cores do site (18/11/2026):** fundo preto quente (`--color-canvas` em `.theme-dark`, `app/globals.css`); o vinho (`bg-wine`) fica só nos blocos de destaque (destaque da semana, faixas de oferta, títulos das páginas); botão "Escolher" dos cartões com contorno dourado; vermelho cheio só nas ações principais (Pedir agora, Adicionar ao pedido, carrinho).
 - Luz quente lateral (pizzas, churrasco) ou luz natural suave (almoço, sobremesas).
 - Proporção **4:3** (1600×1200 px), produto ocupando o quadro.
 - Sem marca d’água, sem texto, sem mãos/pessoas, sem ingredientes que o produto não tem.

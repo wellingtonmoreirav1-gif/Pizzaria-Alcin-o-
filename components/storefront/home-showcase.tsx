@@ -80,7 +80,7 @@ function HomeCatalogs({ catalog }: { catalog: Catalog }) {
           <ul className="flex gap-2">
             {sections.map((s) => (
               <li key={s.id} className="shrink-0">
-                <a href={`#${s.id}`} className="inline-flex h-11 items-center rounded-full bg-brand-600 px-5 text-base font-semibold text-white hover:bg-brand-700">
+                <a href={`#${s.id}`} className="inline-flex h-11 items-center rounded-full border border-line bg-mist px-5 text-base font-semibold text-fg transition-colors hover:border-gold hover:text-gold">
                   {s.title}
                 </a>
               </li>

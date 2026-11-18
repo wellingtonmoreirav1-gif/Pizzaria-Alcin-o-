@@ -103,7 +103,8 @@ export function ProductCard({
             type="button"
             disabled={!orderable || !price}
             onClick={() => dialog.quickAdd(product, fetchedAt)}
-            className="relative z-10 inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:bg-line disabled:text-muted"
+            // Contorno dourado: com 40 cartões, o vermelho cheio fica só para as ações principais (Pedir agora, Adicionar ao pedido, carrinho).
+            className="relative z-10 inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl border border-gold/70 px-4 text-sm font-semibold text-gold transition-colors hover:bg-gold hover:text-ink-950 disabled:border-line disabled:text-muted disabled:hover:bg-transparent"
             aria-label={
               reason === 'price' ? `Em breve: ${product.name}` : `${needsCustomization(product) ? 'Escolher opções de' : 'Adicionar'} ${product.name}`
             }

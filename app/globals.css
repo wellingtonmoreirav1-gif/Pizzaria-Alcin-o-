@@ -111,11 +111,12 @@
 }
 
 .theme-dark {
-  /* Fundo da loja no vermelho do vídeo da pizza; cartões e campos num vinho bem escuro. */
-  --color-canvas: var(--color-wine-900);
-  --color-surface: #1e0405;
-  --color-mist: #2c080a;
-  --color-line: #4f1a1d;
+  /* Fundo da loja preto quente (igual ao da capa); o vinho fica só nos blocos de destaque
+     (bg-wine: destaque da semana, ofertas, títulos das páginas). Cartões e campos em preto mais claro. */
+  --color-canvas: #0f0b0b;
+  --color-surface: #181212;
+  --color-mist: #241b1b;
+  --color-line: #3a2d2d;
   --color-muted: #aaa29b;
   --color-muted-strong: #d6cfc8;
   --color-fg: #f6f2ee;
@@ -141,7 +142,7 @@
 @custom-variant over-hero (html:has([data-hero]:not([data-done="true"])) &);
 
 body:has(.theme-dark) {
-  background: var(--color-wine-900);
+  background: #0f0b0b;
 }
 
 @layer base {
