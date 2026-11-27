@@ -24,3 +24,11 @@ Skill `design-taste-frontend` (pasta `taste-skill`) de Leonxlnx (https://github.
 - Os scripts (`scripts/*.mjs`) são código-fonte legível, rodados com Node só quando o assistente precisar: `inspect.mjs` abre o Chromium local para tirar prints e checar a página; `assets.mjs` busca imagens de domínio público em acervos (Openverse, Wikimedia, museus). Nada é baixado para executar.
 - **No Alcinão, fotos de produtos são sempre as reais enviadas pelo painel** — não usar imagens de acervo ou banco de fotos no lugar delas.
 - O ESLint do projeto ignora `.claude/**`.
+
+## Design Motion Principles
+
+Skill `design-motion-principles` de Kyle Zantos (https://github.com/kylezantos/design-motion-principles, commit 4a9ca87, licença MIT — ver LICENSE na pasta). Só textos (SKILL.md, workflows/, references/).
+
+- Dois modos: **Create** (criar componentes com movimento) e **Audit** (revisar o movimento existente e gerar relatório HTML em `motion-audits/`, ignorado pelo git).
+- Base das regras de interface do `AGENTS.md`: skeleton loading, lazy loading, entrada/saída suaves, progresso e `prefers-reduced-motion`.
+- Uso: `/design-motion-principles audit cardápio` ou `/design-motion-principles criar gaveta do carrinho`.
