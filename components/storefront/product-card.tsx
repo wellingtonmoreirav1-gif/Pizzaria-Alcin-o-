@@ -19,12 +19,15 @@ export function ProductCard({
   priority,
   badge,
   className,
+  headingAs: Heading = 'h3',
 }: {
   product: CatalogProduct;
   fetchedAt: string;
   priority?: boolean;
   badge?: string;
   className?: string;
+  /** Nível do título conforme a página (h4/h5 dentro dos catálogos da página inicial). */
+  headingAs?: 'h2' | 'h3' | 'h4' | 'h5';
 }) {
   const now = useNow(fetchedAt);
   const dialog = useProductDialog();
@@ -67,7 +70,7 @@ export function ProductCard({
             const added = await favorites.toggle(product.id);
             toast(added ? 'Salvo nos favoritos' : 'Removido dos favoritos');
           }}
-          className="absolute right-3 top-3 grid size-10 place-items-center rounded-full bg-white/95 text-ink-900 shadow-sm transition-transform hover:scale-105"
+          className="absolute right-3 top-3 grid size-11 place-items-center rounded-full bg-white/95 text-ink-900 shadow-sm transition-transform hover:scale-105"
           aria-pressed={fav}
           aria-label={fav ? `Remover ${product.name} dos favoritos` : `Salvar ${product.name} nos favoritos`}
         >
@@ -76,11 +79,11 @@ export function ProductCard({
       </div>
       {/* Cartão estreito (2 por linha no celular): preço em cima e botão inteiro embaixo. */}
       <div className="flex flex-1 flex-col gap-1.5 p-3 @[15rem]:p-4">
-        <h3 className="font-display text-base font-semibold leading-snug @[15rem]:text-lg">
+        <Heading className="font-display text-base font-semibold leading-snug @[15rem]:text-lg">
           <Link href={`/produto/${product.slug}`} className="after:absolute after:inset-0 after:rounded-[var(--radius-card)] after:content-[''] focus-visible:outline-none focus-visible:after:outline-3 focus-visible:after:-outline-offset-3 focus-visible:after:outline-gold">
             {product.name}
           </Link>
-        </h3>
+        </Heading>
         {product.shortDescription ? <p className="line-clamp-3 text-sm text-muted">{product.shortDescription}</p> : null}
         {product.serves ? <p className="text-xs font-semibold text-gold">{product.serves}</p> : null}
         <div className="mt-auto flex flex-col gap-2 pt-3 @[15rem]:flex-row @[15rem]:items-end @[15rem]:justify-between">
@@ -100,7 +103,8 @@ export function ProductCard({
             type="button"
             disabled={!orderable || !price}
             onClick={() => dialog.quickAdd(product, fetchedAt)}
-            className="relative z-10 inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:bg-line disabled:text-muted"
+            // Contorno dourado: com 40 cartões, o vermelho cheio fica só para as ações principais (Pedir agora, Adicionar ao pedido, carrinho).
+            className="relative z-10 inline-flex h-11 items-center justify-center gap-1.5 rounded-2xl border border-gold/70 px-4 text-sm font-semibold text-gold transition-colors hover:bg-gold hover:text-ink-950 disabled:border-line disabled:text-muted disabled:hover:bg-transparent"
             aria-label={
               reason === 'price' ? `Em breve: ${product.name}` : `${needsCustomization(product) ? 'Escolher opções de' : 'Adicionar'} ${product.name}`
             }

@@ -7,7 +7,8 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
     console.error(error.digest ?? 'erro');
   }, [error]);
   return (
-    <main className="grid min-h-[60vh] place-items-center px-4 text-center">
+    // No tema da loja (vermelho), não no fundo branco padrão.
+    <main className="theme-dark grid min-h-screen place-items-center bg-canvas px-4 text-center text-fg">
       <div className="max-w-md space-y-4">
         <h1 className="font-display text-3xl font-semibold">Algo deu errado</h1>
         <p className="text-muted">Tivemos um problema para carregar esta página. Seu carrinho continua salvo neste aparelho.</p>

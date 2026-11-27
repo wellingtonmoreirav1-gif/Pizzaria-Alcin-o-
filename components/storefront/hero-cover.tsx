@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useRef, type ReactNode } from 'react';
 
 /**
@@ -42,7 +43,8 @@ export function HeroCover({ children }: { children: ReactNode }) {
       className="relative -mt-[var(--header-h)] overflow-hidden bg-[#0b0b0b] text-white [--header-h:114px] sm:[--header-h:73px]"
       data-testid="hero"
     >
-      <div className="absolute inset-0 bg-[url(/hero/fundo-preto.webp)] bg-cover bg-center" aria-hidden />
+      {/* Imagem (não fundo CSS) para o navegador achar e baixar logo de cara: é o maior elemento da 1ª tela. */}
+      <Image src="/hero/fundo-preto.webp" alt="" fill sizes="100vw" fetchPriority="high" loading="eager" className="object-cover" aria-hidden />
       {/* Escurece as bordas, como na arte original. */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_70%_at_50%_45%,transparent_35%,rgba(0,0,0,0.65)_100%)]" aria-hidden />
       <div className="relative mx-auto max-w-7xl px-4 pt-[calc(var(--header-h)+1rem)] sm:px-6 lg:flex lg:min-h-[min(var(--app-h-stable),54rem)] lg:flex-col lg:justify-end lg:pt-[var(--header-h)]">

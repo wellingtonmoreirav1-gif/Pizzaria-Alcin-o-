@@ -3,10 +3,10 @@ import { Suspense } from 'react';
 import { getCatalog, getOperation } from '@/lib/catalog/queries';
 import { BrandLogo } from './brand-logo';
 import { HeaderActions } from './header-actions';
-import { MENU_HIDDEN_CATEGORIES } from '@/lib/catalog/groups';
+import { MENU_GROUPS, MENU_HIDDEN_CATEGORIES, groupOfCategory } from '@/lib/catalog/groups';
 import { StoreStatusFallback, StoreStatusPill } from './store-status';
 
-/** Atalhos do menu no computador: um por tipo de prato (leva à primeira categoria do grupo). */
+/** Atalhos do menu: um por tipo de prato (leva ao pedido passo a passo do grupo). */
 const NAV_GROUPS: { label: string; slug: string; href?: string }[] = [
   { label: 'Pizzas', slug: 'pizzas-tradicionais', href: '/pizzas' },
   { label: 'Lanches', slug: 'lanches-tradicionais', href: '/lanches' },
@@ -44,7 +44,7 @@ export async function SiteHeader() {
               </Link>
             </li>
             {NAV_GROUPS.filter((g) => categories.some((c) => c.slug === g.slug)).map((g) => (
-              <li key={g.slug} className="hidden xl:block">
+              <li key={g.slug} className="hidden lg:block">
                 <Link
                   href={g.href ?? `/cardapio?categoria=${g.slug}`}
                   className="rounded-full px-3 py-2 text-muted-strong hover:bg-mist hover:text-fg over-hero:text-white/85 over-hero:hover:bg-white/10"
@@ -59,17 +59,25 @@ export async function SiteHeader() {
           <HeaderActions />
         </div>
       </div>
-      <div className="flex items-center gap-3 overflow-x-auto border-t border-line/60 px-4 py-2 scrollbar-none over-hero:border-transparent md:hidden">
+      {/* Celular e tablet: os mesmos 4 atalhos do passo a passo (botões grandes), mais as categorias novas do painel. */}
+      <div className="flex items-center gap-3 overflow-x-auto border-t border-line/60 px-4 py-2 scrollbar-none over-hero:border-transparent lg:hidden">
         <Suspense fallback={<StoreStatusFallback />}>
           <StoreStatusPill className="shrink-0" />
         </Suspense>
         <span className="h-4 w-px shrink-0 bg-line" aria-hidden />
         <nav aria-label="Categorias (celular)" className="shrink-0">
-          <ul className="flex gap-1.5 text-sm">
-            {categories.map((c) => (
-              <li key={c.id}>
-                <Link href={`/cardapio?categoria=${c.slug}`} className="block whitespace-nowrap rounded-full bg-mist px-3 py-1.5 font-medium over-hero:bg-black/35 over-hero:backdrop-blur-sm">
-                  {c.name}
+          <ul className="flex gap-1.5 text-[0.95rem]">
+            {[
+              ...MENU_GROUPS.filter((g) => categories.some((c) => g.slugs.includes(c.slug))).map((g) => ({ key: g.key, label: g.title, href: g.path })),
+              ...categories.filter((c) => !groupOfCategory(c.slug) && c.sectionType === 'products').map((c) => ({ key: c.id, label: c.name, href: `/cardapio?categoria=${c.slug}` })),
+              { key: 'cardapio', label: 'Cardápio completo', href: '/cardapio' },
+            ].map((item) => (
+              <li key={item.key}>
+                <Link
+                  href={item.href}
+                  className="flex h-11 items-center whitespace-nowrap rounded-full bg-mist px-4 font-semibold over-hero:bg-black/35 over-hero:backdrop-blur-sm"
+                >
+                  {item.label}
                 </Link>
               </li>
             ))}

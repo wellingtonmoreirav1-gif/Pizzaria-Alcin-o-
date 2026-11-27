@@ -42,7 +42,7 @@ export function CartSuggestions({ products, fetchedAt }: { products: CatalogProd
               <button
                 type="button"
                 onClick={() => dialog.quickAdd(p, fetchedAt)}
-                className="mt-2 inline-flex h-8 w-full items-center justify-center gap-1 rounded-lg bg-fg text-xs font-semibold text-canvas hover:opacity-90"
+                className="mt-2 inline-flex h-11 w-full items-center justify-center gap-1 rounded-lg bg-fg text-sm font-semibold text-canvas hover:opacity-90"
                 aria-label={`Adicionar ${p.name}`}
               >
                 <Plus className="size-3.5" aria-hidden /> Adicionar

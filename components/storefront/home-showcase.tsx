@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import type { Catalog, CatalogCategory, CatalogProduct } from '@/types/catalog';
 import type { PublicBanner } from '@/types/settings';
 import { hasActivePromotion, isProductOrderable } from '@/lib/pricing';
@@ -15,7 +17,7 @@ const WEEKLY_FEATURE: WeeklyFeatureConfig = {
   title: 'X Frango Assado',
   productSlug: 'x-frango',
   image: '/destaques/x-frango-poster.webp',
-  video: { mp4: '/destaques/x-frango-loop.mp4', webm: '/destaques/x-frango-loop.webm' },
+  video: { mp4: '/destaques/x-frango-loop-v2.mp4', webm: '/destaques/x-frango-loop-v2.webm' },
   imageAlt: 'Lanche de frango grelhado com queijo derretido, alface, tomate e cebola roxa no pão com gergelim',
 };
 
@@ -41,6 +43,8 @@ export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: 
 interface CatalogSection {
   id: string;
   title: string;
+  /** Página do pedido passo a passo (pizzas, lanches, petiscos, pratos). */
+  path?: string;
   categories: { category: CatalogCategory; products: CatalogProduct[] }[];
 }
 
@@ -56,11 +60,12 @@ function HomeCatalogs({ catalog }: { catalog: Catalog }) {
     ...MENU_GROUPS.map((g) => ({
       id: `catalogo-${g.key}`,
       title: g.title,
+      path: g.path,
       categories: withProducts(g.slugs.map((slug) => catalog.categories.find((c) => c.slug === slug)).filter((c): c is CatalogCategory => Boolean(c))),
     })),
     ...withProducts(
       catalog.categories.filter((c) => c.sectionType === 'products' && !groupOfCategory(c.slug) && !HOME_HIDDEN_CATEGORIES.includes(c.slug)),
-    ).map((c) => ({ id: `catalogo-${c.category.slug}`, title: c.category.name, categories: [c] })),
+    ).map((c) => ({ id: `catalogo-categoria-${c.category.slug}`, title: c.category.name, categories: [c] })), // id próprio: não colide com os grupos (ex.: categoria "pizzas")
   ].filter((s) => s.categories.length > 0);
   if (sections.length === 0) return null;
 
@@ -75,7 +80,7 @@ function HomeCatalogs({ catalog }: { catalog: Catalog }) {
           <ul className="flex gap-2">
             {sections.map((s) => (
               <li key={s.id} className="shrink-0">
-                <a href={`#${s.id}`} className="inline-flex h-11 items-center rounded-full bg-brand-600 px-5 text-base font-semibold text-white hover:bg-brand-700">
+                <a href={`#${s.id}`} className="inline-flex h-11 items-center rounded-full border border-line bg-mist px-5 text-base font-semibold text-fg transition-colors hover:border-gold hover:text-gold">
                   {s.title}
                 </a>
               </li>
@@ -86,7 +91,15 @@ function HomeCatalogs({ catalog }: { catalog: Catalog }) {
 
       {sections.map((s) => (
         <div key={s.id} id={s.id} className="mx-auto max-w-7xl scroll-mt-32 px-4 pt-10 sm:px-6 sm:pt-14" data-testid="home-catalog">
-          <h3 className="border-b-2 border-gold/60 pb-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">{s.title}</h3>
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b-2 border-gold/60 pb-2">
+            <h3 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">{s.title}</h3>
+            {/* Para quem prefere uma pergunta por vez (tipo → tamanho → sabor). */}
+            {s.path ? (
+              <Link href={s.path} className="inline-flex min-h-11 items-center gap-1.5 text-base font-semibold text-gold underline-offset-4 hover:underline">
+                Pedir passo a passo <ArrowRight className="size-4" aria-hidden />
+              </Link>
+            ) : null}
+          </div>
           {s.categories.map(({ category, products }) => (
             <div key={category.id} className="mt-6">
               {/* Com um tipo só (ex.: Petiscos), o nome do catálogo já basta. */}
@@ -94,7 +107,7 @@ function HomeCatalogs({ catalog }: { catalog: Catalog }) {
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
                 {products.map((p) => (
                   <li key={p.id}>
-                    <ProductCard product={p} fetchedAt={catalog.fetchedAt} className="h-full" />
+                    <ProductCard product={p} fetchedAt={catalog.fetchedAt} className="h-full" headingAs={s.categories.length > 1 ? 'h5' : 'h4'} />
                   </li>
                 ))}
               </ul>

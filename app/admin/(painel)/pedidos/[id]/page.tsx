@@ -105,7 +105,7 @@ export default async function OrderDetailPage({ params }: PageProps<'/admin/pedi
               <div className="space-y-3 text-sm">
                 <p className="font-semibold">{order.customerName}</p>
                 <p>{formatBrazilPhone(order.customerPhone)}</p>
-                <a href={buildCustomerChatUrl(order.customerPhone, confirmText)} target="_blank" rel="noopener noreferrer" className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#1f8f4e] px-4 font-semibold text-white">
+                <a href={buildCustomerChatUrl(order.customerPhone, confirmText)} target="_blank" rel="noopener noreferrer" className="inline-flex h-10 items-center gap-2 rounded-xl bg-whatsapp-600 px-4 font-semibold text-white">
                   <MessageCircle className="size-4" aria-hidden /> Abrir conversa no WhatsApp
                 </a>
                 {order.location ? (
