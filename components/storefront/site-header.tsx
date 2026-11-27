@@ -18,15 +18,17 @@ export async function SiteHeader() {
   const [{ data: catalog }, { data: operation }] = await Promise.all([getCatalog(), getOperation()]);
   const categories = catalog.categories.filter(
     (c) =>
-      !MENU_HIDDEN_CATEGORIES.includes(c.slug) &&
-      (catalog.products.some((p) => p.categoryId === c.id) || (c.sectionType === 'options' && c.sharedGroupId)),
+      !MENU_HIDDEN_CATEGORIES.includes(c.slug) && (catalog.products.some((p) => p.categoryId === c.id) || (c.sectionType === 'options' && c.sharedGroupId)),
   );
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-canvas/90 backdrop-blur-md transition-[background-color,border-color] duration-300 over-hero:border-transparent over-hero:bg-transparent over-hero:bg-gradient-to-b over-hero:from-black/60 over-hero:to-transparent over-hero:backdrop-blur-none">
-      <a href="#conteudo" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-white">
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-white"
+      >
         Pular para o conteúdo
       </a>
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:h-[4.5rem] sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 min-[360px]:gap-4 sm:h-[4.5rem] sm:px-6">
         <Link href="/" className="shrink-0">
           <BrandLogo logoUrl={operation.settings.logoUrl} name={operation.settings.businessName} />
           <span className="sr-only">, página inicial</span>
@@ -69,7 +71,9 @@ export async function SiteHeader() {
           <ul className="flex gap-1.5 text-[0.95rem]">
             {[
               ...MENU_GROUPS.filter((g) => categories.some((c) => g.slugs.includes(c.slug))).map((g) => ({ key: g.key, label: g.title, href: g.path })),
-              ...categories.filter((c) => !groupOfCategory(c.slug) && c.sectionType === 'products').map((c) => ({ key: c.id, label: c.name, href: `/cardapio?categoria=${c.slug}` })),
+              ...categories
+                .filter((c) => !groupOfCategory(c.slug) && c.sectionType === 'products')
+                .map((c) => ({ key: c.id, label: c.name, href: `/cardapio?categoria=${c.slug}` })),
               { key: 'cardapio', label: 'Cardápio completo', href: '/cardapio' },
             ].map((item) => (
               <li key={item.key}>

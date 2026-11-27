@@ -15,8 +15,19 @@ import { ProductFields } from '@/components/admin/product-fields';
 import { ButtonLink } from '@/components/ui/button';
 import { Badge, Notice } from '@/components/ui/feedback';
 import {
-  addComboItem, archiveGroup, archiveOptionValue, archiveProduct, archiveVariant, removeComboItem,
-  linkSharedGroup, saveGroup, saveOptionValue, saveSizeMatrix, saveVariant, unlinkSharedGroup, updateProduct,
+  addComboItem,
+  archiveGroup,
+  archiveOptionValue,
+  archiveProduct,
+  archiveVariant,
+  removeComboItem,
+  linkSharedGroup,
+  saveGroup,
+  saveOptionValue,
+  saveSizeMatrix,
+  saveVariant,
+  unlinkSharedGroup,
+  updateProduct,
 } from '../actions';
 import { confirmProductPrices, unconfirmProductPrices } from '../../precos/actions';
 
@@ -55,17 +66,60 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
   ]);
   const p = productRes.data;
   if (!p) notFound();
-  type Variant = { id: string; name: string; size_code: string | null; description: string | null; price: number; max_flavors: number; flavor_price_rule: keyof typeof RULE_LABEL; allow_mixed_flavor_tags: boolean; sort_order: number; is_active: boolean; deleted_at: string | null };
-  type Value = { id: string; name: string; description: string | null; price: number; price_confirmed: boolean; combination_tag: string | null; sort_order: number; is_active: boolean; deleted_at: string | null; option_value_variant_prices: { variant_id: string; price: number | null; is_offered: boolean }[] };
-  type Group = { id: string; kind: keyof typeof GROUP_KIND_LABEL; name: string; description: string | null; min_select: number; max_select: number; sort_order: number; is_active: boolean; deleted_at: string | null; option_values: Value[] };
+  type Variant = {
+    id: string;
+    name: string;
+    size_code: string | null;
+    description: string | null;
+    price: number;
+    max_flavors: number;
+    flavor_price_rule: keyof typeof RULE_LABEL;
+    allow_mixed_flavor_tags: boolean;
+    sort_order: number;
+    is_active: boolean;
+    deleted_at: string | null;
+  };
+  type Value = {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number;
+    price_confirmed: boolean;
+    combination_tag: string | null;
+    sort_order: number;
+    is_active: boolean;
+    deleted_at: string | null;
+    option_value_variant_prices: { variant_id: string; price: number | null; is_offered: boolean }[];
+  };
+  type Group = {
+    id: string;
+    kind: keyof typeof GROUP_KIND_LABEL;
+    name: string;
+    description: string | null;
+    min_select: number;
+    max_select: number;
+    sort_order: number;
+    is_active: boolean;
+    deleted_at: string | null;
+    option_values: Value[];
+  };
   const variants = ((p.product_variants ?? []) as Variant[]).filter((v) => !v.deleted_at).sort((a, b) => a.sort_order - b.sort_order);
   const groups = ((p.option_groups ?? []) as Group[]).filter((g) => !g.deleted_at).sort((a, b) => a.sort_order - b.sort_order);
   const flavorGroup = groups.find((g) => g.kind === 'flavor');
-  type SharedLink = { sort_order: number; option_groups: { id: string; name: string; shared_key: string; kind: string; option_values: { id: string; deleted_at: string | null }[] } | null };
+  type SharedLink = {
+    sort_order: number;
+    option_groups: { id: string; name: string; shared_key: string; kind: string; option_values: { id: string; deleted_at: string | null }[] } | null;
+  };
   const sharedLinks = ((p.product_shared_groups ?? []) as SharedLink[]).filter((l) => l.option_groups).sort((a, b) => a.sort_order - b.sort_order);
   const linkedIds = new Set(sharedLinks.map((l) => l.option_groups!.id));
   const availableShared = (sharedRes.data ?? []).filter((g) => !linkedIds.has(g.id));
-  type OrderRow = { id: string; code: string; created_at: string; status: OrderStatus; order_items: { quantity: number; variant_name: string | null; line_total: number }[] };
+  type OrderRow = {
+    id: string;
+    code: string;
+    created_at: string;
+    status: OrderStatus;
+    order_items: { quantity: number; variant_name: string | null; line_total: number }[];
+  };
   const orders = (ordersRes.data ?? []) as unknown as OrderRow[];
   const brief = buildImageBrief({
     name: p.name,
@@ -93,11 +147,19 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
       <PageHeader
         title={p.name}
         description={p.deleted_at ? 'Produto arquivado.' : p.is_active ? 'Publicado no site.' : 'Rascunho (não aparece no site).'}
-        actions={<ButtonLink href={`/admin/cardapio/${p.id}/previa`} variant="outline" size="sm"><Eye className="size-4" aria-hidden /> Prévia</ButtonLink>}
+        actions={
+          <ButtonLink href={`/admin/cardapio/${p.id}/previa`} variant="outline" size="sm">
+            <Eye className="size-4" aria-hidden /> Prévia
+          </ButtonLink>
+        }
       />
       {problems.length ? (
         <Notice tone="warning" title="Antes de publicar">
-          <ul className="list-disc pl-5">{problems.map((m) => <li key={m}>{m}</li>)}</ul>
+          <ul className="list-disc pl-5">
+            {problems.map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
         </Notice>
       ) : null}
 
@@ -122,7 +184,13 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
                 <VariantFields v={v} isPizza={p.kind === 'pizza'} />
               </ActionForm>
               <div className="mt-2">
-                <ActionForm action={archiveVariant.bind(null, p.id, v.id)} submitLabel="Remover tamanho" size="sm" variant="ghost" confirm="Remover este tamanho?" />
+                <ActionForm
+                  action={archiveVariant.bind(null, p.id, v.id)}
+                  submitLabel="Remover tamanho"
+                  size="sm"
+                  variant="ghost"
+                  confirm="Remover este tamanho?"
+                />
               </div>
             </div>
           ))}
@@ -147,21 +215,50 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
         }
       >
         {p.price_confirmed ? (
-          <ActionForm action={unconfirmProductPrices.bind(null, p.id)} submitLabel="Voltar para “preço em conferência”" size="sm" variant="outline" confirm="O produto deixará de poder ser pedido até nova confirmação. Continuar?" />
+          <ActionForm
+            action={unconfirmProductPrices.bind(null, p.id)}
+            submitLabel="Voltar para “preço em conferência”"
+            size="sm"
+            variant="outline"
+            confirm="O produto deixará de poder ser pedido até nova confirmação. Continuar?"
+          />
         ) : (
-          <ActionForm action={confirmProductPrices.bind(null, p.id)} submitLabel={<><BadgeCheck className="size-4" aria-hidden /> Salvar e confirmar valores</>} size="sm" className="space-y-3">
+          <ActionForm
+            action={confirmProductPrices.bind(null, p.id)}
+            submitLabel={
+              <>
+                <BadgeCheck className="size-4" aria-hidden /> Salvar e confirmar valores
+              </>
+            }
+            size="sm"
+            className="space-y-3"
+          >
             <div className="flex flex-wrap gap-3">
               {variants.length ? (
                 variants.map((v) => (
                   <label key={v.id} className="text-xs font-medium">
                     {v.name}
-                    <input name={`variant:${v.id}`} defaultValue={Number(v.price) > 0 ? centsInput(v.price) : ''} placeholder="0,00" inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
+                    <input
+                      name={`variant:${v.id}`}
+                      defaultValue={Number(v.price) > 0 ? centsInput(v.price) : ''}
+                      placeholder="0,00"
+                      inputMode="decimal"
+                      required
+                      className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm"
+                    />
                   </label>
                 ))
               ) : (
                 <label className="text-xs font-medium">
                   Preço
-                  <input name="basePrice" defaultValue={Number(p.base_price) > 0 ? centsInput(p.base_price) : ''} placeholder="0,00" inputMode="decimal" required className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm" />
+                  <input
+                    name="basePrice"
+                    defaultValue={Number(p.base_price) > 0 ? centsInput(p.base_price) : ''}
+                    placeholder="0,00"
+                    inputMode="decimal"
+                    required
+                    className="mt-1 block h-9 w-28 rounded-lg border border-line px-2 text-sm"
+                  />
                 </label>
               )}
             </div>
@@ -169,7 +266,10 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
         )}
       </Card>
 
-      <Card title="Bordas, molhos e outros grupos compartilhados" description="Grupos cadastrados uma vez em “Bordas e molhos” e usados por vários produtos. Os valores são editados lá.">
+      <Card
+        title="Bordas, molhos e outros grupos compartilhados"
+        description="Grupos cadastrados uma vez em “Bordas e molhos” e usados por vários produtos. Os valores são editados lá."
+      >
         {sharedLinks.length ? (
           <ul className="mb-4 divide-y divide-line">
             {sharedLinks.map((l) => {
@@ -177,10 +277,21 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
               return (
                 <li key={g.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
                   <span>
-                    <Link href={`/admin/opcoes#${g.shared_key}`} className="font-semibold underline-offset-2 hover:underline">{g.name}</Link>{' '}
-                    <span className="text-muted">· {g.option_values.filter((v) => !v.deleted_at).length} opções · ordem {l.sort_order}</span>
+                    <Link href={`/admin/opcoes#${g.shared_key}`} className="font-semibold underline-offset-2 hover:underline">
+                      {g.name}
+                    </Link>{' '}
+                    <span className="text-muted">
+                      · {g.option_values.filter((v) => !v.deleted_at).length} opções · ordem {l.sort_order}
+                    </span>
                   </span>
-                  <ActionForm action={unlinkSharedGroup.bind(null, p.id, g.id)} submitLabel="Desligar" size="sm" variant="ghost" inline confirm={`Deixar de oferecer “${g.name}” neste produto?`} />
+                  <ActionForm
+                    action={unlinkSharedGroup.bind(null, p.id, g.id)}
+                    submitLabel="Desligar"
+                    size="sm"
+                    variant="ghost"
+                    inline
+                    confirm={`Deixar de oferecer “${g.name}” neste produto?`}
+                  />
                 </li>
               );
             })}
@@ -191,15 +302,24 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
         {availableShared.length ? (
           <ActionForm action={linkSharedGroup.bind(null, p.id)} submitLabel="Ligar grupo" size="sm" inline>
             <SelectField label="Grupo" name="groupId" required defaultValue="">
-              <option value="" disabled>Selecione…</option>
-              {availableShared.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+              <option value="" disabled>
+                Selecione…
+              </option>
+              {availableShared.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
             </SelectField>
             <TextField label="Ordem" name="sortOrder" type="number" defaultValue={10} className="w-24" />
           </ActionForm>
         ) : null}
       </Card>
 
-      <Card title="Opções de personalização" description="Sabores, borda, adicionais e escolhas (ex.: acompanhamentos). Cada opção pode ter preço diferente por tamanho.">
+      <Card
+        title="Opções de personalização"
+        description="Sabores, borda, adicionais e escolhas (ex.: acompanhamentos). Cada opção pode ter preço diferente por tamanho."
+      >
         <div className="space-y-5">
           {groups.map((g) => {
             const values = g.option_values.filter((v) => !v.deleted_at).sort((a, b) => a.sort_order - b.sort_order);
@@ -216,7 +336,13 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
                         <ValueFields v={v} kind={g.kind} />
                       </ActionForm>
                       <div className="mt-1">
-                        <ActionForm action={archiveOptionValue.bind(null, p.id, v.id)} submitLabel="Remover opção" size="sm" variant="ghost" confirm="Remover esta opção?" />
+                        <ActionForm
+                          action={archiveOptionValue.bind(null, p.id, v.id)}
+                          submitLabel="Remover opção"
+                          size="sm"
+                          variant="ghost"
+                          confirm="Remover esta opção?"
+                        />
                       </div>
                     </div>
                   ))}
@@ -244,22 +370,41 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
                           <thead>
                             <tr className="text-left text-xs text-muted">
                               <th className="py-1 pr-3">Opção</th>
-                              {variants.map((v) => <th key={v.id} className="px-2 py-1">{v.name}</th>)}
+                              {variants.map((v) => (
+                                <th key={v.id} className="px-2 py-1">
+                                  {v.name}
+                                </th>
+                              ))}
                             </tr>
                           </thead>
                           <tbody>
                             {values.map((val) => (
                               <tr key={val.id} className="border-t border-line">
-                                <th scope="row" className="py-2 pr-3 text-left font-medium">{val.name}</th>
+                                <th scope="row" className="py-2 pr-3 text-left font-medium">
+                                  {val.name}
+                                </th>
                                 {variants.map((v) => {
                                   const rule = val.option_value_variant_prices.find((r) => r.variant_id === v.id);
                                   const key = `${val.id}:${v.id}`;
                                   return (
                                     <td key={v.id} className="px-2 py-2">
                                       <input type="hidden" name={`cell:${key}`} value="1" />
-                                      <input name={`price:${key}`} defaultValue={centsInput(rule?.price ?? null)} placeholder="padrão" inputMode="decimal" aria-label={`Preço de ${val.name} em ${v.name}`} className="h-9 w-24 rounded-lg border border-line px-2" />
+                                      <input
+                                        name={`price:${key}`}
+                                        defaultValue={centsInput(rule?.price ?? null)}
+                                        placeholder="padrão"
+                                        inputMode="decimal"
+                                        aria-label={`Preço de ${val.name} em ${v.name}`}
+                                        className="h-9 w-24 rounded-lg border border-line px-2"
+                                      />
                                       <label className="mt-1 flex items-center gap-1 text-xs">
-                                        <input type="checkbox" name={`offered:${key}`} defaultChecked={rule ? rule.is_offered : true} className="accent-brand-600" /> Oferecido
+                                        <input
+                                          type="checkbox"
+                                          name={`offered:${key}`}
+                                          defaultChecked={rule ? rule.is_offered : true}
+                                          className="accent-brand-600"
+                                        />{' '}
+                                        Oferecido
                                       </label>
                                     </td>
                                   );
@@ -272,7 +417,13 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
                     </ActionForm>
                   </details>
                 ) : null}
-                <ActionForm action={archiveGroup.bind(null, p.id, g.id)} submitLabel="Remover grupo" size="sm" variant="ghost" confirm="Remover este grupo e suas opções?" />
+                <ActionForm
+                  action={archiveGroup.bind(null, p.id, g.id)}
+                  submitLabel="Remover grupo"
+                  size="sm"
+                  variant="ghost"
+                  confirm="Remover este grupo e suas opções?"
+                />
               </div>
             );
           })}
@@ -290,25 +441,43 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
       {p.kind === 'combo' ? (
         <Card title="Itens do combo" description="O preço do combo é o definido nos dados do produto. O combo fica indisponível se algum item esgotar.">
           <ul className="mb-4 divide-y divide-line">
-            {(p.combo_items ?? []).map((c: { id: string; quantity: number; description: string | null; item: { name: string } | null; variant: { name: string } | null }) => (
-              <li key={c.id} className="flex items-center justify-between gap-2 py-2 text-sm">
-                <span>
-                  {c.quantity}x {c.description ?? c.item?.name}
-                  {c.variant ? ` (${c.variant.name})` : ''}
-                </span>
-                <ActionForm action={removeComboItem.bind(null, p.id, c.id)} submitLabel="Remover" size="sm" variant="ghost" inline />
-              </li>
-            ))}
+            {(p.combo_items ?? []).map(
+              (c: { id: string; quantity: number; description: string | null; item: { name: string } | null; variant: { name: string } | null }) => (
+                <li key={c.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+                  <span>
+                    {c.quantity}x {c.description ?? c.item?.name}
+                    {c.variant ? ` (${c.variant.name})` : ''}
+                  </span>
+                  <ActionForm action={removeComboItem.bind(null, p.id, c.id)} submitLabel="Remover" size="sm" variant="ghost" inline />
+                </li>
+              ),
+            )}
           </ul>
           <ActionForm action={addComboItem.bind(null, p.id)} submitLabel="Incluir item" size="sm" resetOnSuccess>
             <div className="grid gap-3 md:grid-cols-4">
               <SelectField label="Produto" name="itemProductId" required defaultValue="">
-                <option value="" disabled>Selecione…</option>
-                {(allProducts.data ?? []).filter((x) => x.kind !== 'combo').map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                <option value="" disabled>
+                  Selecione…
+                </option>
+                {(allProducts.data ?? [])
+                  .filter((x) => x.kind !== 'combo')
+                  .map((x) => (
+                    <option key={x.id} value={x.id}>
+                      {x.name}
+                    </option>
+                  ))}
               </SelectField>
               <SelectField label="Tamanho (se houver)" name="itemVariantId" defaultValue="">
                 <option value="">—</option>
-                {(allProducts.data ?? []).flatMap((x) => (x.product_variants ?? []).filter((v) => !v.deleted_at).map((v) => <option key={v.id} value={v.id}>{x.name} — {v.name}</option>))}
+                {(allProducts.data ?? []).flatMap((x) =>
+                  (x.product_variants ?? [])
+                    .filter((v) => !v.deleted_at)
+                    .map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {x.name} — {v.name}
+                      </option>
+                    )),
+                )}
               </SelectField>
               <TextField label="Quantidade" name="quantity" type="number" min={1} max={20} defaultValue={1} />
               <TextField label="Descrição exibida" name="description" placeholder="Ex.: Pizza grande (sabor à escolha)" />
@@ -320,14 +489,22 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
       <Card
         title="Pedidos com este produto"
         description="Últimos pedidos que incluem este produto (os pedidos guardam o nome e o valor da época)."
-        actions={<ButtonLink href={`/admin/pedidos?produto=${p.id}`} variant="outline" size="sm">Ver todos</ButtonLink>}
+        actions={
+          <ButtonLink href={`/admin/pedidos?produto=${p.id}`} variant="outline" size="sm">
+            Ver todos
+          </ButtonLink>
+        }
       >
         {orders.length ? (
           <ul className="divide-y divide-line text-sm" data-testid="product-orders">
             {orders.map((o) => (
               <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <Link href={`/admin/pedidos/${o.id}`} className="font-mono font-semibold underline-offset-2 hover:underline">#{o.code}</Link>
-                <span className="text-muted">{new Date(o.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Fortaleza' })}</span>
+                <Link href={`/admin/pedidos/${o.id}`} className="font-mono font-semibold underline-offset-2 hover:underline">
+                  #{o.code}
+                </Link>
+                <span className="text-muted">
+                  {new Date(o.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Fortaleza' })}
+                </span>
                 <span>{o.order_items.map((i) => `${i.quantity}x${i.variant_name ? ` ${i.variant_name}` : ''}`).join(', ')}</span>
                 <span>{formatBRL(o.order_items.reduce((sum, i) => sum + toCents(i.line_total), 0))}</span>
                 <span className="text-muted">{ORDER_STATUS_LABEL[o.status]}</span>
@@ -341,30 +518,75 @@ export default async function EditProductPage({ params }: PageProps<'/admin/card
 
       <Card title="Foto: briefing e prompt" description="Use para produzir uma foto fiel ao produto (ver docs/LOGO-E-IMAGENS.md). Revise antes de publicar.">
         <dl className="grid gap-2 text-sm md:grid-cols-2">
-          <div><dt className="text-muted">Composição</dt><dd>{brief.composition}</dd></div>
-          <div><dt className="text-muted">Enquadramento</dt><dd>{brief.framing}</dd></div>
-          <div><dt className="text-muted">Iluminação</dt><dd>{brief.lighting}</dd></div>
-          <div><dt className="text-muted">Proporção / arquivo</dt><dd>{brief.aspectRatio} · {brief.fileName}</dd></div>
+          <div>
+            <dt className="text-muted">Composição</dt>
+            <dd>{brief.composition}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Enquadramento</dt>
+            <dd>{brief.framing}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Iluminação</dt>
+            <dd>{brief.lighting}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Proporção / arquivo</dt>
+            <dd>
+              {brief.aspectRatio} · {brief.fileName}
+            </dd>
+          </div>
         </dl>
-        <textarea readOnly value={brief.prompt} className="mt-3 h-28 w-full rounded-xl border border-line bg-mist p-3 font-mono text-xs" aria-label="Prompt da foto" />
+        <textarea
+          readOnly
+          value={brief.prompt}
+          className="mt-3 h-28 w-full rounded-xl border border-line bg-mist p-3 font-mono text-xs"
+          aria-label="Prompt da foto"
+        />
       </Card>
 
       {!p.deleted_at ? (
         <Card title="Arquivar produto" description="Remove do site e do painel de operação. Pedidos antigos continuam com os dados da época.">
-          <ActionForm action={archiveProduct.bind(null, p.id)} submitLabel="Arquivar produto" variant="danger" confirm="Arquivar este produto?" redirectTo="/admin/cardapio" />
+          <ActionForm
+            action={archiveProduct.bind(null, p.id)}
+            submitLabel="Arquivar produto"
+            variant="danger"
+            confirm="Arquivar este produto?"
+            redirectTo="/admin/cardapio"
+          />
         </Card>
       ) : null}
     </div>
   );
 }
 
-function VariantFields({ v, isPizza }: { v: { name: string; size_code: string | null; description: string | null; price: number; max_flavors: number; flavor_price_rule: string; allow_mixed_flavor_tags: boolean; sort_order: number; is_active: boolean } | null; isPizza: boolean }) {
+function VariantFields({
+  v,
+  isPizza,
+}: {
+  v: {
+    name: string;
+    size_code: string | null;
+    description: string | null;
+    price: number;
+    max_flavors: number;
+    flavor_price_rule: string;
+    allow_mixed_flavor_tags: boolean;
+    sort_order: number;
+    is_active: boolean;
+  } | null;
+  isPizza: boolean;
+}) {
   return (
     <div className="grid gap-3 md:grid-cols-6">
       <TextField label="Nome" name="name" required defaultValue={v?.name} className="md:col-span-2" placeholder="Ex.: Grande" />
       <SelectField label="Código do tamanho" name="sizeCode" defaultValue={v?.size_code ?? ''} hint="Liga o tamanho aos valores das bordas.">
         <option value="">—</option>
-        {SIZE_CODES.map((c) => <option key={c} value={c}>{SIZE_LABEL[c]}</option>)}
+        {SIZE_CODES.map((c) => (
+          <option key={c} value={c}>
+            {SIZE_LABEL[c]}
+          </option>
+        ))}
       </SelectField>
       <TextField label="Descrição" name="description" defaultValue={v?.description ?? ''} placeholder="Ex.: 8 fatias" />
       <TextField label={isPizza ? 'Preço-base (R$)' : 'Preço (R$)'} name="price" required inputMode="decimal" defaultValue={centsInput(v?.price ?? null)} />
@@ -373,9 +595,18 @@ function VariantFields({ v, isPizza }: { v: { name: string; size_code: string | 
         <>
           <TextField label="Máx. de sabores" name="maxFlavors" type="number" min={1} max={8} defaultValue={v?.max_flavors ?? 1} />
           <SelectField label="Preço com 2+ sabores" name="flavorPriceRule" defaultValue={v?.flavor_price_rule ?? 'highest'} className="md:col-span-2">
-            {Object.entries(RULE_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+            {Object.entries(RULE_LABEL).map(([k, l]) => (
+              <option key={k} value={k}>
+                {l}
+              </option>
+            ))}
           </SelectField>
-          <CheckboxField label="Permite misturar tipos (ex.: doce + salgada)" name="allowMixed" defaultChecked={v?.allow_mixed_flavor_tags ?? true} className="md:col-span-2" />
+          <CheckboxField
+            label="Permite misturar tipos (ex.: doce + salgada)"
+            name="allowMixed"
+            defaultChecked={v?.allow_mixed_flavor_tags ?? true}
+            className="md:col-span-2"
+          />
         </>
       ) : (
         <input type="hidden" name="allowMixed" value="on" />
@@ -385,11 +616,19 @@ function VariantFields({ v, isPizza }: { v: { name: string; size_code: string | 
   );
 }
 
-function GroupFields({ g }: { g: { kind: string; name: string; description: string | null; min_select: number; max_select: number; sort_order: number; is_active: boolean } | null }) {
+function GroupFields({
+  g,
+}: {
+  g: { kind: string; name: string; description: string | null; min_select: number; max_select: number; sort_order: number; is_active: boolean } | null;
+}) {
   return (
     <div className="grid gap-3 md:grid-cols-6">
       <SelectField label="Tipo" name="kind" defaultValue={g?.kind ?? 'choice'} className="md:col-span-2">
-        {Object.entries(GROUP_KIND_LABEL).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+        {Object.entries(GROUP_KIND_LABEL).map(([k, l]) => (
+          <option key={k} value={k}>
+            {l}
+          </option>
+        ))}
       </SelectField>
       <TextField label="Nome exibido" name="name" required defaultValue={g?.name} className="md:col-span-2" />
       <TextField label="Mínimo" name="minSelect" type="number" min={0} defaultValue={g?.min_select ?? 0} hint="0 = opcional" />
@@ -401,7 +640,21 @@ function GroupFields({ g }: { g: { kind: string; name: string; description: stri
   );
 }
 
-function ValueFields({ v, kind }: { v: { name: string; description: string | null; price: number; price_confirmed: boolean; combination_tag: string | null; sort_order: number; is_active: boolean } | null; kind: string }) {
+function ValueFields({
+  v,
+  kind,
+}: {
+  v: {
+    name: string;
+    description: string | null;
+    price: number;
+    price_confirmed: boolean;
+    combination_tag: string | null;
+    sort_order: number;
+    is_active: boolean;
+  } | null;
+  kind: string;
+}) {
   return (
     <div className="grid gap-2 md:grid-cols-6">
       <TextField label="Nome" name="name" required defaultValue={v?.name} className="md:col-span-2" />

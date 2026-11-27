@@ -13,8 +13,14 @@ beforeAll(async () => {
   manager = await createUser(client, 'gerente@teste.local', 'manager');
   attendant = await createUser(client, 'atendente@teste.local', 'attendant');
   const pickup = {
-    fulfillment: 'pickup', delivery_fee_status: 'not_applicable', address_street: null, address_number: null,
-    address_neighborhood: null, latitude: null, longitude: null, location_source: null,
+    fulfillment: 'pickup',
+    delivery_fee_status: 'not_applicable',
+    address_street: null,
+    address_number: null,
+    address_neighborhood: null,
+    latitude: null,
+    longitude: null,
+    location_source: null,
   };
   const a = await createOrder(client, { ...pickup, customer_phone: '83900000001' });
   const b = await createOrder(client, { ...pickup, customer_phone: '83900000001', payment_method: 'cash' });
@@ -27,8 +33,7 @@ afterAll(async () => {
   await client.end();
 });
 
-const run = (sql: string, userId = manager) =>
-  as(client, { role: 'authenticated', userId }, (c) => c.query(sql, [from, to]));
+const run = (sql: string, userId = manager) => as(client, { role: 'authenticated', userId }, (c) => c.query(sql, [from, to]));
 
 describe('relatórios', () => {
   it('atendente não acessa relatórios financeiros', async () => {
@@ -63,15 +68,18 @@ describe('relatórios', () => {
     const canc = await run('select reason, orders from public.report_cancellations($1, $2)');
     expect(canc.rows).toEqual([{ reason: 'out_of_area', orders: '1' }]);
     const rec = await as(client, { role: 'authenticated', userId: manager }, (c) =>
-      c.query('select customer_phone, orders from public.report_recurring_customers($1, $2, 2)', [from, to]));
+      c.query('select customer_phone, orders from public.report_recurring_customers($1, $2, 2)', [from, to]),
+    );
     expect(rec.rows).toEqual([{ customer_phone: '83900000001', orders: '2' }]);
     const together = await as(client, { role: 'authenticated', userId: manager }, (c) =>
-      c.query('select orders_together from public.report_bought_together($1, $2, 2)', [from, to]));
+      c.query('select orders_together from public.report_bought_together($1, $2, 2)', [from, to]),
+    );
     expect(together.rows[0].orders_together).toBe('2');
     const none = await run('select product_name from public.report_products_without_sales($1, $2)');
     expect(none.rows.map((r) => r.product_name)).toContain('[EXEMPLO] Espetinho');
     const series = await as(client, { role: 'authenticated', userId: manager }, (c) =>
-      c.query(`select orders_completed, revenue from public.report_sales_series($1, $2, 'month')`, [from, to]));
+      c.query(`select orders_completed, revenue from public.report_sales_series($1, $2, 'month')`, [from, to]),
+    );
     expect(series.rows[0]).toEqual({ orders_completed: '2', revenue: '36.00' });
   });
 

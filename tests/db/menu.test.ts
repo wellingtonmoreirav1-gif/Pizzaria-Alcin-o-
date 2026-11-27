@@ -20,7 +20,16 @@ afterAll(async () => {
 
 const EXPECTED: Record<string, string[]> = {
   'pizzas-tradicionais': ['Pizza Muçarela', 'Pizza Calabresa', 'Pizza Frango', 'Pizza Marguerita', 'Pizza Portuguesa', 'Pizza Bacon'],
-  'pizzas-especiais': ['Pizza Frango com Catupiry', 'Pizza Calabresa com Catupiry', 'Pizza Carne de Sol', 'Pizza Carne de Sol com Queijo Coalho', 'Pizza Quatro Queijos', 'Pizza Frango com Cheddar', 'Pizza Pepperoni', 'Pizza Costela'],
+  'pizzas-especiais': [
+    'Pizza Frango com Catupiry',
+    'Pizza Calabresa com Catupiry',
+    'Pizza Carne de Sol',
+    'Pizza Carne de Sol com Queijo Coalho',
+    'Pizza Quatro Queijos',
+    'Pizza Frango com Cheddar',
+    'Pizza Pepperoni',
+    'Pizza Costela',
+  ],
   'pizzas-premium': ['Pizza Camarão com Catupiry', 'Pizza Camarão aos Quatro Queijos'],
   'pizzas-doces': ['Pizza Chocolate', 'Pizza Banana com Canela', 'Pizza Prestígio', 'Pizza Romeu e Julieta'],
   'lanches-tradicionais': ['Misto Quente', 'X-Burguer', 'X-Frango', 'X-Bacon', 'X-Calabresa'],
@@ -41,20 +50,43 @@ async function snapshot() {
     left join public.product_variants v on v.product_id = p.id and v.deleted_at is null
     where not p.is_demo and p.deleted_at is null
     group by c.slug, c.sort_order, p.id order by c.sort_order, p.sort_order`);
-  return rows as { category: string; name: string; kind: string; base_price: string | null; serves: string | null; price_confirmed: boolean; is_featured: boolean; image_url: string; sizes: { code: string; name: string; price: number }[] }[];
+  return rows as {
+    category: string;
+    name: string;
+    kind: string;
+    base_price: string | null;
+    serves: string | null;
+    price_confirmed: boolean;
+    is_featured: boolean;
+    image_url: string;
+    sizes: { code: string; name: string; price: number }[];
+  }[];
 }
 
 describe('cardápio oficial', () => {
   it('cadastra todas as categorias e produtos, sem duplicatas', async () => {
     const rows = await snapshot();
     for (const [category, names] of Object.entries(EXPECTED)) {
-      expect(rows.filter((r) => r.category === category).map((r) => r.name), category).toEqual(names);
+      expect(
+        rows.filter((r) => r.category === category).map((r) => r.name),
+        category,
+      ).toEqual(names);
     }
     expect(rows).toHaveLength(46);
     const cats = await client.query(`select slug, section_type from public.categories where is_active order by sort_order`);
     expect(cats.rows.slice(0, 12).map((c) => c.slug)).toEqual([
-      'pizzas-tradicionais', 'pizzas-especiais', 'pizzas-premium', 'pizzas-doces', 'bordas-recheadas', 'lanches-tradicionais',
-      'lanches-especiais', 'beirute', 'petiscos', 'pratos-da-casa', 'lasanhas', 'molhos',
+      'pizzas-tradicionais',
+      'pizzas-especiais',
+      'pizzas-premium',
+      'pizzas-doces',
+      'bordas-recheadas',
+      'lanches-tradicionais',
+      'lanches-especiais',
+      'beirute',
+      'petiscos',
+      'pratos-da-casa',
+      'lasanhas',
+      'molhos',
     ]);
     expect(cats.rows[12]?.slug).toBe('bebidas');
     expect(cats.rows.filter((c) => c.section_type === 'options').map((c) => c.slug)).toEqual(['bordas-recheadas', 'molhos']);
@@ -69,7 +101,10 @@ describe('cardápio oficial', () => {
       expect(p.sizes.map((s) => s.code)).toEqual(['P', 'M', 'G', 'GG', 'F']);
       expect(p.sizes.map((s) => s.name)).toEqual(['Pequena (P)', 'Média (M)', 'Grande (G)', 'Gigante (GG)', 'Família (F)']);
       const reference = p.category === 'pizzas-especiais' || p.category === 'pizzas-premium';
-      expect(p.sizes.map((s) => Number(s.price)), p.name).toEqual(reference ? [30, 45, 55, 65, 80] : [25, 39, 50, 60, 75]);
+      expect(
+        p.sizes.map((s) => Number(s.price)),
+        p.name,
+      ).toEqual(reference ? [30, 45, 55, 65, 80] : [25, 39, 50, 60, 75]);
       expect(p.price_confirmed, p.name).toBe(true);
     }
   });
@@ -81,7 +116,9 @@ describe('cardápio oficial', () => {
     expect([price('Cheddar Bacon'), price('Duplo Burguer'), price('Alcinão — Especial da Casa')]).toEqual([25, 27, 30]);
     expect(price('Beirute')).toBe(49.9);
     expect(rows.find((r) => r.name === 'Beirute')?.serves).toBe('Serve até 3 pessoas');
-    expect([price('Batata Frita 400 g'), price('Batata Frita com Cheddar e Bacon'), price('Isca de Frango Crocante'), price('Calabresa do Chef')]).toEqual([17, 22, 30.9, 30.9]);
+    expect([price('Batata Frita 400 g'), price('Batata Frita com Cheddar e Bacon'), price('Isca de Frango Crocante'), price('Calabresa do Chef')]).toEqual([
+      17, 22, 30.9, 30.9,
+    ]);
     const pratos = rows.filter((r) => r.category === 'pratos-da-casa');
     expect(pratos.map((p) => Number(p.base_price))).toEqual([70, 60, 50, 65]);
     expect(pratos.every((p) => p.serves === 'Serve 2 pessoas')).toBe(true);
@@ -113,7 +150,9 @@ describe('cardápio oficial', () => {
       select count(*)::int as n from public.product_shared_groups l join public.option_groups g on g.id = l.group_id
       join public.products p on p.id = l.product_id where g.shared_key = 'bordas-recheadas' and p.kind = 'pizza' and not p.is_demo`);
     expect(links.rows[0].n).toBe(20);
-    const molhos = await client.query(`select v.name, v.price::text as price, v.price_confirmed from public.option_values v join public.option_groups g on g.id = v.group_id where g.shared_key = 'molhos' order by v.sort_order`);
+    const molhos = await client.query(
+      `select v.name, v.price::text as price, v.price_confirmed from public.option_values v join public.option_groups g on g.id = v.group_id where g.shared_key = 'molhos' order by v.sort_order`,
+    );
     expect(molhos.rows).toEqual([
       { name: 'Maionese verde', price: '0.00', price_confirmed: true },
       { name: 'Maionese de alho', price: '0.00', price_confirmed: true },
@@ -124,13 +163,15 @@ describe('cardápio oficial', () => {
 
   it('bebidas: tamanhos cadastrados, sem preço e em conferência; reaplicar não duplica nem mexe em preço conferido', async () => {
     const drinks = async () =>
-      (await client.query(`
+      (
+        await client.query(`
         select p.slug, p.price_confirmed, p.base_price,
           coalesce(json_agg(v.name order by v.sort_order) filter (where v.id is not null and v.deleted_at is null), '[]') as sizes,
           coalesce(sum(v.price) filter (where v.deleted_at is null), 0)::text as total
         from public.products p join public.categories c on c.id = p.category_id
         left join public.product_variants v on v.product_id = p.id
-        where c.slug = 'bebidas' and not p.is_demo group by p.id order by p.sort_order`)).rows;
+        where c.slug = 'bebidas' and not p.is_demo group by p.id order by p.sort_order`)
+      ).rows;
     const all = ['Lata', '600 ml', '1 litro', '2 litros'];
     expect(await drinks()).toEqual([
       { slug: 'coca-cola', price_confirmed: false, base_price: null, sizes: all, total: '0.00' },
@@ -142,7 +183,9 @@ describe('cardápio oficial', () => {
     ]);
     // A equipe confere a Coca-Cola e remove um tamanho; reaplicar a migration não desfaz nada.
     await client.query(`update public.product_variants v set price = 6 from public.products p where p.id = v.product_id and p.slug = 'coca-cola'`);
-    await client.query(`update public.product_variants v set deleted_at = now() from public.products p where p.id = v.product_id and p.slug = 'fanta-laranja' and v.name = '1 litro'`);
+    await client.query(
+      `update public.product_variants v set deleted_at = now() from public.products p where p.id = v.product_id and p.slug = 'fanta-laranja' and v.name = '1 litro'`,
+    );
     await client.query(`update public.products set price_confirmed = true where slug = 'coca-cola'`);
     await client.query(DRINKS_SQL);
     const after = await drinks();
@@ -167,7 +210,9 @@ describe('cardápio oficial', () => {
   });
 
   it('reaplicar o cardápio atualiza sem duplicar e não troca foto já enviada', async () => {
-    await client.query(`update public.products set image_url = 'https://exemplo.supabase.co/storage/v1/object/public/catalog/products/x.webp', base_price = 99 where slug = 'x-bacon'`);
+    await client.query(
+      `update public.products set image_url = 'https://exemplo.supabase.co/storage/v1/object/public/catalog/products/x.webp', base_price = 99 where slug = 'x-bacon'`,
+    );
     await client.query(MENU_SQL);
     const rows = await snapshot();
     expect(rows).toHaveLength(46);
@@ -175,13 +220,21 @@ describe('cardápio oficial', () => {
     expect(Number(xbacon?.base_price)).toBe(19);
     expect(xbacon?.image_url).toContain('catalog/products/x.webp');
     // Conferências feitas pela equipe continuam valendo (pizzas especiais e molhos).
-    const kept = await client.query(`select count(*)::int as n from public.products p join public.categories c on c.id = p.category_id where c.slug in ('pizzas-especiais', 'pizzas-premium') and not p.price_confirmed`);
+    const kept = await client.query(
+      `select count(*)::int as n from public.products p join public.categories c on c.id = p.category_id where c.slug in ('pizzas-especiais', 'pizzas-premium') and not p.price_confirmed`,
+    );
     expect(kept.rows[0].n).toBe(0);
-    const sauces = await client.query(`select count(*)::int as n from public.option_values v join public.option_groups g on g.id = v.group_id where g.shared_key = 'molhos' and not v.price_confirmed`);
+    const sauces = await client.query(
+      `select count(*)::int as n from public.option_values v join public.option_groups g on g.id = v.group_id where g.shared_key = 'molhos' and not v.price_confirmed`,
+    );
     expect(sauces.rows[0].n).toBe(0);
-    const dup = await client.query(`select count(*)::int as n from (select product_id, size_code from public.product_variants where deleted_at is null and size_code is not null group by 1, 2 having count(*) > 1) d`);
+    const dup = await client.query(
+      `select count(*)::int as n from (select product_id, size_code from public.product_variants where deleted_at is null and size_code is not null group by 1, 2 having count(*) > 1) d`,
+    );
     expect(dup.rows[0].n).toBe(0);
-    const values = await client.query(`select count(*)::int as n from public.option_values v join public.option_groups g on g.id = v.group_id where g.shared_key in ('bordas-recheadas', 'molhos')`);
+    const values = await client.query(
+      `select count(*)::int as n from public.option_values v join public.option_groups g on g.id = v.group_id where g.shared_key in ('bordas-recheadas', 'molhos')`,
+    );
     expect(values.rows[0].n).toBe(9);
   });
 
@@ -190,13 +243,17 @@ describe('cardápio oficial', () => {
     expect(read.rows[0].n).toBe(25);
     await expect(as(client, { role: 'anon' }, (c) => c.query(`update public.option_value_size_prices set price = 0`))).rejects.toThrow(/permission denied/);
     const attendant = await createUser(client, 'atendente-menu@teste.local', 'attendant');
-    const res = await as(client, { role: 'authenticated', userId: attendant }, (c) => c.query(`update public.products set base_price = 1 where slug = 'beirute' returning id`));
+    const res = await as(client, { role: 'authenticated', userId: attendant }, (c) =>
+      c.query(`update public.products set base_price = 1 where slug = 'beirute' returning id`),
+    );
     expect(res.rowCount).toBe(0);
     const manager = await createUser(client, 'gerente-menu@teste.local', 'manager');
     await as(client, { role: 'authenticated', userId: manager }, (c) =>
       c.query(`update public.products set price_confirmed = false where slug = 'pizza-pepperoni'`),
     );
-    const { rows } = await client.query(`select actor_role from public.audit_logs where table_name = 'products' and new_data->>'slug' = 'pizza-pepperoni' order by id desc limit 1`);
+    const { rows } = await client.query(
+      `select actor_role from public.audit_logs where table_name = 'products' and new_data->>'slug' = 'pizza-pepperoni' order by id desc limit 1`,
+    );
     expect(rows[0].actor_role).toBe('manager');
     await expect(
       client.query(`
@@ -212,18 +269,31 @@ describe('cardápio oficial', () => {
     const other = await createUser(client, 'outro-precos@teste.local', 'manager');
     await client.query(`update public.products set price_confirmed = false where slug = 'pizza-costela'`);
     await as(client, { role: 'authenticated', userId: manager }, (c) =>
-      c.query(`update public.products set price_confirmed = true, price_confirmed_at = '2000-01-01', price_confirmed_by = $1 where slug = 'pizza-costela'`, [other]),
+      c.query(`update public.products set price_confirmed = true, price_confirmed_at = '2000-01-01', price_confirmed_by = $1 where slug = 'pizza-costela'`, [
+        other,
+      ]),
     );
-    const confirmed = await client.query(`select price_confirmed_by, price_confirmed_at > now() - interval '1 minute' as recent from public.products where slug = 'pizza-costela'`);
+    const confirmed = await client.query(
+      `select price_confirmed_by, price_confirmed_at > now() - interval '1 minute' as recent from public.products where slug = 'pizza-costela'`,
+    );
     expect(confirmed.rows[0]).toEqual({ price_confirmed_by: manager, recent: true });
     // Editar outro campo não troca o registro da conferência.
-    await as(client, { role: 'authenticated', userId: other }, (c) => c.query(`update public.products set price_confirmed_by = $1, sort_order = 99 where slug = 'pizza-costela'`, [other]));
+    await as(client, { role: 'authenticated', userId: other }, (c) =>
+      c.query(`update public.products set price_confirmed_by = $1, sort_order = 99 where slug = 'pizza-costela'`, [other]),
+    );
     expect((await client.query(`select price_confirmed_by from public.products where slug = 'pizza-costela'`)).rows[0].price_confirmed_by).toBe(manager);
     // Voltar para "em conferência" limpa o registro; o molho só é liberado com conferência explícita.
-    await as(client, { role: 'authenticated', userId: manager }, (c) => c.query(`update public.products set price_confirmed = false where slug = 'pizza-costela'`));
-    expect((await client.query(`select price_confirmed_at, price_confirmed_by from public.products where slug = 'pizza-costela'`)).rows[0]).toEqual({ price_confirmed_at: null, price_confirmed_by: null });
+    await as(client, { role: 'authenticated', userId: manager }, (c) =>
+      c.query(`update public.products set price_confirmed = false where slug = 'pizza-costela'`),
+    );
+    expect((await client.query(`select price_confirmed_at, price_confirmed_by from public.products where slug = 'pizza-costela'`)).rows[0]).toEqual({
+      price_confirmed_at: null,
+      price_confirmed_by: null,
+    });
     await client.query(`update public.option_values set price_confirmed = false where name = 'Maionese verde'`);
-    await as(client, { role: 'authenticated', userId: manager }, (c) => c.query(`update public.option_values set price = 0, price_confirmed = true where name = 'Maionese verde'`));
+    await as(client, { role: 'authenticated', userId: manager }, (c) =>
+      c.query(`update public.option_values set price = 0, price_confirmed = true where name = 'Maionese verde'`),
+    );
     const sauce = await client.query(`select price_confirmed_by from public.option_values where name = 'Maionese verde'`);
     expect(sauce.rows[0].price_confirmed_by).toBe(manager);
   });

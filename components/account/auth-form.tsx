@@ -93,10 +93,23 @@ export function AuthForm({ next = '/conta', allowSignup = true, title }: { next?
         </Field>
         {mode !== 'reset' ? (
           <Field label="Senha" required hint={mode === 'signup' ? 'Mínimo de 8 caracteres.' : undefined}>
-            {(p) => <Input {...p} type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} minLength={mode === 'signup' ? 8 : undefined} />}
+            {(p) => (
+              <Input
+                {...p}
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                minLength={mode === 'signup' ? 8 : undefined}
+              />
+            )}
           </Field>
         ) : null}
-        {message ? <Notice tone={message.tone} live>{message.text}</Notice> : null}
+        {message ? (
+          <Notice tone={message.tone} live>
+            {message.text}
+          </Notice>
+        ) : null}
         <Button type="submit" size="lg" className="w-full" loading={loading}>
           {mode === 'login' ? 'Entrar' : mode === 'signup' ? 'Criar conta' : 'Enviar link'}
         </Button>

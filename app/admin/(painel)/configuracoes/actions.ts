@@ -21,12 +21,17 @@ export async function saveSettings(_prev: ActionResult | null, form: FormData): 
       const email = str(form, 'privacyEmail');
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new ActionError('E-mail de privacidade inválido.');
       const instagram = str(form, 'instagramUrl');
-      if (instagram && !/^https:\/\/(www\.)?instagram\.com\//.test(instagram)) throw new ActionError('Link do Instagram deve começar com https://instagram.com/');
+      if (instagram && !/^https:\/\/(www\.)?instagram\.com\//.test(instagram))
+        throw new ActionError('Link do Instagram deve começar com https://instagram.com/');
       const lat = str(form, 'latitude');
       const lng = str(form, 'longitude');
       const latitude = lat === null ? null : Number(lat.replace(',', '.'));
       const longitude = lng === null ? null : Number(lng.replace(',', '.'));
-      if ((latitude === null) !== (longitude === null) || (latitude !== null && (!Number.isFinite(latitude) || Math.abs(latitude) > 90)) || (longitude !== null && (!Number.isFinite(longitude) || Math.abs(longitude) > 180))) {
+      if (
+        (latitude === null) !== (longitude === null) ||
+        (latitude !== null && (!Number.isFinite(latitude) || Math.abs(latitude) > 90)) ||
+        (longitude !== null && (!Number.isFinite(longitude) || Math.abs(longitude) > 180))
+      ) {
         throw new ActionError('Coordenadas inválidas (informe latitude e longitude).');
       }
       check(

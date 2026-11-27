@@ -10,7 +10,7 @@ export async function setAccepting(accepting: boolean, _prev: ActionResult | nul
   return runAdminAction(
     roles,
     async (_ctx, db) => {
-      check(await db.rpc('set_operation_status', { p_accepting: accepting, p_pause_message: accepting ? '' : str(form, 'message') ?? '' }));
+      check(await db.rpc('set_operation_status', { p_accepting: accepting, p_pause_message: accepting ? '' : (str(form, 'message') ?? '') }));
       return accepting ? 'Pedidos pelo site reativados.' : 'Recebimento de pedidos suspenso.';
     },
     ['settings'],

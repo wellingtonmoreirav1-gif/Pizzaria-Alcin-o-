@@ -264,5 +264,6 @@ Não há promessa de custo zero. Análise completa, o que acontece ao atingir li
 - [docs/LOGO-E-IMAGENS.md](docs/LOGO-E-IMAGENS.md) — logo oficial, direção de arte e produção das fotos.
 - [docs/CUSTOS.md](docs/CUSTOS.md) — custos, limites e backups.
 - [docs/OBSERVABILIDADE.md](docs/OBSERVABILIDADE.md) — Sentry, Datadog, New Relic e OpenTelemetry (desligados até configurar).
-- [docs/TESTES.md](docs/TESTES.md) — como rodar e o que os testes cobrem.
+- [docs/TESTES.md](docs/TESTES.md) — como rodar e o que os testes cobrem (inclusive no CI).
+- [docs/QUALIDADE.md](docs/QUALIDADE.md) — Biome, Commitlint, Knip, Arch-Contract, Stryker e Codecov.
 - [docs/PENDENCIAS.md](docs/PENDENCIAS.md) — informações que faltam e checklist de publicação.

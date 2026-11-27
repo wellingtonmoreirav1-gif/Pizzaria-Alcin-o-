@@ -98,12 +98,7 @@ export function StoryTimeline() {
           </Step>
 
           <Step last>
-            <a
-              href={INSTAGRAM.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonClasses('primary', 'lg', 'shadow-[var(--shadow-float)]')}
-            >
+            <a href={INSTAGRAM.url} target="_blank" rel="noopener noreferrer" className={buttonClasses('primary', 'lg', 'shadow-[var(--shadow-float)]')}>
               <InstagramGlyph className="size-5" /> Seguir @{INSTAGRAM.handle} no Instagram
             </a>
           </Step>
@@ -233,7 +228,12 @@ function VideoCarousel() {
         })}
       </div>
       <div className="mt-6 flex items-center justify-center gap-4">
-        <button type="button" onClick={() => go(active - 1)} className="grid size-12 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Vídeo anterior">
+        <button
+          type="button"
+          onClick={() => go(active - 1)}
+          className="grid size-12 place-items-center rounded-full bg-white/10 hover:bg-white/20"
+          aria-label="Vídeo anterior"
+        >
           <ChevronLeft className="size-6" aria-hidden />
         </button>
         <div className="flex gap-2" aria-hidden>
@@ -241,7 +241,12 @@ function VideoCarousel() {
             <span key={v.src} className={cn('h-2 rounded-full transition-all', i === active ? 'w-6 bg-gold' : 'w-2 bg-white/30')} />
           ))}
         </div>
-        <button type="button" onClick={() => go(active + 1)} className="grid size-12 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Próximo vídeo">
+        <button
+          type="button"
+          onClick={() => go(active + 1)}
+          className="grid size-12 place-items-center rounded-full bg-white/10 hover:bg-white/20"
+          aria-label="Próximo vídeo"
+        >
           <ChevronRight className="size-6" aria-hidden />
         </button>
       </div>

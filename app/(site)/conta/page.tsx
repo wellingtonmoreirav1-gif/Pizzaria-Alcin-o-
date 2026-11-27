@@ -46,7 +46,12 @@ async function AccountContent() {
   const [profile, addresses, orders] = await Promise.all([
     supabase.from('profiles').select('full_name, phone').eq('id', user.id).maybeSingle(),
     supabase.from('customer_addresses').select('id, label, street, number, neighborhood, city, state').order('created_at'),
-    supabase.from('orders').select('code, status, total, total_is_final, created_at').eq('customer_id', user.id).order('created_at', { ascending: false }).limit(30),
+    supabase
+      .from('orders')
+      .select('code, status, total, total_is_final, created_at')
+      .eq('customer_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(30),
   ]);
   return (
     <>
@@ -69,10 +74,16 @@ async function AccountContent() {
             {orders.data.map((o) => (
               <li key={o.code} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
                 <span>
-                  <strong>#{o.code}</strong> <span className="text-muted">{new Date(o.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Fortaleza' })}</span>
+                  <strong>#{o.code}</strong>{' '}
+                  <span className="text-muted">
+                    {new Date(o.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Fortaleza' })}
+                  </span>
                 </span>
                 <Badge>{ORDER_STATUS_LABEL[o.status as OrderStatus]}</Badge>
-                <span className="tabular-nums">{formatBRL(toCents(o.total))}{o.total_is_final ? '' : ' + taxa'}</span>
+                <span className="tabular-nums">
+                  {formatBRL(toCents(o.total))}
+                  {o.total_is_final ? '' : ' + taxa'}
+                </span>
                 <Link href={`/pedido/${o.code}`} className="font-semibold text-danger underline">
                   Detalhes e pedir novamente
                 </Link>
@@ -114,7 +125,11 @@ async function AccountContent() {
       <section className="rounded-[var(--radius-card)] border border-line p-6">
         <h2 className="mb-2 font-display text-xl font-semibold">Privacidade</h2>
         <p className="mb-4 text-sm text-muted">
-          Veja a <Link href="/privacidade" className="underline">política de privacidade</Link>. Você pode excluir sua conta quando quiser.
+          Veja a{' '}
+          <Link href="/privacidade" className="underline">
+            política de privacidade
+          </Link>
+          . Você pode excluir sua conta quando quiser.
         </p>
         <DeleteAccount />
       </section>

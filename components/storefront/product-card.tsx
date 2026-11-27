@@ -80,7 +80,10 @@ export function ProductCard({
       {/* Cartão estreito (2 por linha no celular): preço em cima e botão inteiro embaixo. */}
       <div className="flex flex-1 flex-col gap-1.5 p-3 @[15rem]:p-4">
         <Heading className="font-display text-base font-semibold leading-snug @[15rem]:text-lg">
-          <Link href={`/produto/${product.slug}`} className="after:absolute after:inset-0 after:rounded-[var(--radius-card)] after:content-[''] focus-visible:outline-none focus-visible:after:outline-3 focus-visible:after:-outline-offset-3 focus-visible:after:outline-gold">
+          <Link
+            href={`/produto/${product.slug}`}
+            className="after:absolute after:inset-0 after:rounded-[var(--radius-card)] after:content-[''] focus-visible:outline-none focus-visible:after:outline-3 focus-visible:after:-outline-offset-3 focus-visible:after:outline-gold"
+          >
             {product.name}
           </Link>
         </Heading>

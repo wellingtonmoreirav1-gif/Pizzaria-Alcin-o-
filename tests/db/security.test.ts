@@ -30,13 +30,9 @@ describe('RLS: catálogo', () => {
   });
 
   it('visitante e cliente não alteram preços', async () => {
-    await expect(
-      as(client, { role: 'anon' }, (c) => c.query(`update public.product_variants set price = 0.01`)),
-    ).rejects.toThrow(/permission denied/);
+    await expect(as(client, { role: 'anon' }, (c) => c.query(`update public.product_variants set price = 0.01`))).rejects.toThrow(/permission denied/);
     // Cliente autenticado: a RLS não encontra nenhuma linha que ele possa alterar.
-    const res = await as(client, { role: 'authenticated', userId: customer }, (c) =>
-      c.query(`update public.product_variants set price = 0.01 returning id`),
-    );
+    const res = await as(client, { role: 'authenticated', userId: customer }, (c) => c.query(`update public.product_variants set price = 0.01 returning id`));
     expect(res.rowCount).toBe(0);
     const { rows } = await client.query(`select count(*)::int as n from public.product_variants where price = 0.01`);
     expect(rows[0].n).toBe(0);
@@ -75,12 +71,10 @@ describe('RLS: pedidos e dados pessoais', () => {
   it('visitante não lê nem cria pedidos diretamente', async () => {
     await createOrder(client);
     await expect(as(client, { role: 'anon' }, (c) => c.query('select * from public.orders'))).rejects.toThrow(/permission denied/);
-    await expect(
-      as(client, { role: 'anon' }, (c) => c.query(`select public.create_order('{}'::jsonb)`)),
-    ).rejects.toThrow(/permission denied/);
-    await expect(
-      as(client, { role: 'authenticated', userId: customer }, (c) => c.query(`select public.create_order('{}'::jsonb)`)),
-    ).rejects.toThrow(/permission denied/);
+    await expect(as(client, { role: 'anon' }, (c) => c.query(`select public.create_order('{}'::jsonb)`))).rejects.toThrow(/permission denied/);
+    await expect(as(client, { role: 'authenticated', userId: customer }, (c) => c.query(`select public.create_order('{}'::jsonb)`))).rejects.toThrow(
+      /permission denied/,
+    );
   });
 
   it('cliente vê somente os próprios pedidos', async () => {
@@ -95,20 +89,26 @@ describe('RLS: pedidos e dados pessoais', () => {
   });
 
   it('cliente não altera pedidos diretamente', async () => {
-    await expect(
-      as(client, { role: 'authenticated', userId: customer }, (c) => c.query(`update public.orders set total = 0`)),
-    ).rejects.toThrow(/permission denied/);
+    await expect(as(client, { role: 'authenticated', userId: customer }, (c) => c.query(`update public.orders set total = 0`))).rejects.toThrow(
+      /permission denied/,
+    );
   });
 
   it('endereços e favoritos são privados', async () => {
     await as(client, { role: 'authenticated', userId: customer }, (c) =>
-      c.query(`insert into public.customer_addresses (user_id, street, number, neighborhood, city, state)
-               values ($1, 'Rua B', '1', 'Centro', 'São Bento', 'PB')`, [customer]),
+      c.query(
+        `insert into public.customer_addresses (user_id, street, number, neighborhood, city, state)
+               values ($1, 'Rua B', '1', 'Centro', 'São Bento', 'PB')`,
+        [customer],
+      ),
     );
     await expect(
       as(client, { role: 'authenticated', userId: customer }, (c) =>
-        c.query(`insert into public.customer_addresses (user_id, street, number, neighborhood, city, state)
-                 values ($1, 'Rua C', '1', 'Centro', 'São Bento', 'PB')`, [other]),
+        c.query(
+          `insert into public.customer_addresses (user_id, street, number, neighborhood, city, state)
+                 values ($1, 'Rua C', '1', 'Centro', 'São Bento', 'PB')`,
+          [other],
+        ),
       ),
     ).rejects.toThrow(/row-level security/);
     const seen = await as(client, { role: 'authenticated', userId: other }, (c) => c.query('select * from public.customer_addresses'));
@@ -127,7 +127,9 @@ describe('RLS: pedidos e dados pessoais', () => {
   });
 
   it('avaliações: visitante só vê aprovadas e sem dados pessoais', async () => {
-    await client.query(`insert into public.reviews (author_name, rating, status, customer_id) values ('A', 5, 'approved', $1), ('B', 1, 'pending', null)`, [customer]);
+    await client.query(`insert into public.reviews (author_name, rating, status, customer_id) values ('A', 5, 'approved', $1), ('B', 1, 'pending', null)`, [
+      customer,
+    ]);
     const rows = await as(client, { role: 'anon' }, (c) => c.query('select author_name, rating from public.reviews'));
     expect(rows.rows).toEqual([{ author_name: 'A', rating: 5 }]);
     await expect(as(client, { role: 'anon' }, (c) => c.query('select customer_id from public.reviews'))).rejects.toThrow(/permission denied/);
@@ -145,9 +147,9 @@ describe('papéis da equipe', () => {
     await as(client, { role: 'authenticated', userId: admin }, (c) => c.query(`select public.admin_set_user_role('cliente@teste.local', 'attendant')`));
     const staff = await as(client, { role: 'authenticated', userId: admin }, (c) => c.query('select email, role from public.admin_list_staff()'));
     expect(staff.rows).toContainEqual({ email: 'cliente@teste.local', role: 'attendant' });
-    await expect(
-      as(client, { role: 'authenticated', userId: admin }, (c) => c.query(`select public.admin_remove_user_role($1)`, [admin])),
-    ).rejects.toThrow(/last_admin/);
+    await expect(as(client, { role: 'authenticated', userId: admin }, (c) => c.query(`select public.admin_remove_user_role($1)`, [admin]))).rejects.toThrow(
+      /last_admin/,
+    );
     await as(client, { role: 'authenticated', userId: admin }, (c) => c.query(`select public.admin_remove_user_role($1)`, [customer]));
   });
 

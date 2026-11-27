@@ -18,10 +18,7 @@ export async function POST(request: Request) {
   if (!parsed.success) return jsonError(422, 'VALIDATION', 'Carrinho inválido.');
   try {
     const now = new Date();
-    const [operation, products] = await Promise.all([
-      getOperationFresh(),
-      loadProductsForCart(cartProductIds(parsed.data.items)),
-    ]);
+    const [operation, products] = await Promise.all([getOperationFresh(), loadProductsForCart(cartProductIds(parsed.data.items))]);
     const status = computeStoreStatus(operation.hours, now);
     const lines = quoteLines(parsed.data.items, products, {
       now,
@@ -31,10 +28,7 @@ export async function POST(request: Request) {
     const meta = Object.fromEntries(
       [...products.values()].map((p) => [p.id, { slug: p.slug, imageUrl: p.imageUrl, maxQuantity: p.maxQuantity, name: p.name }]),
     );
-    return Response.json(
-      { ok: true, lines, totals: sumLines(valid), status, meta },
-      { headers: { 'cache-control': 'no-store' } },
-    );
+    return Response.json({ ok: true, lines, totals: sumLines(valid), status, meta }, { headers: { 'cache-control': 'no-store' } });
   } catch (error) {
     if (error instanceof OrderError) return jsonError(error.status, error.code, error.message);
     return jsonError(503, 'UNAVAILABLE', 'Não foi possível atualizar os preços agora.');

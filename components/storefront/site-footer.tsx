@@ -33,7 +33,12 @@ export async function SiteFooter() {
                 ) : null}
               </span>
             </p>
-            <a href={`https://wa.me/${s.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold hover:text-brand-500">
+            <a
+              href={`https://wa.me/${s.whatsappNumber}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-semibold hover:text-brand-500"
+            >
               <MessageCircle className="size-4" aria-hidden /> WhatsApp {formatBrazilPhone(phone)}
             </a>
           </div>
@@ -44,12 +49,36 @@ export async function SiteFooter() {
           <div>
             <h2 className="font-display text-lg font-semibold">Links</h2>
             <ul className="mt-3 space-y-2 text-sm text-white/75">
-              <li><Link href="/cardapio" className="hover:text-white">Cardápio completo</Link></li>
-              <li><Link href="/favoritos" className="hover:text-white">Favoritos</Link></li>
-              <li><Link href="/conta" className="hover:text-white">Minha conta e pedidos</Link></li>
-              <li><Link href="/privacidade" className="hover:text-white">Política de privacidade</Link></li>
-              <li><Link href="/termos" className="hover:text-white">Termos de uso</Link></li>
-              <li><Link href="/admin" className="text-white/50 hover:text-white">Área da equipe</Link></li>
+              <li>
+                <Link href="/cardapio" className="hover:text-white">
+                  Cardápio completo
+                </Link>
+              </li>
+              <li>
+                <Link href="/favoritos" className="hover:text-white">
+                  Favoritos
+                </Link>
+              </li>
+              <li>
+                <Link href="/conta" className="hover:text-white">
+                  Minha conta e pedidos
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacidade" className="hover:text-white">
+                  Política de privacidade
+                </Link>
+              </li>
+              <li>
+                <Link href="/termos" className="hover:text-white">
+                  Termos de uso
+                </Link>
+              </li>
+              <li>
+                <Link href="/admin" className="text-white/50 hover:text-white">
+                  Área da equipe
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

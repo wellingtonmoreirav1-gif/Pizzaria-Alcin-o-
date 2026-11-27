@@ -13,7 +13,21 @@ const REDACTED = '[removido]';
 const SENSITIVE_KEY = /(phone|telefone|whatsapp|email|e-mail|nome|name|address|endereco|cpf|token|secret|password|senha|authorization|cookie|apikey|api-key)/i;
 
 /** Chaves que são nomes técnicos (não dados de pessoas), mesmo contendo "name". */
-const SAFE_KEYS = new Set(['service.name', 'span.name', 'next.span_name', 'http.method', 'http.request.method', 'resource.name', 'operation.name', 'db.name', 'net.peer.name', 'server.address', 'next.route', 'http.route', 'next.span_type']);
+const SAFE_KEYS = new Set([
+  'service.name',
+  'span.name',
+  'next.span_name',
+  'http.method',
+  'http.request.method',
+  'resource.name',
+  'operation.name',
+  'db.name',
+  'net.peer.name',
+  'server.address',
+  'next.route',
+  'http.route',
+  'next.span_type',
+]);
 
 export function stripQuery(value: string): string {
   const q = value.indexOf('?');

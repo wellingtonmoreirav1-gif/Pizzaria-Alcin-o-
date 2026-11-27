@@ -43,7 +43,13 @@ export function ProductRail({
             {description ? <p className="mt-1 max-w-xl text-muted">{description}</p> : null}
           </div>
           {href ? (
-            <Link href={href} className={cn('hidden shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold sm:inline-flex', tone === 'wine' ? 'hover:bg-white/10' : 'hover:bg-mist')}>
+            <Link
+              href={href}
+              className={cn(
+                'hidden shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold sm:inline-flex',
+                tone === 'wine' ? 'hover:bg-white/10' : 'hover:bg-mist',
+              )}
+            >
               Ver todos <ArrowRight className="size-4" aria-hidden />
             </Link>
           ) : null}

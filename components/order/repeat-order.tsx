@@ -35,10 +35,21 @@ export function RepeatOrderButton({ items }: { items: RepeatItem[] }) {
         if (!o.groupId || !o.valueId) continue;
         (options[o.groupId] ??= []).push(o.valueId);
       }
-      return { productId: i.productId as string, halfProductId: i.halfProductId ?? null, variantId: i.variantId, options, quantity: i.quantity, notes: i.notes };
+      return {
+        productId: i.productId as string,
+        halfProductId: i.halfProductId ?? null,
+        variantId: i.variantId,
+        options,
+        quantity: i.quantity,
+        notes: i.notes,
+      };
     });
     try {
-      const res = await fetch('/api/cart/quote', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ items: selections }) });
+      const res = await fetch('/api/cart/quote', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ items: selections }),
+      });
       const data = (await res.json()) as {
         ok: boolean;
         lines: { index: number; ok: boolean; line?: PricedLine; error?: PricingError }[];

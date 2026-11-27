@@ -31,7 +31,9 @@ describe('destinos dos traces', () => {
   });
 
   it('liga vários destinos ao mesmo tempo', () => {
-    const names = traceDestinations({ DD_API_KEY: 'a', NEW_RELIC_LICENSE_KEY: 'b', OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: 'https://x/v1/traces' }).map((d) => d.name);
+    const names = traceDestinations({ DD_API_KEY: 'a', NEW_RELIC_LICENSE_KEY: 'b', OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: 'https://x/v1/traces' }).map(
+      (d) => d.name,
+    );
     expect(names).toEqual(['datadog', 'newrelic', 'otlp']);
   });
 
@@ -55,7 +57,9 @@ describe('limpeza de dados sensíveis', () => {
   it('remove a query string (token do pedido)', () => {
     expect(stripQuery('https://site/pedido/ALC-1?t=segredo#topo')).toBe('https://site/pedido/ALC-1?[removido]#topo');
     expect(stripQuery('/cardapio')).toBe('/cardapio');
-    expect(stripQueriesInText('fetch GET https://x.supabase.co/rest/v1/orders?phone=eq.5583999')).toBe('fetch GET https://x.supabase.co/rest/v1/orders?[removido]');
+    expect(stripQueriesInText('fetch GET https://x.supabase.co/rest/v1/orders?phone=eq.5583999')).toBe(
+      'fetch GET https://x.supabase.co/rest/v1/orders?[removido]',
+    );
   });
 
   it('limpa atributos de spans', () => {
@@ -77,7 +81,13 @@ describe('limpeza de dados sensíveis', () => {
 
   it('limpa eventos e rastros do Sentry', () => {
     const event = scrubSentryEvent({
-      request: { url: 'https://site/pedido/X?t=1', query_string: 't=1', cookies: { a: 'b' }, data: { phone: '1' }, headers: { Cookie: 'sb=1', Referer: 'https://site/auth/callback?code=9', Accept: '*/*' } },
+      request: {
+        url: 'https://site/pedido/X?t=1',
+        query_string: 't=1',
+        cookies: { a: 'b' },
+        data: { phone: '1' },
+        headers: { Cookie: 'sb=1', Referer: 'https://site/auth/callback?code=9', Accept: '*/*' },
+      },
       user: { ip_address: '1.2.3.4' },
       breadcrumbs: [{ message: 'navegou para /pedido/X?t=1', data: { to: '/pedido/X?t=1', email: 'a@b' } }],
     });

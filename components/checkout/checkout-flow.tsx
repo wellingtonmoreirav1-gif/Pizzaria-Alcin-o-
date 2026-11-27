@@ -104,7 +104,14 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
   // app (Instagram, WhatsApp). Ficam só neste aparelho e são apagados quando o pedido é enviado.
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(FORM_STORAGE) ?? 'null') as null | { name: string; phone: string; address: AddressForm; fulfillment: Fulfillment | null; notes: string; tableLabel: string };
+      const saved = JSON.parse(localStorage.getItem(FORM_STORAGE) ?? 'null') as null | {
+        name: string;
+        phone: string;
+        address: AddressForm;
+        fulfillment: Fulfillment | null;
+        notes: string;
+        tableLabel: string;
+      };
       if (saved && !prefill) {
         /* eslint-disable react-hooks/set-state-in-effect -- restaura dados do localStorage (sistema externo) após hidratar */
         setName(saved.name);
@@ -132,10 +139,9 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
   const itemsTotal = quote.totals?.itemsSubtotal ?? cart.estimatedTotal;
   const zone = config.zones.find((z) => z.id === address.zoneId) ?? null;
   const estimatedFee = fulfillment === 'delivery' && zone?.fee !== null && zone?.fee !== undefined ? zone.fee : null;
-  const methods = fulfillment ? config.paymentMethods[fulfillment] ?? [] : [];
+  const methods = fulfillment ? (config.paymentMethods[fulfillment] ?? []) : [];
   const hasLineErrors = Object.keys(quote.lineErrors).length > 0;
   const status = quote.status;
-
 
   const cartSignature = useMemo(() => JSON.stringify(cart.lines.map(toSelection)), [cart.lines]);
 
@@ -207,7 +213,10 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
               zoneId: address.zoneId || null,
             }
           : null,
-      location: fulfillment === 'delivery' && location ? { latitude: location.latitude, longitude: location.longitude, accuracy: location.accuracy, source: location.source } : null,
+      location:
+        fulfillment === 'delivery' && location
+          ? { latitude: location.latitude, longitude: location.longitude, accuracy: location.accuracy, source: location.source }
+          : null,
       tableLabel: fulfillment === 'dine_in' ? tableLabel || null : null,
       payment: { method: payment, changeForCents: payment === 'cash' && needsChange ? parseBRLInput(changeFor) : null },
       notes: notes || null,
@@ -233,7 +242,12 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
       }
       try {
         const list = JSON.parse(localStorage.getItem(ORDERS_STORAGE) ?? '[]') as { code: string; token: string; createdAt: string }[];
-        localStorage.setItem(ORDERS_STORAGE, JSON.stringify([{ code: data.code, token: data.accessToken, createdAt: new Date().toISOString() }, ...list.filter((o) => o.code !== data.code)].slice(0, 10)));
+        localStorage.setItem(
+          ORDERS_STORAGE,
+          JSON.stringify(
+            [{ code: data.code, token: data.accessToken, createdAt: new Date().toISOString() }, ...list.filter((o) => o.code !== data.code)].slice(0, 10),
+          ),
+        );
         sessionStorage.removeItem(KEY_STORAGE);
         localStorage.removeItem(FORM_STORAGE);
       } catch {
@@ -242,7 +256,10 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
       cart.clear();
       router.push(`/pedido/${data.code}?t=${encodeURIComponent(data.accessToken)}&novo=1`);
     } catch {
-      setSubmitError({ title: 'Sem conexão', message: 'Não conseguimos falar com o servidor. Verifique a internet e tente de novo — o pedido não será duplicado.' });
+      setSubmitError({
+        title: 'Sem conexão',
+        message: 'Não conseguimos falar com o servidor. Verifique a internet e tente de novo — o pedido não será duplicado.',
+      });
     } finally {
       setSubmitting(false);
     }
@@ -250,7 +267,11 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
 
   if (cart.hydrated && cart.lines.length === 0) {
     return (
-      <EmptyState icon={<ShoppingBag className="size-6" aria-hidden />} title="Seu carrinho está vazio" action={<ButtonLink href="/cardapio">Ver cardápio</ButtonLink>}>
+      <EmptyState
+        icon={<ShoppingBag className="size-6" aria-hidden />}
+        title="Seu carrinho está vazio"
+        action={<ButtonLink href="/cardapio">Ver cardápio</ButtonLink>}
+      >
         Adicione itens para finalizar o pedido.
       </EmptyState>
     );
@@ -268,7 +289,12 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
         <ol className="hidden flex-wrap gap-2 sm:flex" aria-label="Etapas do pedido">
           {steps.map((s, i) => (
             <li key={s} className="flex shrink-0 items-center gap-2 text-sm" aria-current={i === step ? 'step' : undefined}>
-              <span className={cn('grid size-7 place-items-center rounded-full text-xs font-bold', i < step ? 'bg-gold text-ink-950' : i === step ? 'bg-brand-600 text-white' : 'bg-mist text-muted')}>
+              <span
+                className={cn(
+                  'grid size-7 place-items-center rounded-full text-xs font-bold',
+                  i < step ? 'bg-gold text-ink-950' : i === step ? 'bg-brand-600 text-white' : 'bg-mist text-muted',
+                )}
+              >
                 {i < step ? <Check className="size-4" aria-hidden /> : i + 1}
               </span>
               <span className={cn(i === step ? 'font-semibold' : 'text-muted')}>{s}</span>
@@ -290,7 +316,15 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
 
         <section aria-labelledby="etapa" className="rounded-[var(--radius-card)] border border-line p-5 sm:p-7">
           <h2 id="etapa" className="mb-5 font-display text-2xl font-semibold">
-            {current === 'Modalidade' ? 'Como você quer receber?' : current === 'Seus dados' ? 'Seus dados' : current === 'Entrega' ? 'Endereço de entrega' : current === 'Pagamento' ? 'Pagamento' : 'Revise seu pedido'}
+            {current === 'Modalidade'
+              ? 'Como você quer receber?'
+              : current === 'Seus dados'
+                ? 'Seus dados'
+                : current === 'Entrega'
+                  ? 'Endereço de entrega'
+                  : current === 'Pagamento'
+                    ? 'Pagamento'
+                    : 'Revise seu pedido'}
           </h2>
 
           {current === 'Modalidade' ? (
@@ -312,17 +346,29 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                       !config.enabled[mode] && 'cursor-not-allowed opacity-40',
                     )}
                   >
-                    <input type="radio" name="fulfillment" className="sr-only" value={mode} checked={fulfillment === mode} disabled={!config.enabled[mode]} onChange={() => {
+                    <input
+                      type="radio"
+                      name="fulfillment"
+                      className="sr-only"
+                      value={mode}
+                      checked={fulfillment === mode}
+                      disabled={!config.enabled[mode]}
+                      onChange={() => {
                         setFulfillment(mode);
                         if (payment && !(config.paymentMethods[mode] ?? []).includes(payment)) setPayment(null);
-                      }} />
+                      }}
+                    />
                     {icon}
                     <span className="font-semibold">{FULFILLMENT_LABEL[mode]}</span>
                     <span className="text-xs text-muted">{config.enabled[mode] ? hint : 'Indisponível no momento'}</span>
                   </label>
                 ))}
               </div>
-              {errors.fulfillment ? <p className="mt-3 text-sm font-medium text-danger" role="alert">{errors.fulfillment}</p> : null}
+              {errors.fulfillment ? (
+                <p className="mt-3 text-sm font-medium text-danger" role="alert">
+                  {errors.fulfillment}
+                </p>
+              ) : null}
             </fieldset>
           ) : null}
 
@@ -332,7 +378,17 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                 {(p) => <Input {...p} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={120} />}
               </Field>
               <Field label="Telefone (WhatsApp)" required error={errors.phone} hint="Usado só para falar sobre este pedido.">
-                {(p) => <Input {...p} type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" placeholder="(83) 99999-9999" />}
+                {(p) => (
+                  <Input
+                    {...p}
+                    type="tel"
+                    inputMode="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    autoComplete="tel"
+                    placeholder="(83) 99999-9999"
+                  />
+                )}
               </Field>
               {fulfillment === 'dine_in' ? (
                 <Field label="Mesa" error={errors.tableLabel}>
@@ -341,7 +397,11 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
               ) : null}
               {!prefill ? (
                 <p className="text-sm text-muted sm:col-span-2">
-                  Não precisa criar conta. Quer salvar seus dados para a próxima? <Link href="/conta" className="font-semibold text-fg underline">Entre ou cadastre-se</Link>.
+                  Não precisa criar conta. Quer salvar seus dados para a próxima?{' '}
+                  <Link href="/conta" className="font-semibold text-fg underline">
+                    Entre ou cadastre-se
+                  </Link>
+                  .
                 </p>
               ) : null}
             </div>
@@ -356,7 +416,18 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                       {...p}
                       onChange={(e) => {
                         const a = prefill.addresses.find((x) => x.id === e.target.value);
-                        if (a) setAddress({ street: a.street, number: a.number, neighborhood: a.neighborhood, complement: a.complement ?? '', reference: a.reference ?? '', city: a.city, state: a.state, postalCode: a.postalCode ?? '', zoneId: '' });
+                        if (a)
+                          setAddress({
+                            street: a.street,
+                            number: a.number,
+                            neighborhood: a.neighborhood,
+                            complement: a.complement ?? '',
+                            reference: a.reference ?? '',
+                            city: a.city,
+                            state: a.state,
+                            postalCode: a.postalCode ?? '',
+                            zoneId: '',
+                          });
                       }}
                     >
                       {prefill.addresses.map((a) => (
@@ -371,7 +442,9 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
               ) : null}
               <div className="grid gap-4 sm:grid-cols-6">
                 <Field label="Rua ou avenida" required error={errors.street} className="sm:col-span-4">
-                  {(p) => <Input {...p} value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} autoComplete="address-line1" />}
+                  {(p) => (
+                    <Input {...p} value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} autoComplete="address-line1" />
+                  )}
                 </Field>
                 <Field label="Número" required error={errors.number} className="sm:col-span-2">
                   {(p) => <Input {...p} value={address.number} onChange={(e) => setAddress({ ...address, number: e.target.value })} inputMode="numeric" />}
@@ -407,29 +480,60 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                   </Field>
                 ) : null}
                 <Field label="Complemento" className="sm:col-span-3">
-                  {(p) => <Input {...p} value={address.complement} onChange={(e) => setAddress({ ...address, complement: e.target.value })} placeholder="Casa, apto, bloco…" />}
+                  {(p) => (
+                    <Input
+                      {...p}
+                      value={address.complement}
+                      onChange={(e) => setAddress({ ...address, complement: e.target.value })}
+                      placeholder="Casa, apto, bloco…"
+                    />
+                  )}
                 </Field>
                 <Field label="Ponto de referência" className="sm:col-span-6" hint="Ajuda muito o entregador.">
                   {(p) => <Input {...p} value={address.reference} onChange={(e) => setAddress({ ...address, reference: e.target.value })} />}
                 </Field>
                 {/* Quase todo pedido é da cidade do restaurante: cidade, UF e CEP ficam recolhidos. */}
-                {!otherCity && address.city === config.defaultCity && address.state === config.defaultState && !errors.city && !errors.state && !errors.postalCode ? (
+                {!otherCity &&
+                address.city === config.defaultCity &&
+                address.state === config.defaultState &&
+                !errors.city &&
+                !errors.state &&
+                !errors.postalCode ? (
                   <p className="text-sm text-muted sm:col-span-6">
-                    Cidade: <strong className="text-fg">{address.city}/{address.state}</strong>{' '}
-                    <button type="button" onClick={() => setOtherCity(true)} className="ml-1 inline-flex min-h-11 items-center font-semibold text-gold underline underline-offset-4">
+                    Cidade:{' '}
+                    <strong className="text-fg">
+                      {address.city}/{address.state}
+                    </strong>{' '}
+                    <button
+                      type="button"
+                      onClick={() => setOtherCity(true)}
+                      className="ml-1 inline-flex min-h-11 items-center font-semibold text-gold underline underline-offset-4"
+                    >
                       Outra cidade?
                     </button>
                   </p>
                 ) : (
                   <>
                     <Field label="Cidade" required error={errors.city} className="sm:col-span-3">
-                      {(p) => <Input {...p} value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} autoComplete="address-level2" />}
+                      {(p) => (
+                        <Input {...p} value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} autoComplete="address-level2" />
+                      )}
                     </Field>
                     <Field label="UF" required error={errors.state} className="sm:col-span-1">
-                      {(p) => <Input {...p} value={address.state} maxLength={2} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />}
+                      {(p) => (
+                        <Input {...p} value={address.state} maxLength={2} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
+                      )}
                     </Field>
                     <Field label="CEP" error={errors.postalCode} className="sm:col-span-2">
-                      {(p) => <Input {...p} value={address.postalCode} inputMode="numeric" onChange={(e) => setAddress({ ...address, postalCode: e.target.value })} autoComplete="postal-code" />}
+                      {(p) => (
+                        <Input
+                          {...p}
+                          value={address.postalCode}
+                          inputMode="numeric"
+                          onChange={(e) => setAddress({ ...address, postalCode: e.target.value })}
+                          autoComplete="postal-code"
+                        />
+                      )}
                     </Field>
                   </>
                 )}
@@ -448,16 +552,28 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                 <legend className="sr-only">Forma de pagamento</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {methods.map((m) => (
-                    <label key={m} className={cn('flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-brand-500', payment === m ? 'border-fg bg-mist' : 'border-line hover:border-muted')}>
+                    <label
+                      key={m}
+                      className={cn(
+                        'flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 has-[:focus-visible]:outline has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-brand-500',
+                        payment === m ? 'border-fg bg-mist' : 'border-line hover:border-muted',
+                      )}
+                    >
                       <input type="radio" name="payment" className="sr-only" checked={payment === m} onChange={() => setPayment(m)} />
-                      <span className={cn('grid size-5 place-items-center rounded-full border-2', payment === m ? 'border-brand-600 bg-brand-600' : 'border-line')}>
+                      <span
+                        className={cn('grid size-5 place-items-center rounded-full border-2', payment === m ? 'border-brand-600 bg-brand-600' : 'border-line')}
+                      >
                         {payment === m ? <span className="size-2 rounded-full bg-surface" /> : null}
                       </span>
                       <span className="font-medium">{PAYMENT_LABEL[m]}</span>
                     </label>
                   ))}
                 </div>
-                {errors.payment ? <p className="mt-3 text-sm font-medium text-danger" role="alert">{errors.payment}</p> : null}
+                {errors.payment ? (
+                  <p className="mt-3 text-sm font-medium text-danger" role="alert">
+                    {errors.payment}
+                  </p>
+                ) : null}
               </fieldset>
               <p className="text-sm text-muted">O pagamento é feito diretamente com a equipe — o site não faz cobranças.</p>
               {payment === 'cash' ? (
@@ -474,7 +590,9 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                 </div>
               ) : null}
               <Field label="Observações do pedido">
-                {(p) => <Textarea {...p} value={notes} maxLength={500} onChange={(e) => setNotes(e.target.value)} placeholder="Algo que a equipe precise saber?" />}
+                {(p) => (
+                  <Textarea {...p} value={notes} maxLength={500} onChange={(e) => setNotes(e.target.value)} placeholder="Algo que a equipe precise saber?" />
+                )}
               </Field>
             </div>
           ) : null}
@@ -485,11 +603,16 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
               <dl className="grid gap-3 rounded-2xl bg-mist p-4 text-sm sm:grid-cols-2">
                 <div>
                   <dt className="text-muted">Modalidade</dt>
-                  <dd className="font-semibold">{FULFILLMENT_LABEL[fulfillment]}{fulfillment === 'dine_in' && tableLabel ? ` · Mesa ${tableLabel}` : ''}</dd>
+                  <dd className="font-semibold">
+                    {FULFILLMENT_LABEL[fulfillment]}
+                    {fulfillment === 'dine_in' && tableLabel ? ` · Mesa ${tableLabel}` : ''}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-muted">Cliente</dt>
-                  <dd className="font-semibold">{name} · {normalizeBrazilPhone(phone) ? formatBrazilPhone(normalizeBrazilPhone(phone) ?? '') : phone}</dd>
+                  <dd className="font-semibold">
+                    {name} · {normalizeBrazilPhone(phone) ? formatBrazilPhone(normalizeBrazilPhone(phone) ?? '') : phone}
+                  </dd>
                 </div>
                 {fulfillment === 'delivery' ? (
                   <div className="sm:col-span-2">
@@ -506,7 +629,11 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                   <dt className="text-muted">Pagamento</dt>
                   <dd className="font-semibold">
                     {payment ? PAYMENT_LABEL[payment] : '—'}
-                    {payment === 'cash' ? (needsChange && parseBRLInput(changeFor) ? ` · troco para ${formatBRL(parseBRLInput(changeFor) ?? 0)}` : ' · sem troco') : ''}
+                    {payment === 'cash'
+                      ? needsChange && parseBRLInput(changeFor)
+                        ? ` · troco para ${formatBRL(parseBRLInput(changeFor) ?? 0)}`
+                        : ' · sem troco'
+                      : ''}
                   </dd>
                 </div>
                 {notes ? (
@@ -517,15 +644,29 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                 ) : null}
               </dl>
               <label className="flex items-start gap-3 rounded-2xl border border-line p-4">
-                <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 size-5 accent-brand-600" aria-describedby="confirm-hint" />
+                <input
+                  type="checkbox"
+                  checked={confirmed}
+                  onChange={(e) => setConfirmed(e.target.checked)}
+                  className="mt-0.5 size-5 accent-brand-600"
+                  aria-describedby="confirm-hint"
+                />
                 <span>
                   <span className="font-semibold">Confirmo que os itens, valores e dados estão corretos.</span>
                   <span id="confirm-hint" className="block text-sm text-muted">
-                    Ao enviar, o pedido fica registrado e você abre o WhatsApp para mandar a mensagem para a equipe. Leia a <Link href="/privacidade" className="underline">política de privacidade</Link>.
+                    Ao enviar, o pedido fica registrado e você abre o WhatsApp para mandar a mensagem para a equipe. Leia a{' '}
+                    <Link href="/privacidade" className="underline">
+                      política de privacidade
+                    </Link>
+                    .
                   </span>
                 </span>
               </label>
-              {errors.confirmed ? <p className="text-sm font-medium text-danger" role="alert">{errors.confirmed}</p> : null}
+              {errors.confirmed ? (
+                <p className="text-sm font-medium text-danger" role="alert">
+                  {errors.confirmed}
+                </p>
+              ) : null}
               {/* O fim do pedido acontece no WhatsApp: diz exatamente o que fazer lá. */}
               <div className="rounded-2xl bg-mist p-4 text-sm" data-testid="next-steps">
                 <p className="font-semibold">Depois de tocar em “Registrar e enviar”:</p>

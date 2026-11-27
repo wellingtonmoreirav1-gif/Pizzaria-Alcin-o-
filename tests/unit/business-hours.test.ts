@@ -81,7 +81,10 @@ describe('business hours', () => {
     const s = computeStoreStatus(holiday, at('2026-10-19T19:00:00'));
     expect(s.acceptingOrders).toBe(false);
     expect(s.nextOpening?.label).toBe('amanhã às 10h30 (almoço)');
-    const special = config({}, { exceptions: [{ date: '2026-10-19', shift: 'dinner', isClosed: false, opensAt: '19:00:00', closesAt: '21:00:00', note: null }] });
+    const special = config(
+      {},
+      { exceptions: [{ date: '2026-10-19', shift: 'dinner', isClosed: false, opensAt: '19:00:00', closesAt: '21:00:00', note: null }] },
+    );
     // Almoço sem horário de fechamento segue aberto até o jantar especial começar (19h).
     expect(computeStoreStatus(special, at('2026-10-19T18:45:00')).openShifts).toEqual(['lunch']);
     expect(computeStoreStatus(special, at('2026-10-19T20:00:00')).closesAtLabel).toBe('até 21h');

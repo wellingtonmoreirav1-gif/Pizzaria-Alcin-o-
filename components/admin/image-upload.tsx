@@ -65,7 +65,11 @@ export function ImageUpload({ name, folder, defaultUrl, label = 'Imagem' }: { na
       <input type="hidden" name={name} value={url} />
       <div className="flex items-center gap-3">
         <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-mist">
-          {url ? <Image src={url} alt="Prévia" fill sizes="96px" className="object-cover" /> : <span className="grid size-full place-items-center text-xs text-muted">Sem imagem</span>}
+          {url ? (
+            <Image src={url} alt="Prévia" fill sizes="96px" className="object-cover" />
+          ) : (
+            <span className="grid size-full place-items-center text-xs text-muted">Sem imagem</span>
+          )}
         </div>
         <div className="flex flex-col gap-2">
           <input
@@ -91,7 +95,11 @@ export function ImageUpload({ name, folder, defaultUrl, label = 'Imagem' }: { na
         </div>
       </div>
       <p className="text-xs text-muted">JPG, PNG, WebP ou AVIF até 5 MB. Fotos grandes são reduzidas automaticamente.</p>
-      {status ? <p className="text-xs font-medium" role="status">{status}</p> : null}
+      {status ? (
+        <p className="text-xs font-medium" role="status">
+          {status}
+        </p>
+      ) : null}
     </div>
   );
 }

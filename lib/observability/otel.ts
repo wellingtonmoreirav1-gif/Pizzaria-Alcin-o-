@@ -1,6 +1,13 @@
 import { OTLPHttpProtoTraceExporter, registerOTel } from '@vercel/otel';
 import type { Context } from '@opentelemetry/api';
-import { BatchSpanProcessor, TraceIdRatioBasedSampler, ParentBasedSampler, type ReadableSpan, type Span, type SpanProcessor } from '@opentelemetry/sdk-trace-base';
+import {
+  BatchSpanProcessor,
+  TraceIdRatioBasedSampler,
+  ParentBasedSampler,
+  type ReadableSpan,
+  type Span,
+  type SpanProcessor,
+} from '@opentelemetry/sdk-trace-base';
 import { SERVICE_NAME, deploymentEnvironment, traceDestinations, traceSampleRatio } from './config';
 import { scrubAttributes, stripQueriesInText } from './scrub';
 

@@ -11,7 +11,14 @@ import { saveBrandImages, saveCategoryPhoto, saveProductPhoto } from './actions'
 
 export const metadata = { title: 'Fotos e logo' };
 
-type Row = { id: string; name: string; image_url: string | null; image_alt: string | null; is_active: boolean; categories: { name: string; sort_order: number } | null };
+type Row = {
+  id: string;
+  name: string;
+  image_url: string | null;
+  image_alt: string | null;
+  is_active: boolean;
+  categories: { name: string; sort_order: number } | null;
+};
 type Status = 'foto' | 'ilustracao' | 'sem';
 
 const statusOf = (url: string | null): Status => (!url ? 'sem' : url.startsWith('/images/products/') ? 'ilustracao' : 'foto');
@@ -33,9 +40,7 @@ export default async function PhotosPage({ searchParams }: PageProps<'/admin/fot
     supabase.from('categories').select('id, name, image_url').is('deleted_at', null).eq('is_active', true).eq('show_on_home', true).order('sort_order'),
   ]);
   const categories = (categoriesRes.data ?? []) as { id: string; name: string; image_url: string | null }[];
-  const all = ((productsRes.data ?? []) as unknown as Row[]).sort(
-    (a, b) => (a.categories?.sort_order ?? 0) - (b.categories?.sort_order ?? 0),
-  );
+  const all = ((productsRes.data ?? []) as unknown as Row[]).sort((a, b) => (a.categories?.sort_order ?? 0) - (b.categories?.sort_order ?? 0));
   const done = all.filter((p) => statusOf(p.image_url) === 'foto').length;
   const shown = all.filter((p) => (filter === 'todas' ? true : filter === 'enviadas' ? statusOf(p.image_url) === 'foto' : statusOf(p.image_url) !== 'foto'));
   const groups = new Map<string, Row[]>();
@@ -61,7 +66,10 @@ export default async function PhotosPage({ searchParams }: PageProps<'/admin/fot
         description="Envie aqui a logo oficial e as fotos reais dos produtos. Cada foto aparece no site assim que você clicar em Salvar."
       />
 
-      <Card title="Logo oficial" description="PNG com fundo transparente ou WebP, de preferência quadrada ou horizontal. O topo da página inicial usa a animação da pizza.">
+      <Card
+        title="Logo oficial"
+        description="PNG com fundo transparente ou WebP, de preferência quadrada ou horizontal. O topo da página inicial usa a animação da pizza."
+      >
         <ActionForm action={saveBrandImages} submitLabel="Salvar logo">
           <ImageUpload name="logoUrl" folder="brand" defaultUrl={s?.logo_url ?? null} label="Logo oficial" />
         </ActionForm>
@@ -106,7 +114,9 @@ export default async function PhotosPage({ searchParams }: PageProps<'/admin/fot
                   return (
                     <li key={p.id} className="rounded-xl border border-line p-3" data-testid="photo-item">
                       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                        <Link href={`/admin/cardapio/${p.id}`} className="font-semibold underline-offset-2 hover:underline">{p.name}</Link>
+                        <Link href={`/admin/cardapio/${p.id}`} className="font-semibold underline-offset-2 hover:underline">
+                          {p.name}
+                        </Link>
                         <span className="flex gap-1">
                           {!p.is_active ? <Badge>Rascunho</Badge> : null}
                           <Badge tone={STATUS_BADGE[status].tone}>{STATUS_BADGE[status].label}</Badge>

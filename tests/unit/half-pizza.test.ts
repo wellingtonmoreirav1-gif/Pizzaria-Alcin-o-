@@ -7,15 +7,49 @@ import type { CatalogProduct, CatalogPromotion, CatalogVariant } from '@/types/c
 const CODES = ['P', 'M', 'G', 'GG', 'F'];
 const sizes = (id: string, prices: number[]): CatalogVariant[] =>
   CODES.map((code, i) => ({
-    id: `${id}-${code}`, sizeCode: code, name: code, description: null, price: prices[i]!, maxFlavors: 1, flavorPriceRule: 'highest', allowMixedFlavorTags: true, sortOrder: i, isAvailable: true,
+    id: `${id}-${code}`,
+    sizeCode: code,
+    name: code,
+    description: null,
+    price: prices[i]!,
+    maxFlavors: 1,
+    flavorPriceRule: 'highest',
+    allowMixedFlavorTags: true,
+    sortOrder: i,
+    isAvailable: true,
   }));
 
 function pizza(id: string, name: string, prices: number[], overrides: Partial<CatalogProduct> = {}): CatalogProduct {
   return {
-    id, categoryId: 'cat', categorySlug: 'pizzas-tradicionais', categoryName: 'Pizzas tradicionais', kind: 'pizza', slug: id, name,
-    shortDescription: null, description: null, imageUrl: null, imageAlt: null, images: [], basePrice: null, isAvailable: true, isFeatured: false, featuredOrder: null,
-    sortOrder: 0, shiftRestriction: 'any', availableFrom: null, availableUntil: null, tags: [], serves: null, maxQuantity: 30, isDemo: false, priceConfirmed: true,
-    variants: sizes(id, prices), groups: [], promotions: [], comboItems: [],
+    id,
+    categoryId: 'cat',
+    categorySlug: 'pizzas-tradicionais',
+    categoryName: 'Pizzas tradicionais',
+    kind: 'pizza',
+    slug: id,
+    name,
+    shortDescription: null,
+    description: null,
+    imageUrl: null,
+    imageAlt: null,
+    images: [],
+    basePrice: null,
+    isAvailable: true,
+    isFeatured: false,
+    featuredOrder: null,
+    sortOrder: 0,
+    shiftRestriction: 'any',
+    availableFrom: null,
+    availableUntil: null,
+    tags: [],
+    serves: null,
+    maxQuantity: 30,
+    isDemo: false,
+    priceConfirmed: true,
+    variants: sizes(id, prices),
+    groups: [],
+    promotions: [],
+    comboItems: [],
     ...overrides,
   };
 }
@@ -28,7 +62,10 @@ const half = (product: CatalogProduct, code: string, other: CatalogProduct | und
 
 describe('pizza metade/metade', () => {
   it('vale o preço do sabor mais caro, nos dois sentidos', () => {
-    for (const [a, b] of [[CALABRESA, CAMARAO], [CAMARAO, CALABRESA]] as const) {
+    for (const [a, b] of [
+      [CALABRESA, CAMARAO],
+      [CAMARAO, CALABRESA],
+    ] as const) {
       const r = half(a, 'G', b, 2);
       expect(r.ok).toBe(true);
       if (!r.ok) return;
@@ -54,7 +91,9 @@ describe('pizza metade/metade', () => {
   it('recusa o mesmo sabor, sabor que sumiu, esgotado ou sem preço confirmado', () => {
     const code = (r: ReturnType<typeof half>) => (r.ok ? 'ok' : r.error.code);
     expect(code(half(CALABRESA, 'G', CALABRESA))).toBe('HALF_UNAVAILABLE');
-    expect(code(priceLine(CALABRESA, { productId: 'calabresa', variantId: 'calabresa-G', options: {}, quantity: 1, halfProductId: 'x' }, ctx))).toBe('HALF_UNAVAILABLE');
+    expect(code(priceLine(CALABRESA, { productId: 'calabresa', variantId: 'calabresa-G', options: {}, quantity: 1, halfProductId: 'x' }, ctx))).toBe(
+      'HALF_UNAVAILABLE',
+    );
     expect(code(half(CALABRESA, 'G', { ...CAMARAO, isAvailable: false }))).toBe('HALF_UNAVAILABLE');
     expect(code(half(CALABRESA, 'G', { ...CAMARAO, priceConfirmed: false }))).toBe('PRICE_NOT_CONFIRMED');
     const noG = { ...CAMARAO, variants: CAMARAO.variants.map((v) => (v.sizeCode === 'G' ? { ...v, isAvailable: false } : v)) };
@@ -65,7 +104,13 @@ describe('pizza metade/metade', () => {
 
   it('promoção de uma metade só conta se ela continuar sendo a mais cara', () => {
     const promo = (productId: string, variantId: string, promoPrice: number): CatalogPromotion => ({
-      id: `promo-${productId}`, title: 'Promo', description: null, variantId, promoPrice, startsAt: null, endsAt: null,
+      id: `promo-${productId}`,
+      title: 'Promo',
+      description: null,
+      variantId,
+      promoPrice,
+      startsAt: null,
+      endsAt: null,
     });
     // Camarão G em promoção por R$ 60: metade/metade com calabresa (R$ 50) sai R$ 60.
     const onSale = { ...CAMARAO, promotions: [promo('camarao', 'camarao-G', 6000)] };

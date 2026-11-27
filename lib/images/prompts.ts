@@ -91,11 +91,11 @@ export function buildImageBrief(input: PromptInput): ImageBrief {
 export function toCsv(rows: Record<string, string | number | null>[]): string {
   if (rows.length === 0) return '';
   const headers = Object.keys(rows[0] ?? {});
-  const escape = (v: string | number | null) => {
+  const escapeCell = (v: string | number | null) => {
     let s = v === null || v === undefined ? '' : String(v);
     // Evita fórmulas maliciosas ao abrir no Excel/Sheets.
     if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
     return /[",;\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  return '﻿' + [headers.join(';'), ...rows.map((r) => headers.map((h) => escape(r[h] ?? null)).join(';'))].join('\r\n');
+  return `﻿${[headers.join(';'), ...rows.map((r) => headers.map((h) => escapeCell(r[h] ?? null)).join(';'))].join('\r\n')}`;
 }

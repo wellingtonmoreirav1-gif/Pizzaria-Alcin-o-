@@ -14,7 +14,9 @@ export function BannerStrip({ banners, now }: { banners: PublicBanner[]; now: Da
         {active.map((b) => {
           const content = (
             <div className="relative isolate flex min-h-44 flex-col justify-end overflow-hidden rounded-[var(--radius-card)] bg-ink-900 p-6 text-white">
-              {b.imageUrl ? <Image src={b.imageUrl} alt={b.imageAlt ?? ''} fill sizes="(max-width: 768px) 90vw, 50vw" className="-z-10 object-cover opacity-70" /> : null}
+              {b.imageUrl ? (
+                <Image src={b.imageUrl} alt={b.imageAlt ?? ''} fill sizes="(max-width: 768px) 90vw, 50vw" className="-z-10 object-cover opacity-70" />
+              ) : null}
               <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink-950/90 to-transparent" aria-hidden />
               <h3 className="font-display text-2xl font-semibold">{b.title}</h3>
               {b.body ? <p className="mt-1 max-w-md text-sm text-white/80">{b.body}</p> : null}

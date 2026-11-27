@@ -100,7 +100,6 @@ export const checkoutSchema = z
     }
   });
 
-export type CheckoutInput = z.input<typeof checkoutSchema>;
 export type CheckoutPayload = z.output<typeof checkoutSchema>;
 export type CartLineInput = z.output<typeof cartLineSchema>;
 

@@ -34,7 +34,13 @@ export function reportRange(sp: Record<string, string | string[] | undefined>) {
 }
 
 /** Completa os períodos sem pedidos com zero (dia, semana ISO ou mês), em datas locais. */
-export function fillBuckets<T extends { bucket: string }>(rows: T[], fromDate: string, toDate: string, bucket: 'day' | 'week' | 'month', empty: (bucket: string) => T): T[] {
+export function fillBuckets<T extends { bucket: string }>(
+  rows: T[],
+  fromDate: string,
+  toDate: string,
+  bucket: 'day' | 'week' | 'month',
+  empty: (bucket: string) => T,
+): T[] {
   const byKey = new Map(rows.map((r) => [r.bucket.slice(0, 10), r]));
   const out: T[] = [];
   const start = new Date(`${fromDate}T12:00:00Z`);

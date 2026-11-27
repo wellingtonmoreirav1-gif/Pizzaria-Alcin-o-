@@ -27,7 +27,10 @@ export function StoreStatusFallback({ className }: { className?: string }) {
 
 /** "Estamos fechados agora. Abrimos hoje às 10h30 (almoço)." → "Abrimos hoje às 10h30 (almoço)." */
 const shortMessage = (message: string) =>
-  message.replace(/estamos fechados agora\.\s*/i, '').replace(/^pedidos pausados por alguns minutos\.\s*/i, '').trim();
+  message
+    .replace(/estamos fechados agora\.\s*/i, '')
+    .replace(/^pedidos pausados por alguns minutos\.\s*/i, '')
+    .trim();
 
 /** Faixa de aviso exibida quando a loja não está aceitando pedidos. */
 export async function ClosedBanner() {
@@ -40,9 +43,7 @@ export async function ClosedBanner() {
     // do pedido ela some, porque o aviso já está na própria página (ver globals.css).
     <div className="border-b border-line bg-mist px-4 py-2 text-center text-sm text-fg" role="status" data-closed-banner>
       <strong className="font-semibold">{error ? 'Aviso:' : status.reason === 'paused' ? 'Pedidos pausados.' : 'Fechado agora.'}</strong>{' '}
-      <span className="text-muted-strong">
-        {error ? 'Alguns dados podem estar desatualizados.' : shortMessage(status.message)} Seu carrinho fica salvo.
-      </span>
+      <span className="text-muted-strong">{error ? 'Alguns dados podem estar desatualizados.' : shortMessage(status.message)} Seu carrinho fica salvo.</span>
     </div>
   );
 }

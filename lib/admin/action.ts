@@ -68,7 +68,10 @@ export function int(form: FormData, key: string, fallback = 0): number {
 export function money(form: FormData, key: string): string | null {
   const v = str(form, key);
   if (v === null) return null;
-  const normalized = v.replace(/[R$\s]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
+  const normalized = v
+    .replace(/[R$\s]/g, '')
+    .replace(/\.(?=\d{3}(\D|$))/g, '')
+    .replace(',', '.');
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) throw new ActionError(`Valor inválido em "${key}". Use o formato 12,50.`);
   return normalized;
 }

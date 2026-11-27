@@ -47,7 +47,14 @@ export async function saveZone(id: string | null, _prev: ActionResult | null, fo
     async (_ctx, db) => {
       const name = str(form, 'name');
       if (!name) throw new ActionError('Informe o bairro.');
-      const fields = { name, city: str(form, 'city') ?? 'São Bento', fee: money(form, 'fee'), notes: str(form, 'notes'), is_active: bool(form, 'isActive'), sort_order: int(form, 'sortOrder') };
+      const fields = {
+        name,
+        city: str(form, 'city') ?? 'São Bento',
+        fee: money(form, 'fee'),
+        notes: str(form, 'notes'),
+        is_active: bool(form, 'isActive'),
+        sort_order: int(form, 'sortOrder'),
+      };
       if (id) {
         if (!z.uuid().safeParse(id).success) throw new ActionError('Registro inválido.');
         check(await db.from('delivery_zones').update(fields).eq('id', id));

@@ -1,5 +1,18 @@
 # Testes
 
+## No GitHub (CI)
+
+Cada Pull Request roda o workflow **CI** (`.github/workflows/ci.yml`):
+
+| Job | O que roda |
+|---|---|
+| Qualidade | Biome, ESLint, TypeScript, Knip, Arch-Contract (veja [QUALIDADE.md](QUALIDADE.md)) |
+| Mensagens de commit | Commitlint nos commits do PR |
+| Testes unitários + cobertura | `npm run test:coverage` → Codecov (flag `unitarios`) |
+| Integração + ponta a ponta | sobe o mesmo ambiente local abaixo (PostgreSQL + Supabase Auth + PostgREST, binários copiados das imagens oficiais), roda `tests/db` com cobertura (Codecov, flag `integracao`), faz o build de produção e roda o Playwright. Se falhar, o relatório fica no artefato `playwright-report` |
+
+O teste de mutação (Stryker) roda toda segunda-feira e sob demanda (workflow **Teste de mutação**).
+
 ## Como rodar
 
 ```bash

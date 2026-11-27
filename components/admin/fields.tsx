@@ -3,8 +3,7 @@ import { cn } from '@/lib/utils';
 
 /* Campos simples (sem hooks) para formulários do painel renderizados no servidor. */
 
-const control =
-  'w-full rounded-xl border border-line bg-white px-3 text-sm text-ink-900 focus:border-ink-900 focus:outline-none disabled:bg-mist';
+const control = 'w-full rounded-xl border border-line bg-white px-3 text-sm text-ink-900 focus:border-ink-900 focus:outline-none disabled:bg-mist';
 
 export function TextField({ label, name, hint, className, required, ...props }: ComponentProps<'input'> & { label: string; name: string; hint?: ReactNode }) {
   const id = `f-${name}`;
@@ -33,7 +32,14 @@ export function TextAreaField({ label, name, hint, className, ...props }: Compon
   );
 }
 
-export function SelectField({ label, name, hint, className, children, ...props }: ComponentProps<'select'> & { label: string; name: string; hint?: ReactNode }) {
+export function SelectField({
+  label,
+  name,
+  hint,
+  className,
+  children,
+  ...props
+}: ComponentProps<'select'> & { label: string; name: string; hint?: ReactNode }) {
   const id = `f-${name}`;
   return (
     <div className={cn('flex flex-col gap-1', className)}>
@@ -60,7 +66,19 @@ export function CheckboxField({ label, name, hint, className, ...props }: Compon
   );
 }
 
-export function Card({ title, description, children, actions, className }: { title?: string; description?: ReactNode; children: ReactNode; actions?: ReactNode; className?: string }) {
+export function Card({
+  title,
+  description,
+  children,
+  actions,
+  className,
+}: {
+  title?: string;
+  description?: ReactNode;
+  children: ReactNode;
+  actions?: ReactNode;
+  className?: string;
+}) {
   return (
     <section className={cn('rounded-2xl border border-line bg-white p-5', className)}>
       {title || actions ? (

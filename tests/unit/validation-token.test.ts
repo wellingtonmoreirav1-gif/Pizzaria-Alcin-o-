@@ -35,7 +35,15 @@ describe('checkout schema', () => {
     expect(checkoutSchema.safeParse({ ...valid, fulfillment: 'pickup', address: null, payment: { method: 'pix' } }).success).toBe(true);
     expect(checkoutSchema.safeParse({ ...valid, location: { latitude: 120, longitude: 0, source: 'gps' } }).success).toBe(false);
     expect(checkoutSchema.safeParse({ ...valid, location: { latitude: -6.5, longitude: -37.4, source: 'map_pin' } }).success).toBe(true);
-    expect(checkoutSchema.safeParse({ ...valid, fulfillment: 'pickup', address: null, payment: { method: 'pix' }, location: { latitude: -6.5, longitude: -37.4, source: 'gps' } }).success).toBe(false);
+    expect(
+      checkoutSchema.safeParse({
+        ...valid,
+        fulfillment: 'pickup',
+        address: null,
+        payment: { method: 'pix' },
+        location: { latitude: -6.5, longitude: -37.4, source: 'gps' },
+      }).success,
+    ).toBe(false);
   });
 });
 
@@ -45,7 +53,7 @@ describe('order access token', () => {
     const token = orderAccessToken('order-1', secret);
     expect(verifyOrderAccessToken('order-1', token, secret)).toBe(true);
     expect(verifyOrderAccessToken('order-2', token, secret)).toBe(false);
-    expect(verifyOrderAccessToken('order-1', token.slice(0, -1) + 'A', secret)).toBe(false);
+    expect(verifyOrderAccessToken('order-1', `${token.slice(0, -1)}A`, secret)).toBe(false);
     expect(verifyOrderAccessToken('order-1', '', secret)).toBe(false);
   });
   it('hashes payloads independent of key order', () => {

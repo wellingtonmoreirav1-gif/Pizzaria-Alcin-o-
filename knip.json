@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "scripts/**/*.mjs",
+    "tests/stubs/*.ts"
+  ],
+  "project": [
+    "**/*.{ts,tsx,mjs,css}",
+    "!.claude/**"
+  ],
+  "ignoreDependencies": [
+    "@next/env",
+    "@stryker-mutator/api"
+  ],
+  "ignoreExportsUsedInFile": true
+}

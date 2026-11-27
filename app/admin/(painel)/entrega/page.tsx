@@ -28,15 +28,26 @@ export default async function DeliveryPage() {
   await connection();
   const supabase = await createSessionClient();
   const [settings, zones] = await Promise.all([
-    supabase.from('business_settings').select('delivery_enabled, pickup_enabled, dine_in_enabled, payment_methods, min_order_value, delivery_info_text').eq('id', 1).single(),
+    supabase
+      .from('business_settings')
+      .select('delivery_enabled, pickup_enabled, dine_in_enabled, payment_methods, min_order_value, delivery_info_text')
+      .eq('id', 1)
+      .single(),
     supabase.from('delivery_zones').select('*').order('sort_order').order('name'),
   ]);
   const s = settings.data;
-  const enabled: Record<Fulfillment, boolean> = { delivery: s?.delivery_enabled ?? true, pickup: s?.pickup_enabled ?? true, dine_in: s?.dine_in_enabled ?? true };
+  const enabled: Record<Fulfillment, boolean> = {
+    delivery: s?.delivery_enabled ?? true,
+    pickup: s?.pickup_enabled ?? true,
+    dine_in: s?.dine_in_enabled ?? true,
+  };
   const pm = (s?.payment_methods ?? {}) as Record<Fulfillment, PaymentMethod[]>;
   return (
     <div className="space-y-6">
-      <PageHeader title="Entrega e pagamento" description="A taxa de entrega nunca é calculada por distância: ela é confirmada pela equipe em cada pedido. A taxa do bairro, se informada, aparece como “prevista”." />
+      <PageHeader
+        title="Entrega e pagamento"
+        description="A taxa de entrega nunca é calculada por distância: ela é confirmada pela equipe em cada pedido. A taxa do bairro, se informada, aparece como “prevista”."
+      />
       <Card title="Modalidades e formas de pagamento">
         <ActionForm action={saveModes} submitLabel="Salvar">
           <div className="grid gap-4 md:grid-cols-3">
@@ -54,8 +65,19 @@ export default async function DeliveryPage() {
             ))}
           </div>
           <div className="grid gap-3 md:grid-cols-3">
-            <TextField label="Pedido mínimo (R$)" name="minOrder" inputMode="decimal" defaultValue={centsInput(s?.min_order_value ?? null)} hint="Vazio = sem mínimo" />
-            <TextAreaField label="Texto sobre entrega (página inicial)" name="deliveryInfo" defaultValue={s?.delivery_info_text ?? ''} className="md:col-span-2" />
+            <TextField
+              label="Pedido mínimo (R$)"
+              name="minOrder"
+              inputMode="decimal"
+              defaultValue={centsInput(s?.min_order_value ?? null)}
+              hint="Vazio = sem mínimo"
+            />
+            <TextAreaField
+              label="Texto sobre entrega (página inicial)"
+              name="deliveryInfo"
+              defaultValue={s?.delivery_info_text ?? ''}
+              className="md:col-span-2"
+            />
           </div>
         </ActionForm>
       </Card>
@@ -63,12 +85,16 @@ export default async function DeliveryPage() {
         <div className="space-y-3">
           {((zones.data ?? []) as Zone[]).map((z) => (
             <div key={z.id} className="rounded-xl border border-line p-3">
-              <ActionForm action={saveZone.bind(null, z.id)} size="sm"><ZoneFields z={z} /></ActionForm>
+              <ActionForm action={saveZone.bind(null, z.id)} size="sm">
+                <ZoneFields z={z} />
+              </ActionForm>
             </div>
           ))}
           <div className="rounded-xl border border-dashed border-line p-3">
             <p className="mb-2 text-sm font-semibold">Novo bairro</p>
-            <ActionForm action={saveZone.bind(null, null)} submitLabel="Adicionar" size="sm" resetOnSuccess><ZoneFields z={null} /></ActionForm>
+            <ActionForm action={saveZone.bind(null, null)} submitLabel="Adicionar" size="sm" resetOnSuccess>
+              <ZoneFields z={null} />
+            </ActionForm>
           </div>
         </div>
       </Card>

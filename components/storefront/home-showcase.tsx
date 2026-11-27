@@ -35,7 +35,15 @@ export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: 
       <WeeklyFeature config={WEEKLY_FEATURE} product={weeklyProduct} fetchedAt={catalog.fetchedAt} />
       <HomeCatalogs catalog={catalog} />
       <BannerStrip banners={banners} now={now} />
-      <ProductRail id="promocoes" eyebrow="Por tempo limitado" title="Promoções" products={promos.slice(0, 8)} fetchedAt={catalog.fetchedAt} href="/cardapio?colecao=promocoes" tone="wine" />
+      <ProductRail
+        id="promocoes"
+        eyebrow="Por tempo limitado"
+        title="Promoções"
+        products={promos.slice(0, 8)}
+        fetchedAt={catalog.fetchedAt}
+        href="/cardapio?colecao=promocoes"
+        tone="wine"
+      />
     </>
   );
 }
@@ -63,9 +71,9 @@ function HomeCatalogs({ catalog }: { catalog: Catalog }) {
       path: g.path,
       categories: withProducts(g.slugs.map((slug) => catalog.categories.find((c) => c.slug === slug)).filter((c): c is CatalogCategory => Boolean(c))),
     })),
-    ...withProducts(
-      catalog.categories.filter((c) => c.sectionType === 'products' && !groupOfCategory(c.slug) && !HOME_HIDDEN_CATEGORIES.includes(c.slug)),
-    ).map((c) => ({ id: `catalogo-categoria-${c.category.slug}`, title: c.category.name, categories: [c] })), // id próprio: não colide com os grupos (ex.: categoria "pizzas")
+    ...withProducts(catalog.categories.filter((c) => c.sectionType === 'products' && !groupOfCategory(c.slug) && !HOME_HIDDEN_CATEGORIES.includes(c.slug))).map(
+      (c) => ({ id: `catalogo-categoria-${c.category.slug}`, title: c.category.name, categories: [c] }),
+    ), // id próprio: não colide com os grupos (ex.: categoria "pizzas")
   ].filter((s) => s.categories.length > 0);
   if (sections.length === 0) return null;
 
@@ -80,7 +88,10 @@ function HomeCatalogs({ catalog }: { catalog: Catalog }) {
           <ul className="flex gap-2">
             {sections.map((s) => (
               <li key={s.id} className="shrink-0">
-                <a href={`#${s.id}`} className="inline-flex h-11 items-center rounded-full border border-line bg-mist px-5 text-base font-semibold text-fg transition-colors hover:border-gold hover:text-gold">
+                <a
+                  href={`#${s.id}`}
+                  className="inline-flex h-11 items-center rounded-full border border-line bg-mist px-5 text-base font-semibold text-fg transition-colors hover:border-gold hover:text-gold"
+                >
                   {s.title}
                 </a>
               </li>

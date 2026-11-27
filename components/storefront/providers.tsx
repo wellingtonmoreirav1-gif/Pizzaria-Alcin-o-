@@ -16,7 +16,9 @@ export function StoreProviders({ children, drinks, pizzas }: { children: ReactNo
     <ToastProvider>
       <CartProvider>
         <FavoritesProvider>
-          <ProductDialogProvider drinks={drinks} pizzas={pizzas}>{children}</ProductDialogProvider>
+          <ProductDialogProvider drinks={drinks} pizzas={pizzas}>
+            {children}
+          </ProductDialogProvider>
         </FavoritesProvider>
       </CartProvider>
     </ToastProvider>

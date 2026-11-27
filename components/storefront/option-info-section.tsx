@@ -18,12 +18,19 @@ export function OptionInfoSection({ category, group }: { category: CatalogCatego
       </h2>
       {category.description ? <p className="mt-1 text-muted">{category.description}</p> : null}
       {sizes.length > 0 ? (
-        <div tabIndex={0} role="region" aria-label={`Valores de ${group.name.toLowerCase()} por tamanho`} className="mt-4 overflow-x-auto focus-visible:outline-3 focus-visible:outline-gold rounded-[var(--radius-card)] bg-surface ring-1 ring-line">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label={`Valores de ${group.name.toLowerCase()} por tamanho`}
+          className="mt-4 overflow-x-auto focus-visible:outline-3 focus-visible:outline-gold rounded-[var(--radius-card)] bg-surface ring-1 ring-line"
+        >
           <table className="w-full min-w-[34rem] text-sm">
             <caption className="sr-only">Preço de cada {group.name.toLowerCase()} por tamanho da pizza</caption>
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
-                <th scope="col" className="px-4 py-3">{group.name}</th>
+                <th scope="col" className="px-4 py-3">
+                  {group.name}
+                </th>
                 {sizes.map((code) => (
                   <th key={code} scope="col" className="px-3 py-3 text-right">
                     {SIZE_LABEL[code] ?? code} <span className="text-muted">({code})</span>
@@ -33,19 +40,25 @@ export function OptionInfoSection({ category, group }: { category: CatalogCatego
             </thead>
             <tbody>
               <tr className="border-b border-line">
-                <th scope="row" className="px-4 py-3 text-left font-medium text-muted-strong">Sem borda</th>
+                <th scope="row" className="px-4 py-3 text-left font-medium text-muted-strong">
+                  Sem borda
+                </th>
                 {sizes.map((code) => (
-                  <td key={code} className="px-3 py-3 text-right text-muted">—</td>
+                  <td key={code} className="px-3 py-3 text-right text-muted">
+                    —
+                  </td>
                 ))}
               </tr>
               {values.map((v) => (
                 <tr key={v.id} className="border-b border-line last:border-0">
-                  <th scope="row" className="px-4 py-3 text-left font-semibold">{v.name}</th>
+                  <th scope="row" className="px-4 py-3 text-left font-semibold">
+                    {v.name}
+                  </th>
                   {sizes.map((code) => {
                     const rule = v.sizeRules[code];
                     return (
                       <td key={code} className="whitespace-nowrap px-3 py-3 text-right font-semibold tabular-nums text-gold">
-                        {!v.priceConfirmed ? 'a definir' : rule && rule.isOffered && rule.price !== null ? `+ ${formatBRL(rule.price)}` : '—'}
+                        {!v.priceConfirmed ? 'a definir' : rule?.isOffered && rule.price !== null ? `+ ${formatBRL(rule.price)}` : '—'}
                       </td>
                     );
                   })}
@@ -67,7 +80,9 @@ export function OptionInfoSection({ category, group }: { category: CatalogCatego
         </ul>
       )}
       <p className="mt-2 text-xs text-muted">
-        {group.kind === 'crust' ? 'Escolha a borda ao montar a sua pizza. O valor é somado ao preço da pizza.' : 'Disponíveis como adicional nos produtos indicados.'}
+        {group.kind === 'crust'
+          ? 'Escolha a borda ao montar a sua pizza. O valor é somado ao preço da pizza.'
+          : 'Disponíveis como adicional nos produtos indicados.'}
       </p>
     </section>
   );

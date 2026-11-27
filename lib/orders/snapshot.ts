@@ -2,13 +2,7 @@ import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { toCents, toCentsOrNull, type Cents } from '@/lib/money';
 import type { WhatsAppOrder } from '@/lib/whatsapp';
-import type {
-  CancelReason,
-  DeliveryFeeStatus,
-  Fulfillment,
-  OrderStatus,
-  PaymentMethod,
-} from '@/lib/orders/labels';
+import type { CancelReason, DeliveryFeeStatus, Fulfillment, OrderStatus, PaymentMethod } from '@/lib/orders/labels';
 
 export const ORDER_DETAIL_SELECT = `
   id, code, customer_id, customer_name, customer_phone, fulfillment, status, address_street, address_number,

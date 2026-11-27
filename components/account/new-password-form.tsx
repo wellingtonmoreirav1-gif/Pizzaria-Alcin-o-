@@ -32,8 +32,14 @@ export function NewPasswordForm() {
       <Field label="Nova senha" required hint="Mínimo de 8 caracteres.">
         {(p) => <Input {...p} type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />}
       </Field>
-      {error ? <Notice tone="danger" live>{error}</Notice> : null}
-      <Button type="submit" loading={loading} className="w-full">Salvar senha</Button>
+      {error ? (
+        <Notice tone="danger" live>
+          {error}
+        </Notice>
+      ) : null}
+      <Button type="submit" loading={loading} className="w-full">
+        Salvar senha
+      </Button>
     </form>
   );
 }

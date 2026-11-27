@@ -40,7 +40,15 @@ describe('whatsapp message', () => {
   });
 
   it('omits address and fee for pickup and shows final total', () => {
-    const msg = buildOrderMessage({ ...base, fulfillment: 'pickup', deliveryFeeStatus: 'not_applicable', address: null, location: null, paymentMethod: 'pix', cashChangeFor: null });
+    const msg = buildOrderMessage({
+      ...base,
+      fulfillment: 'pickup',
+      deliveryFeeStatus: 'not_applicable',
+      address: null,
+      location: null,
+      paymentMethod: 'pix',
+      cashChangeFor: null,
+    });
     expect(msg).not.toContain('Endereço');
     expect(msg).not.toContain('Taxa de entrega');
     expect(msg).toContain('*Total: R$ 81,00*');

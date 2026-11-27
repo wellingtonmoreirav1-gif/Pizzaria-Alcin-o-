@@ -12,8 +12,7 @@ const routes = [
 
 const cors = {
   'access-control-allow-origin': '*',
-  'access-control-allow-headers':
-    'authorization, x-client-info, apikey, content-type, prefer, accept-profile, content-profile, range, x-supabase-api-version',
+  'access-control-allow-headers': 'authorization, x-client-info, apikey, content-type, prefer, accept-profile, content-profile, range, x-supabase-api-version',
   'access-control-allow-methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
   'access-control-expose-headers': 'content-range, x-supabase-api-version',
 };

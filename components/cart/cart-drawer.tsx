@@ -65,7 +65,11 @@ export function CartDrawer({ suggestions, fetchedAt }: { suggestions: CatalogPro
       ) : (
         <div className="space-y-4">
           {quote.error ? <Notice tone="warning">{quote.error}</Notice> : null}
-          {hasErrors ? <Notice tone="danger" title="Revise os itens destacados">Alguns itens mudaram ou ficaram indisponíveis.</Notice> : null}
+          {hasErrors ? (
+            <Notice tone="danger" title="Revise os itens destacados">
+              Alguns itens mudaram ou ficaram indisponíveis.
+            </Notice>
+          ) : null}
           {quote.pricesChanged ? <Notice tone="info">Os preços foram atualizados com os valores atuais do cardápio.</Notice> : null}
           <CartLines lineErrors={quote.lineErrors} onNavigate={() => cart.setDrawerOpen(false)} compact />
           <CartSuggestions products={suggestions} fetchedAt={fetchedAt} />

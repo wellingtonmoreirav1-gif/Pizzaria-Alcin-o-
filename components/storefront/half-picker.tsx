@@ -132,10 +132,7 @@ function Choice({ pressed, onClick, title, subtitle, testId }: { pressed: boolea
       type="button"
       onClick={onClick}
       aria-pressed={pressed}
-      className={cn(
-        'rounded-2xl px-4 py-3 text-left ring-1 transition-colors',
-        pressed ? 'bg-mist ring-2 ring-gold' : 'bg-surface ring-line hover:ring-gold',
-      )}
+      className={cn('rounded-2xl px-4 py-3 text-left ring-1 transition-colors', pressed ? 'bg-mist ring-2 ring-gold' : 'bg-surface ring-line hover:ring-gold')}
       data-testid={testId}
     >
       <span className="block text-lg font-bold">{title}</span>

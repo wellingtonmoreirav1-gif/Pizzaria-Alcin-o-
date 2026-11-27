@@ -55,3 +55,9 @@ supabase/.temp/
 
 # Relatórios da skill design-motion-principles (modo Audit)
 /motion-audits
+
+# Stryker (teste de mutação) e cobertura
+/.stryker-tmp
+/reports
+/.svc
+/coverage-db

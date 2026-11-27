@@ -15,8 +15,3 @@ export function formatBrazilPhone(digits: string): string {
   if (digits.length === 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
   return digits;
 }
-
-/** Número para links do WhatsApp (55 + DDD + número). */
-export function toWhatsAppNumber(digits: string): string {
-  return digits.startsWith('55') && digits.length >= 12 ? digits : `55${digits}`;
-}
