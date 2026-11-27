@@ -42,3 +42,16 @@ Recomenda-se configurar **alerta de gastos/uso** nos painéis da Vercel e do Sup
   Guarde o arquivo em local seguro (contém dados pessoais). Para restaurar em um projeto novo: aplique as migrations e rode `pg_restore --data-only -d "<nova connection string>" arquivo.dump`.
 - **Imagens:** ficam no Storage (bucket `catalog`); baixe periodicamente pelo painel do Supabase se quiser cópia.
 - **Código:** fica no GitHub; qualquer versão anterior pode ser publicada de novo na Vercel (*Deployments → Promote/Redeploy*).
+
+## Observabilidade (opcional)
+
+Nada é contratado nem ligado por padrão (veja `docs/OBSERVABILIDADE.md`). Confira os preços atuais nas páginas oficiais.
+
+| Serviço | Plano de entrada | Observação |
+|---|---|---|
+| Sentry | gratuito para 1 pessoa, com cota mensal de erros | suficiente para o início |
+| New Relic | gratuito com cota mensal de dados ingeridos | acima da cota, cobra por GB |
+| Datadog | APM pago por host/uso | ligar só se já houver conta ou necessidade |
+| OpenTelemetry | gratuito (padrão aberto) | o custo é do destino escolhido |
+
+Para reduzir volume: `OTEL_TRACES_SAMPLE_RATIO` (fração das requisições rastreadas).
