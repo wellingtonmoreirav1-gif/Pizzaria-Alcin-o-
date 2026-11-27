@@ -36,8 +36,9 @@ export function WeeklyFeature({ config, product, fetchedAt }: { config: WeeklyFe
   const titleId = 'destaque-semana-titulo';
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // O vídeo só baixa perto da tela e pausa fora dela; com "menos movimento" ou economia
-  // de dados fica só a imagem parada.
+  // O vídeo só baixa quando pelo menos metade dele aparece (no celular o destaque começa
+  // na beirada da 1ª tela: baixar antes gastava o 4G de quem nem rolou) e pausa fora dela;
+  // com "menos movimento" ou economia de dados fica só a imagem parada.
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -48,15 +49,16 @@ export function WeeklyFeature({ config, product, fetchedAt }: { config: WeeklyFe
     video.addEventListener('playing', onPlaying);
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) {
+        if (!entry) return;
+        if (entry.intersectionRatio >= 0.5) {
           if (video.preload !== 'auto') {
             video.preload = 'auto';
             video.load();
           }
           video.play().catch(() => {});
-        } else video.pause();
+        } else if (!entry.isIntersecting) video.pause();
       },
-      { rootMargin: '200px 0px' },
+      { threshold: [0, 0.5] },
     );
     io.observe(video);
     return () => {

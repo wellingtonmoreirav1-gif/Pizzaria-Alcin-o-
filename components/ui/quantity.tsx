@@ -18,7 +18,7 @@ export function QuantityStepper({
   size?: 'sm' | 'md';
   label?: string;
 }) {
-  const btn = size === 'sm' ? 'size-8' : 'size-11';
+  const btn = size === 'sm' ? 'size-10' : 'size-11';
   return (
     <div className="inline-flex items-center rounded-full border border-line bg-surface" role="group" aria-label={label}>
       <button

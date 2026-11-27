@@ -238,7 +238,15 @@ function AddSheet({
   const [halfId, setHalfId] = useState<string | null>(null);
   const half = pizzas.find((p) => p.id === halfId) ?? null;
   const unitPrice = priceFor(half);
-  const hasExtras = product.groups.some((g) => g.values.some((v) => v.isAvailable));
+  // "Quero borda, molho ou observação" só com o que este produto tem (lanche não tem borda).
+  const available = product.groups.filter((g) => g.values.some((v) => v.isAvailable));
+  const extras = [
+    available.some((g) => g.kind === 'crust') && 'borda',
+    available.some((g) => g.kind !== 'crust' && /molho/i.test(g.name)) && 'molho',
+    available.some((g) => g.kind !== 'crust' && !/molho/i.test(g.name)) && 'adicionais',
+    'observação',
+  ].filter((x): x is string => Boolean(x));
+  const extrasLabel = `Quero ${extras.length > 1 ? `${extras.slice(0, -1).join(', ')} ou ${extras.at(-1)}` : 'escrever uma observação'}`;
   return (
     <Dialog open onClose={onClose} title={product.name} description={variant && product.variants.length > 1 ? variant.name : product.categoryName} side="bottom">
       <div className="space-y-5 pb-2">
@@ -256,11 +264,9 @@ function AddSheet({
         >
           <ShoppingBag className="size-6" aria-hidden /> Adicionar ao pedido
         </button>
-        {hasExtras ? (
-          <button type="button" onClick={() => onCustomize(half)} className="w-full text-center text-base font-semibold text-gold underline underline-offset-4">
-            Quero borda, molho ou observação
-          </button>
-        ) : null}
+        <button type="button" onClick={() => onCustomize(half)} className="min-h-11 w-full text-center text-base font-semibold text-gold underline underline-offset-4">
+          {extrasLabel}
+        </button>
       </div>
     </Dialog>
   );

@@ -13,7 +13,11 @@ export default async function SiteLayout({ children }: LayoutProps<'/'>) {
   const { data: catalog } = await getCatalog();
   // Bebidas saem do cardápio e são oferecidas no carrinho e depois de adicionar um item.
   const drinks = catalog.products.filter((p) => p.categorySlug === DRINK_CATEGORY);
-  const pizzas = catalog.products.filter((p) => p.kind === 'pizza');
+  // Sabores para a 2ª metade da pizza (ver HalfPicker): vão para toda página, então só com o
+  // necessário para escolher e calcular o preço (sem bordas, textos e fotos).
+  const pizzas = catalog.products
+    .filter((p) => p.kind === 'pizza')
+    .map((p) => ({ ...p, groups: [], description: null, shortDescription: null, images: [], imageUrl: null, imageAlt: null, comboItems: [] }));
   return (
     // O tema escuro envolve também as janelas (escolher produto), que ficam no provedor.
     <div className="theme-dark flex min-h-screen flex-col">

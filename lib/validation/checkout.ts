@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { normalizeBrazilPhone } from '@/lib/phone';
 
+// Mensagens padrão do zod em português (as nossas, escritas nos campos, continuam valendo).
+z.config(z.locales.ptBR());
+
 const trimmed = (max: number) => z.string().trim().max(max);
 const optionalText = (max: number) =>
   z

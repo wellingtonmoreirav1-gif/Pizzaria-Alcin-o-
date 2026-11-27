@@ -1,71 +1,72 @@
 import Image from 'next/image';
-import { ArrowRight, ChevronDown, MessageCircle, UtensilsCrossed } from 'lucide-react';
+import { ArrowDown, MessageCircle } from 'lucide-react';
 import { ButtonLink, buttonClasses } from '@/components/ui/button';
 import { buildWhatsAppUrl } from '@/lib/whatsapp';
 import type { SiteSettings } from '@/types/settings';
-import { HeroLoop } from './hero-loop';
+import { HeroCover } from './hero-cover';
 
-/** Título que vinha do cadastro inicial; trocado pelo letreiro "Sabor irresistível no Alcinão". */
+/** Título que vinha do cadastro inicial (não é mostrado). */
 const LEGACY_TITLE = 'Seu próximo sabor favorito está aqui.';
 
 const GLASS_BUTTON = 'border-white/30 bg-black/25 text-white backdrop-blur-sm hover:border-white hover:bg-white/10';
 
 /**
- * Primeira dobra: pizza que desmonta em loop (HeroLoop) e a apresentação da casa. Um título próprio cadastrado em /admin/configuracoes substitui o padrão.
+ * Capa: o logo "Pizzaria Alcinão" à esquerda e o personagem à direita, apontando para ele,
+ * sobre o fundo preto. "Pedir agora" desce até os catálogos da própria página inicial.
+ * Uma frase própria cadastrada em /admin/configuracoes aparece embaixo do logo.
  */
 export function Hero({ settings }: { settings: SiteSettings }) {
   const customTitle = settings.heroTitle && settings.heroTitle !== LEGACY_TITLE ? settings.heroTitle : null;
-  const subtitle =
-    settings.heroSubtitle ?? `Pizzas, lanches, petiscos e pratos da casa em ${settings.city ?? 'São Bento'}. Monte seu pedido e envie pelo WhatsApp.`;
+  const city = `${settings.city ?? 'São Bento'} (${settings.state ?? 'PB'})`;
   return (
-    <HeroLoop>
-      <div className="max-w-xl">
-        <p className="hidden w-fit items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-white/85 backdrop-blur-sm lg:inline-flex">
-          <UtensilsCrossed className="size-3.5 text-gold" aria-hidden /> {settings.city ?? 'São Bento'} · {settings.state ?? 'PB'}
-        </p>
-        {customTitle ? (
-          <h1 className="mt-4 text-balance font-display text-[2.4rem] font-bold leading-[1.05] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)] sm:text-6xl">
-            {customTitle}
-          </h1>
-        ) : (
-          // Letreiro "Sabor irresistível no Alcinão" (arte do restaurante, fundo recortado), com fade-in.
-          <h1 className="lg:mt-4">
-            <Image
-              src="/hero/sabor-irresistivel.webp"
-              alt="Sabor irresistível no Alcinão"
-              width={1200}
-              height={793}
-              loading="eager"
-              sizes="(max-width: 640px) 92vw, 560px"
-              className="mx-auto h-auto w-full max-w-[19rem] drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)] motion-safe:animate-title-in sm:max-w-[30rem] lg:mx-0 lg:max-w-[35rem]"
-            />
-            <span className="sr-only"> — pizzaria e churrascaria em {settings.city ?? 'São Bento'} ({settings.state ?? 'PB'})</span>
-          </h1>
-        )}
-        {customTitle ? <p className="mt-5 hidden max-w-md text-pretty text-lg leading-relaxed text-white/80 sm:block">{subtitle}</p> : null}
-      </div>
-
-      <div className="mt-6 lg:mt-8">
-        <div className="flex flex-wrap justify-center gap-3 lg:justify-start">
-          <ButtonLink href="/cardapio" size="lg">
-            Pedir agora <ArrowRight className="size-5" aria-hidden />
-          </ButtonLink>
-          <a
-            href={buildWhatsAppUrl(settings.whatsappNumber, 'Olá! Vim pelo site do Alcinão.')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonClasses('outline', 'lg', GLASS_BUTTON)}
-          >
-            <MessageCircle className="size-5" aria-hidden /> Falar no WhatsApp
-          </a>
+    <HeroCover>
+      {/* Celular: logo e personagem lado a lado, botões embaixo. Computador: logo e botões à esquerda, personagem à direita. */}
+      <div className="grid grid-cols-[1.25fr_1fr] items-center gap-x-1 lg:grid-cols-[1.05fr_1fr] lg:gap-x-10">
+        <h1 className="col-start-1 row-start-1 lg:self-end">
+          <Image
+            src="/hero/logo-alcinao.webp"
+            alt="Pizzaria Alcinão"
+            width={1200}
+            height={719}
+            loading="eager"
+            fetchPriority="high"
+            sizes="(max-width: 1024px) 55vw, 600px"
+            className="h-auto w-full drop-shadow-[0_12px_28px_rgba(0,0,0,0.6)] motion-safe:animate-title-in lg:max-w-[38rem]"
+          />
+          <span className="sr-only"> — pizzaria e churrascaria em {city}</span>
+        </h1>
+        <div className="col-start-2 row-start-1 self-end lg:row-span-2">
+          <Image
+            src="/hero/personagem.webp"
+            alt=""
+            width={1016}
+            height={1100}
+            loading="eager"
+            sizes="(max-width: 1024px) 45vw, 520px"
+            className="ml-auto h-auto w-full [mask-image:linear-gradient(to_bottom,black_82%,transparent)] lg:max-w-[34rem] lg:[mask-image:none]"
+          />
         </div>
-        <p className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70 lg:justify-start">
-          <MessageCircle className="size-4" aria-hidden /> Pedido confirmado pela equipe no WhatsApp
-        </p>
-        <p className="mt-5 hidden items-center gap-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60 lg:flex motion-reduce:hidden" aria-hidden>
-          <ChevronDown className="size-4 motion-safe:animate-bounce" /> Role para ver
-        </p>
+
+        <div className="col-span-2 row-start-2 pb-8 pt-5 lg:col-span-1 lg:col-start-1 lg:self-start lg:pb-16 lg:pt-8">
+          {customTitle ? <p className="mb-5 text-center text-lg font-semibold text-white/90 lg:text-left lg:text-xl">{customTitle}</p> : null}
+          <div className="flex flex-wrap justify-center gap-3 lg:justify-start">
+            <ButtonLink href="#cardapio" size="lg">
+              Pedir agora <ArrowDown className="size-5" aria-hidden />
+            </ButtonLink>
+            <a
+              href={buildWhatsAppUrl(settings.whatsappNumber, 'Olá! Vim pelo site do Alcinão.')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonClasses('outline', 'lg', GLASS_BUTTON)}
+            >
+              <MessageCircle className="size-5" aria-hidden /> Falar no WhatsApp
+            </a>
+          </div>
+          <p className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70 lg:justify-start">
+            <MessageCircle className="size-4" aria-hidden /> Pedido confirmado pela equipe no WhatsApp
+          </p>
+        </div>
       </div>
-    </HeroLoop>
+    </HeroCover>
   );
 }

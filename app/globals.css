@@ -45,6 +45,16 @@
   --color-muted-strong: #4a4440;
 
   --color-success-600: #1f7a3f;
+  /* Verde do WhatsApp: botões de enviar (600/700) e a chamada final "Peça pelo WhatsApp". */
+  --color-whatsapp-100: #9ff0c0;
+  --color-whatsapp-400: #25d366;
+  --color-whatsapp-300: #3ee07a;
+  --color-whatsapp-500: #1a7a45;
+  --color-whatsapp-600: #1f8f4e;
+  --color-whatsapp-700: #18733e;
+  --color-whatsapp-800: #0f4d2c;
+  --color-whatsapp-900: #0a3520;
+  --color-whatsapp-950: #062b16;
   --color-success-50: #ecf8f0;
   --color-warning-600: #9a5b00;
   --color-warning-50: #fff6e5;
@@ -101,11 +111,12 @@
 }
 
 .theme-dark {
-  /* Fundo da loja no vermelho do vídeo da pizza; cartões e campos num vinho bem escuro. */
-  --color-canvas: var(--color-wine-900);
-  --color-surface: #1e0405;
-  --color-mist: #2c080a;
-  --color-line: #4f1a1d;
+  /* Fundo da loja preto quente (igual ao da capa); o vinho fica só nos blocos de destaque
+     (bg-wine: destaque da semana, ofertas, títulos das páginas). Cartões e campos em preto mais claro. */
+  --color-canvas: #0f0b0b;
+  --color-surface: #181212;
+  --color-mist: #241b1b;
+  --color-line: #3a2d2d;
   --color-muted: #aaa29b;
   --color-muted-strong: #d6cfc8;
   --color-fg: #f6f2ee;
@@ -131,7 +142,7 @@
 @custom-variant over-hero (html:has([data-hero]:not([data-done="true"])) &);
 
 body:has(.theme-dark) {
-  background: var(--color-wine-900);
+  background: #0f0b0b;
 }
 
 @layer base {
@@ -203,4 +214,9 @@ body:has(.theme-dark) {
 .leaflet-container {
   font-family: var(--font-sans);
   border-radius: 1rem;
+}
+
+/* Na finalização do pedido o aviso de fechado já aparece na página: a faixa do topo some. */
+body:has([data-checkout-page]) [data-closed-banner] {
+  display: none;
 }

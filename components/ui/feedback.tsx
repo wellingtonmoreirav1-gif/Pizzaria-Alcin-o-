@@ -33,11 +33,12 @@ export function Badge({ children, tone = 'neutral', className }: { children: Rea
   return <span className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold', styles[tone], className)}>{children}</span>;
 }
 
-export function EmptyState({ icon, title, children, action }: { icon?: ReactNode; title: string; children?: ReactNode; action?: ReactNode }) {
+/** `level`: nível do título conforme a página (h2 logo abaixo do h1 da página). */
+export function EmptyState({ icon, title, children, action, level: Title = 'h2' }: { icon?: ReactNode; title: string; children?: ReactNode; action?: ReactNode; level?: 'h2' | 'h3' }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-[var(--radius-card)] border border-dashed border-line px-6 py-12 text-center">
       {icon ? <div className="grid size-14 place-items-center rounded-full bg-mist text-muted">{icon}</div> : null}
-      <h3 className="font-display text-xl font-semibold">{title}</h3>
+      <Title className="font-display text-xl font-semibold">{title}</Title>
       {children ? <div className="max-w-md text-sm text-muted">{children}</div> : null}
       {action}
     </div>
