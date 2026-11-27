@@ -6,7 +6,7 @@ import type { SiteSettings } from '@/types/settings';
 export function WhatsAppCta({ settings }: { settings: SiteSettings }) {
   const chat = `https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent('Olá! Vim pelo site do Alcinão.')}`;
   return (
-    <section aria-labelledby="cta-whatsapp-titulo" className="on-dark bg-[radial-gradient(ellipse_80%_90%_at_50%_0%,var(--color-whatsapp-500)_0%,var(--color-whatsapp-800)_55%,var(--color-whatsapp-900)_100%)] text-white">
+    <section aria-labelledby="cta-whatsapp-titulo" className="bg-[radial-gradient(ellipse_80%_90%_at_50%_0%,var(--color-whatsapp-500)_0%,var(--color-whatsapp-800)_55%,var(--color-whatsapp-900)_100%)] text-white">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between md:py-14">
         <div className="max-w-xl">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-whatsapp-100">Pedido rápido</p>

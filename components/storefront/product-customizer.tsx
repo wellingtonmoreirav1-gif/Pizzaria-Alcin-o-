@@ -201,7 +201,7 @@ export function ProductCustomizer({
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
             {!product.priceConfirmed ? <Badge className="bg-gold-soft text-gold">Preço em conferência</Badge> : !orderable ? <Badge tone="dark">Esgotado</Badge> : null}
-            {product.tags.includes('especial-da-casa') ? <Badge className="bg-gold-bright text-ink-950">Especial da casa</Badge> : null}
+            {product.tags.includes('especial-da-casa') ? <Badge className="bg-gold text-ink-950">Especial da casa</Badge> : null}
             {result.ok && result.line.unitDiscount > 0 ? (
               <Badge tone="brand">Promoção</Badge>
             ) : null}
