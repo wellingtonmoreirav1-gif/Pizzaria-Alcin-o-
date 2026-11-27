@@ -26,7 +26,11 @@ export type Loaded<T> = { data: T; error: null } | { data: T; error: string };
 
 function failure<T>(data: T, error: unknown): Loaded<T> {
   reportError('catalogo', error);
-  cacheLife('seconds');
+  // Em produção, tenta de novo em segundos. Durante o build não: com o banco fora do ar,
+  // um cache "em segundos" no generateMetadata da raiz impedia o build inteiro (e,
+  // com isso, publicar qualquer correção). O build fica com o prazo normal e a
+  // página se atualiza sozinha depois.
+  if (process.env.NEXT_PHASE !== 'phase-production-build') cacheLife('seconds');
   return { data, error: 'Não foi possível carregar os dados agora. Tente novamente em instantes.' };
 }
 

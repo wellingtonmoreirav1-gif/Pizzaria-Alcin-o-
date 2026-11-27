@@ -59,7 +59,7 @@ export function CartDrawer({ suggestions, fetchedAt }: { suggestions: CatalogPro
       }
     >
       {cart.lines.length === 0 ? (
-        <EmptyState icon={<ShoppingBag className="size-6" aria-hidden />} title="Carrinho vazio">
+        <EmptyState icon={<ShoppingBag className="size-6" aria-hidden />} title="Carrinho vazio" level="h3">
           Escolha suas pizzas, pratos e bebidas no cardápio.
         </EmptyState>
       ) : (

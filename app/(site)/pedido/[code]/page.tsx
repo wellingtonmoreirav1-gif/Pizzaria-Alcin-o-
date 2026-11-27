@@ -86,7 +86,7 @@ async function OrderContent({
       </header>
 
       {order.status === 'registered' ? (
-        <section className="space-y-4 rounded-[var(--radius-card)] border-2 border-[#1f8f4e]/50 bg-success-50 p-5 sm:p-6" aria-labelledby="enviar">
+        <section className="space-y-4 rounded-[var(--radius-card)] border-2 border-whatsapp-600/50 bg-success-50 p-5 sm:p-6" aria-labelledby="enviar">
           <h2 id="enviar" className="font-display text-xl font-semibold">
             1 passo para confirmar
           </h2>

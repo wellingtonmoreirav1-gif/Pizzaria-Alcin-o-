@@ -5,7 +5,9 @@ import { createSessionClient } from '@/lib/supabase/server';
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
   const nextParam = request.nextUrl.searchParams.get('next') ?? '/conta';
-  const next = nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/conta';
+  // Só caminhos deste site: "//x" e "/\x" levariam para outro domínio.
+  const target = new URL(nextParam, request.url);
+  const next = nextParam.startsWith('/') && target.origin === request.nextUrl.origin ? `${target.pathname}${target.search}` : '/conta';
   if (code) {
     const supabase = await createSessionClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);

@@ -1,7 +1,9 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { getBrowserClient } from '@/lib/supabase/browser';
+
+/** O cliente do Supabase (login, favoritos na conta) fica fora do carregamento inicial do site. */
+const loadClient = () => import('@/lib/supabase/browser').then((m) => m.getBrowserClient());
 
 const STORAGE_KEY = 'alcinao:favorites:v1';
 
@@ -32,32 +34,44 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- favoritos lidos do localStorage (sistema externo) após hidratar
     setIds(new Set(local));
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
-    const supabase = getBrowserClient();
-    const sync = async (uid: string | null) => {
-      setUserId(uid);
-      if (!uid) return;
-      if (local.length > 0) {
-        await supabase.from('favorites').upsert(
-          local.map((product_id) => ({ user_id: uid, product_id })),
-          { ignoreDuplicates: true },
-        );
-      }
-      const { data } = await supabase.from('favorites').select('product_id');
-      if (data) {
-        const merged = new Set(data.map((f: { product_id: string }) => f.product_id));
-        setIds(merged);
-        try {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...merged]));
-        } catch {
-          // ignorado
+    let unsubscribe = () => {};
+    let cancelled = false;
+    const start = async () => {
+      const supabase = await loadClient();
+      if (cancelled) return;
+      const sync = async (uid: string | null) => {
+        setUserId(uid);
+        if (!uid) return;
+        if (local.length > 0) {
+          await supabase.from('favorites').upsert(
+            local.map((product_id) => ({ user_id: uid, product_id })),
+            { ignoreDuplicates: true },
+          );
         }
-      }
+        const { data } = await supabase.from('favorites').select('product_id');
+        if (data) {
+          const merged = new Set(data.map((f: { product_id: string }) => f.product_id));
+          setIds(merged);
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...merged]));
+          } catch {
+            // ignorado
+          }
+        }
+      };
+      supabase.auth.getSession().then(({ data }) => sync(data.session?.user.id ?? null));
+      const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUserId(session?.user.id ?? null);
+      });
+      unsubscribe = () => sub.subscription.unsubscribe();
     };
-    supabase.auth.getSession().then(({ data }) => sync(data.session?.user.id ?? null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user.id ?? null);
-    });
-    return () => sub.subscription.unsubscribe();
+    // Depois que a página já abriu (quem não tem conta nem percebe).
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
+    idle(() => void start());
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, []);
 
   const toggle = useCallback(
@@ -73,7 +87,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         // ignorado
       }
       if (userId) {
-        const supabase = getBrowserClient();
+        const supabase = await loadClient();
         if (adding) await supabase.from('favorites').upsert({ user_id: userId, product_id: id }, { ignoreDuplicates: true });
         else await supabase.from('favorites').delete().eq('product_id', id);
       }

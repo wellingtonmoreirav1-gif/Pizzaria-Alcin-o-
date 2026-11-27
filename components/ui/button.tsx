@@ -12,7 +12,7 @@ const variants: Record<Variant, string> = {
   ghost: 'text-fg hover:bg-mist',
   outline: 'border border-line bg-surface text-fg hover:border-muted',
   danger: 'bg-surface text-danger border border-brand-200 hover:bg-brand-50',
-  whatsapp: 'bg-[#1f8f4e] text-white hover:bg-[#18733e] shadow-sm',
+  whatsapp: 'bg-whatsapp-600 text-white hover:bg-whatsapp-700 shadow-sm',
 };
 const sizes: Record<Size, string> = {
   sm: 'h-9 px-3 text-sm gap-1.5 rounded-xl',

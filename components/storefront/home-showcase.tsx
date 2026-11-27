@@ -1,38 +1,29 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Layers } from 'lucide-react';
-import type { Catalog, CatalogCategory } from '@/types/catalog';
+import { ArrowRight } from 'lucide-react';
+import type { Catalog, CatalogCategory, CatalogProduct } from '@/types/catalog';
 import type { PublicBanner } from '@/types/settings';
 import { hasActivePromotion, isProductOrderable } from '@/lib/pricing';
 import { useNow } from '@/lib/use-now';
+import { ProductCard } from './product-card';
 import { ProductRail } from './product-rail';
 import { BannerStrip } from './banner-strip';
 import { WeeklyFeature, type WeeklyFeatureConfig } from './weekly-feature';
-import { HOME_HIDDEN_CATEGORIES, MENU_GROUPS, groupOfCategory, type MenuGroup } from '@/lib/catalog/groups';
+import { HOME_HIDDEN_CATEGORIES, MENU_GROUPS, groupOfCategory } from '@/lib/catalog/groups';
 
-/** Sem foto própria da categoria, cada faixa mostra um recorte diferente do desenho do 1º produto. */
-const BAND_CROPS = [
-  { origin: '50% 40%', zoom: 1.1 },
-  { origin: '25% 65%', zoom: 1.7 },
-  { origin: '75% 35%', zoom: 1.4 },
-  { origin: '50% 80%', zoom: 2 },
-  { origin: '20% 30%', zoom: 1.25 },
-  { origin: '80% 70%', zoom: 1.55 },
-];
 /** Destaque da semana (troque aqui o lanche, o nome e a foto em public/destaques/). */
 const WEEKLY_FEATURE: WeeklyFeatureConfig = {
   title: 'X Frango Assado',
   productSlug: 'x-frango',
   image: '/destaques/x-frango-poster.webp',
-  video: { mp4: '/destaques/x-frango-loop.mp4', webm: '/destaques/x-frango-loop.webm' },
+  video: { mp4: '/destaques/x-frango-loop-v2.mp4', webm: '/destaques/x-frango-loop-v2.webm' },
   imageAlt: 'Lanche de frango grelhado com queijo derretido, alface, tomate e cebola roxa no pão com gergelim',
 };
 
 /**
- * Miolo da página inicial: destaque da semana, blocos "Pedir …" e, quando houver, banners
- * e promoções. A história e o fechamento vêm depois (app/(site)/page.tsx).
+ * Miolo da página inicial: destaque da semana, os catálogos com os produtos e, quando houver,
+ * banners e promoções. A história e o fechamento vêm depois (app/(site)/page.tsx).
  */
 export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: PublicBanner[] }) {
   const now = useNow(catalog.fetchedAt);
@@ -42,7 +33,7 @@ export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: 
   return (
     <>
       <WeeklyFeature config={WEEKLY_FEATURE} product={weeklyProduct} fetchedAt={catalog.fetchedAt} />
-      <CategoryTiles catalog={catalog} />
+      <HomeCatalogs catalog={catalog} />
       <BannerStrip banners={banners} now={now} />
       <ProductRail
         id="promocoes"
@@ -57,127 +48,84 @@ export function HomeShowcase({ catalog, banners }: { catalog: Catalog; banners: 
   );
 }
 
-/**
- * Categorias em faixas largas (de ponta a ponta da tela), uma embaixo da outra.
- * Foto: a da categoria (Painel → Fotos e logo) ou, sem ela, a do primeiro produto.
- * Grupos de adicionais (bordas, molhos) não se pedem sozinhos: ficam só no cardápio.
- */
-function CategoryTiles({ catalog }: { catalog: Catalog }) {
-  // Pizzas, lanches, petiscos e pratos ganham um bloco próprio ("Pedir …", com foto); as faixas
-  // ficam só para categorias novas criadas no painel. Bebidas não aparecem aqui.
-  const groups = MENU_GROUPS.filter((g) => catalog.products.some((p) => g.slugs.includes(p.categorySlug)));
-  const tiles = catalog.categories
-    .filter((c: CatalogCategory) => c.sectionType === 'products' && !groupOfCategory(c.slug) && !HOME_HIDDEN_CATEGORIES.includes(c.slug))
-    .map((c) => {
-      const products = catalog.products.filter((p) => p.categoryId === c.id);
-      const image = c.imageUrl ?? products.find((p) => p.imageUrl)?.imageUrl ?? null;
-      return { category: c, count: products.length, image, ownPhoto: Boolean(c.imageUrl) };
-    })
-    .filter((t) => t.count > 0);
-  if (tiles.length === 0 && groups.length === 0) return null;
-  return (
-    <section aria-labelledby="categorias-titulo" className="pb-4 pt-10 sm:pt-14" id="categorias">
-      <div className="mx-auto mb-6 flex max-w-7xl items-end justify-between gap-4 px-4 sm:px-6">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Cardápio</p>
-          <h2 id="categorias-titulo" className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            O que você quer hoje?
-          </h2>
-        </div>
-        <Link href="/cardapio" className="hidden shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-semibold hover:bg-mist sm:inline-flex">
-          Ver cardápio completo <ArrowRight className="size-4" aria-hidden />
-        </Link>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        {groups.map((g) => (
-          <MenuCallout key={g.key} group={g} />
-        ))}
-      </div>
-      {tiles.length > 0 ? (
-        <ul className="mt-1.5 flex flex-col gap-1.5" data-testid="category-bands">
-          {tiles.map(({ category, count, image, ownPhoto }, i) => {
-            const crop = ownPhoto ? null : BAND_CROPS[i % BAND_CROPS.length]!;
-            return (
-              <li key={category.id}>
-                <Link
-                  href={`/cardapio?categoria=${category.slug}`}
-                  className="group relative flex h-24 w-full items-center overflow-hidden bg-wine sm:h-36 lg:h-40"
-                >
-                  {image ? (
-                    <span className="absolute inset-0" style={crop ? { transform: `scale(${crop.zoom})`, transformOrigin: crop.origin } : undefined}>
-                      <Image
-                        src={image}
-                        alt=""
-                        fill
-                        sizes="100vw"
-                        unoptimized={image.endsWith('.svg')}
-                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                      />
-                    </span>
-                  ) : (
-                    <Layers className="absolute right-[12%] size-16 text-gold/40 sm:size-24" aria-hidden />
-                  )}
-                  {/* Escurece o lado do texto para o nome ficar sempre legível sobre a foto. */}
-                  <span className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/70 to-ink-950/10" aria-hidden />
-                  <span className="relative mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-                    <span>
-                      <span className="block font-display text-[1.6rem] font-bold leading-tight text-white drop-shadow sm:text-4xl lg:text-5xl">
-                        {category.name}
-                      </span>
-                      <span className="mt-0.5 block text-sm font-semibold text-gold sm:mt-1 sm:text-base">
-                        {count} {count === 1 ? 'item' : 'itens'}
-                      </span>
-                    </span>
-                    <span
-                      className="grid size-11 shrink-0 place-items-center rounded-full bg-black/40 text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors group-hover:bg-brand-600 sm:size-12"
-                      aria-hidden
-                    >
-                      <ArrowRight className="size-5" />
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-    </section>
-  );
+interface CatalogSection {
+  id: string;
+  title: string;
+  /** Página do pedido passo a passo (pizzas, lanches, petiscos, pratos). */
+  path?: string;
+  categories: { category: CatalogCategory; products: CatalogProduct[] }[];
 }
 
-/** Bloco de um grupo do cardápio: o texto (que é o próprio botão) à esquerda e a foto à direita. */
-function MenuCallout({ group }: { group: MenuGroup }) {
+/**
+ * Catálogos (pizzas, lanches, petiscos, pratos e categorias novas do painel) com os produtos
+ * de cada tipo, na ordem do cardápio. Um atalho no topo leva a cada catálogo. Bebidas ficam
+ * fora (são oferecidas no carrinho); bordas e molhos não se pedem sozinhos.
+ */
+function HomeCatalogs({ catalog }: { catalog: Catalog }) {
+  const productsOf = (c: CatalogCategory) => catalog.products.filter((p) => p.categoryId === c.id).sort((a, b) => a.sortOrder - b.sortOrder);
+  const withProducts = (cats: CatalogCategory[]) => cats.map((category) => ({ category, products: productsOf(category) })).filter((c) => c.products.length > 0);
+  const sections: CatalogSection[] = [
+    ...MENU_GROUPS.map((g) => ({
+      id: `catalogo-${g.key}`,
+      title: g.title,
+      path: g.path,
+      categories: withProducts(g.slugs.map((slug) => catalog.categories.find((c) => c.slug === slug)).filter((c): c is CatalogCategory => Boolean(c))),
+    })),
+    ...withProducts(catalog.categories.filter((c) => c.sectionType === 'products' && !groupOfCategory(c.slug) && !HOME_HIDDEN_CATEGORIES.includes(c.slug))).map(
+      (c) => ({ id: `catalogo-categoria-${c.category.slug}`, title: c.category.name, categories: [c] }),
+    ), // id próprio: não colide com os grupos (ex.: categoria "pizzas")
+  ].filter((s) => s.categories.length > 0);
+  if (sections.length === 0) return null;
+
   return (
-    <div
-      className="relative overflow-hidden bg-[radial-gradient(ellipse_55%_80%_at_72%_55%,var(--color-wine-500)_0%,var(--color-wine-700)_45%,var(--color-wine-900)_100%)]"
-      data-testid="menu-callout"
-    >
-      <div className="mx-auto grid max-w-7xl items-center gap-2 px-4 pb-10 pt-6 sm:px-6 lg:grid-cols-2 lg:gap-10 lg:py-14">
-        <div className="relative order-1 aspect-[3/2] w-full lg:order-2">
-          <Image
-            src={group.image}
-            alt={group.imageAlt}
-            fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-contain drop-shadow-[0_30px_40px_rgba(0,0,0,0.5)]"
-          />
-        </div>
-        <div className="order-2 lg:order-1">
-          <Link
-            href={group.path}
-            className="group/callout inline-flex items-center gap-4 rounded-full bg-brand-600 py-3 pl-8 pr-3 font-display text-[2rem] font-bold leading-tight text-white shadow-[var(--shadow-float)] transition-colors hover:bg-brand-700 sm:text-5xl lg:py-4 lg:pl-10 lg:text-[3.25rem]"
-          >
-            {group.cta}
-            <span
-              className="grid size-12 shrink-0 place-items-center rounded-full bg-white/15 transition-transform group-hover/callout:translate-x-1 sm:size-14 lg:size-16"
-              aria-hidden
-            >
-              <ArrowRight className="size-6 lg:size-7" />
-            </span>
-          </Link>
-          <p className="mt-5 text-lg text-white/80 sm:text-xl">{group.line}</p>
-        </div>
+    <section id="cardapio" aria-labelledby="cardapio-titulo" className="scroll-mt-32 pb-6 pt-10 sm:pt-14">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Cardápio</p>
+        <h2 id="cardapio-titulo" className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          O que você quer hoje?
+        </h2>
+        <nav aria-label="Catálogos" className="-mx-4 mt-5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          <ul className="flex gap-2">
+            {sections.map((s) => (
+              <li key={s.id} className="shrink-0">
+                <a
+                  href={`#${s.id}`}
+                  className="inline-flex h-11 items-center rounded-full border border-line bg-mist px-5 text-base font-semibold text-fg transition-colors hover:border-gold hover:text-gold"
+                >
+                  {s.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-    </div>
+
+      {sections.map((s) => (
+        <div key={s.id} id={s.id} className="mx-auto max-w-7xl scroll-mt-32 px-4 pt-10 sm:px-6 sm:pt-14" data-testid="home-catalog">
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b-2 border-gold/60 pb-2">
+            <h3 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">{s.title}</h3>
+            {/* Para quem prefere uma pergunta por vez (tipo → tamanho → sabor). */}
+            {s.path ? (
+              <Link href={s.path} className="inline-flex min-h-11 items-center gap-1.5 text-base font-semibold text-gold underline-offset-4 hover:underline">
+                Pedir passo a passo <ArrowRight className="size-4" aria-hidden />
+              </Link>
+            ) : null}
+          </div>
+          {s.categories.map(({ category, products }) => (
+            <div key={category.id} className="mt-6">
+              {/* Com um tipo só (ex.: Petiscos), o nome do catálogo já basta. */}
+              {s.categories.length > 1 ? <h4 className="mb-3 text-xl font-semibold text-gold sm:text-2xl">{category.name}</h4> : null}
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+                {products.map((p) => (
+                  <li key={p.id}>
+                    <ProductCard product={p} fetchedAt={catalog.fetchedAt} className="h-full" headingAs={s.categories.length > 1 ? 'h5' : 'h4'} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      ))}
+    </section>
   );
 }

@@ -5,7 +5,7 @@ import { useId } from 'react';
 import { cn } from '@/lib/utils';
 
 const control =
-  'w-full rounded-xl border border-line bg-surface px-3.5 text-[0.95rem] text-fg placeholder:text-muted transition-colors focus:border-fg focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 disabled:bg-mist aria-[invalid=true]:border-brand-600';
+  'w-full rounded-xl border border-line bg-surface px-3.5 text-base text-fg placeholder:text-muted transition-colors focus:border-fg focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 disabled:bg-mist aria-[invalid=true]:border-brand-600';
 
 export function Input({ className, ...props }: ComponentProps<'input'>) {
   return <input className={cn(control, 'h-12', className)} {...props} />;

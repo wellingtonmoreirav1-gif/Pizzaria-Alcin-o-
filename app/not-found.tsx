@@ -1,8 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+
+export const metadata: Metadata = { title: 'Página não encontrada' };
 
 export default function NotFound() {
   return (
-    <main className="grid min-h-[70vh] place-items-center bg-wine px-4 text-center text-white">
+    <main className="grid min-h-screen place-items-center bg-wine px-4 text-center text-white">
       <div className="space-y-5">
         <p className="font-display text-8xl font-bold italic text-brand-600">404</p>
         <h1 className="font-display text-3xl font-semibold">Essa fatia sumiu do forno.</h1>

@@ -98,11 +98,13 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
+  const [otherCity, setOtherCity] = useState(false);
 
-  // Mantém os dados digitados se o cliente sair e voltar (somente nesta aba).
+  // Mantém os dados digitados se o cliente sair e voltar, mesmo que feche o navegador do
+  // app (Instagram, WhatsApp). Ficam só neste aparelho e são apagados quando o pedido é enviado.
   useEffect(() => {
     try {
-      const saved = JSON.parse(sessionStorage.getItem(FORM_STORAGE) ?? 'null') as null | {
+      const saved = JSON.parse(localStorage.getItem(FORM_STORAGE) ?? 'null') as null | {
         name: string;
         phone: string;
         address: AddressForm;
@@ -111,7 +113,7 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
         tableLabel: string;
       };
       if (saved && !prefill) {
-        /* eslint-disable react-hooks/set-state-in-effect -- restaura dados do sessionStorage (sistema externo) após hidratar */
+        /* eslint-disable react-hooks/set-state-in-effect -- restaura dados do localStorage (sistema externo) após hidratar */
         setName(saved.name);
         setPhone(saved.phone);
         setAddress(saved.address);
@@ -126,7 +128,7 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     try {
-      sessionStorage.setItem(FORM_STORAGE, JSON.stringify({ name, phone, address, fulfillment, notes, tableLabel }));
+      localStorage.setItem(FORM_STORAGE, JSON.stringify({ name, phone, address, fulfillment, notes, tableLabel }));
     } catch {
       // ignorado
     }
@@ -247,7 +249,7 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
           ),
         );
         sessionStorage.removeItem(KEY_STORAGE);
-        sessionStorage.removeItem(FORM_STORAGE);
+        localStorage.removeItem(FORM_STORAGE);
       } catch {
         // ignorado
       }
@@ -278,9 +280,13 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
   const closed = status && !status.acceptingOrders;
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]" data-checkout-page>
       <div className="min-w-0 space-y-6">
-        <ol className="flex gap-2 overflow-x-auto scrollbar-none" aria-label="Etapas do pedido">
+        {/* No celular, só o passo atual (a lista inteira não cabe e escondia etapas). */}
+        <p className="text-sm font-semibold text-muted sm:hidden" aria-live="polite">
+          Passo {step + 1} de {steps.length} · <span className="text-fg">{current}</span>
+        </p>
+        <ol className="hidden flex-wrap gap-2 sm:flex" aria-label="Etapas do pedido">
           {steps.map((s, i) => (
             <li key={s} className="flex shrink-0 items-center gap-2 text-sm" aria-current={i === step ? 'step' : undefined}>
               <span
@@ -486,27 +492,51 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                 <Field label="Ponto de referência" className="sm:col-span-6" hint="Ajuda muito o entregador.">
                   {(p) => <Input {...p} value={address.reference} onChange={(e) => setAddress({ ...address, reference: e.target.value })} />}
                 </Field>
-                <Field label="Cidade" required error={errors.city} className="sm:col-span-3">
-                  {(p) => (
-                    <Input {...p} value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} autoComplete="address-level2" />
-                  )}
-                </Field>
-                <Field label="UF" required error={errors.state} className="sm:col-span-1">
-                  {(p) => (
-                    <Input {...p} value={address.state} maxLength={2} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
-                  )}
-                </Field>
-                <Field label="CEP" error={errors.postalCode} className="sm:col-span-2">
-                  {(p) => (
-                    <Input
-                      {...p}
-                      value={address.postalCode}
-                      inputMode="numeric"
-                      onChange={(e) => setAddress({ ...address, postalCode: e.target.value })}
-                      autoComplete="postal-code"
-                    />
-                  )}
-                </Field>
+                {/* Quase todo pedido é da cidade do restaurante: cidade, UF e CEP ficam recolhidos. */}
+                {!otherCity &&
+                address.city === config.defaultCity &&
+                address.state === config.defaultState &&
+                !errors.city &&
+                !errors.state &&
+                !errors.postalCode ? (
+                  <p className="text-sm text-muted sm:col-span-6">
+                    Cidade:{' '}
+                    <strong className="text-fg">
+                      {address.city}/{address.state}
+                    </strong>{' '}
+                    <button
+                      type="button"
+                      onClick={() => setOtherCity(true)}
+                      className="ml-1 inline-flex min-h-11 items-center font-semibold text-gold underline underline-offset-4"
+                    >
+                      Outra cidade?
+                    </button>
+                  </p>
+                ) : (
+                  <>
+                    <Field label="Cidade" required error={errors.city} className="sm:col-span-3">
+                      {(p) => (
+                        <Input {...p} value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} autoComplete="address-level2" />
+                      )}
+                    </Field>
+                    <Field label="UF" required error={errors.state} className="sm:col-span-1">
+                      {(p) => (
+                        <Input {...p} value={address.state} maxLength={2} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
+                      )}
+                    </Field>
+                    <Field label="CEP" error={errors.postalCode} className="sm:col-span-2">
+                      {(p) => (
+                        <Input
+                          {...p}
+                          value={address.postalCode}
+                          inputMode="numeric"
+                          onChange={(e) => setAddress({ ...address, postalCode: e.target.value })}
+                          autoComplete="postal-code"
+                        />
+                      )}
+                    </Field>
+                  </>
+                )}
               </div>
               <LocationStep value={location} onChange={setLocation} defaultCenter={config.mapCenter} />
               <Notice tone="info">
@@ -637,6 +667,17 @@ export function CheckoutFlow({ config, prefill }: { config: CheckoutConfig; pref
                   {errors.confirmed}
                 </p>
               ) : null}
+              {/* O fim do pedido acontece no WhatsApp: diz exatamente o que fazer lá. */}
+              <div className="rounded-2xl bg-mist p-4 text-sm" data-testid="next-steps">
+                <p className="font-semibold">Depois de tocar em “Registrar e enviar”:</p>
+                <ol className="mt-2 list-decimal space-y-1 pl-5 text-muted-strong">
+                  <li>O WhatsApp abre com a mensagem do pedido já escrita.</li>
+                  <li>
+                    Toque em <strong className="text-fg">Enviar</strong> no WhatsApp. Sem isso a equipe não recebe o pedido.
+                  </li>
+                  <li>A equipe responde confirmando o pedido{fulfillment === 'delivery' ? ', a taxa de entrega' : ''} e o tempo.</li>
+                </ol>
+              </div>
               {submitError ? (
                 <Notice tone="danger" title={submitError.title} live>
                   {submitError.message}

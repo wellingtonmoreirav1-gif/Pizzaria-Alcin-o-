@@ -63,7 +63,7 @@ export function Dialog({
         if (e.target === ref.current) onClose();
       }}
       aria-labelledby={titleId}
-      className={cn('p-0 text-fg shadow-[var(--shadow-float)] open:flex open:animate-[var(--animate-sheet)] open:flex-col', position, className)}
+      className={cn('bg-surface p-0 text-fg shadow-[var(--shadow-float)] open:flex open:animate-[var(--animate-sheet)] open:flex-col', position, className)}
     >
       <header className="flex shrink-0 items-start justify-between gap-4 border-b border-line px-5 py-4">
         <div>
@@ -72,7 +72,7 @@ export function Dialog({
           </h2>
           {description ? <p className="mt-0.5 text-sm text-muted">{description}</p> : null}
         </div>
-        <button type="button" onClick={onClose} className="grid size-10 shrink-0 place-items-center rounded-full bg-mist hover:bg-line" aria-label="Fechar">
+        <button type="button" onClick={onClose} className="grid size-11 shrink-0 place-items-center rounded-full bg-mist hover:bg-line" aria-label="Fechar">
           <X className="size-5" aria-hidden />
         </button>
       </header>

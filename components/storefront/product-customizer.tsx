@@ -79,6 +79,8 @@ export function ProductCustomizer({
   const half = dialog.pizzas.find((p) => p.id === halfId) ?? null;
 
   const variant = product.variants.find((v) => v.id === variantId) ?? null;
+  // Tamanhos do maior para o menor (F, GG, G, M, P), igual ao pedido passo a passo.
+  const sizeOrder = product.variants.some((v) => v.sizeCode) ? [...product.variants].sort((a, b) => b.sortOrder - a.sortOrder) : product.variants;
   const orderable = isProductOrderable(product, now);
   const selection: LineSelection = { productId: product.id, variantId, options, quantity, notes: notes.trim() || undefined, halfProductId: halfId };
   const result = useMemo(
@@ -139,7 +141,7 @@ export function ProductCustomizer({
       toast('Item atualizado no carrinho');
     } else {
       cart.add(payload);
-      toast(`${line.productName} adicionado ao carrinho`);
+      toast(`Adicionado ao carrinho: ${line.productName}`);
       dialog.suggestDrink(product);
     }
     onDone?.();
@@ -171,9 +173,16 @@ export function ProductCustomizer({
   };
 
   const footer = (
-    <div className="flex items-center gap-3">
+    // Com letra grande o botão desce para a linha de baixo em vez de sair da tela.
+    <div className="flex flex-wrap items-center gap-3">
       <QuantityStepper value={quantity} onChange={setQuantity} max={product.maxQuantity} />
-      <Button size="lg" className="flex-1" onClick={submit} disabled={!orderable} data-testid="add-to-cart">
+      <Button
+        size="lg"
+        className="h-auto min-h-14 min-w-[12rem] flex-1 whitespace-normal py-2"
+        onClick={submit}
+        disabled={!orderable}
+        data-testid="add-to-cart"
+      >
         <ShoppingBag className="size-5" aria-hidden />
         {!orderable ? 'Indisponível' : editLine ? 'Salvar alterações' : 'Adicionar'}
         {result.ok ? <span className="ml-auto tabular-nums">{formatBRL(result.line.lineTotal)}</span> : null}
@@ -255,7 +264,7 @@ export function ProductCustomizer({
               <Badge tone="dark">Obrigatório</Badge>
             </legend>
             <div className="grid gap-2 sm:grid-cols-2">
-              {product.variants.map((v) => (
+              {sizeOrder.map((v) => (
                 <label
                   key={v.id}
                   className={cn(
@@ -404,7 +413,7 @@ export function ProductCustomizer({
             onChange={(e) => setNotes(e.target.value.slice(0, 200))}
             maxLength={200}
             placeholder="Ex.: sem cebola, carne bem passada…"
-            className="min-h-20 w-full rounded-xl border border-line px-3.5 py-3 text-[0.95rem] focus:border-fg focus:outline-none"
+            className="min-h-20 w-full rounded-xl border border-line px-3.5 py-3 text-base focus:border-fg focus:outline-none focus-visible:outline-3 focus-visible:outline-gold"
           />
           <p className="text-right text-xs text-muted">{notes.length}/200</p>
         </div>
