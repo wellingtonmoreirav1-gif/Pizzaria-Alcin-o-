@@ -19,6 +19,7 @@ const CATEGORIES: Record<string, string[]> = {
   petiscos: ['Batata Frita 400 g', 'Batata Frita com Cheddar e Bacon', 'Isca de Frango Crocante', 'Calabresa do Chef'],
   'pratos-da-casa': ['Picanha na Chapa', 'Filé Mignon na Chapa', 'Filé à Parmegiana de Frango', 'Peixe Frito'],
   lasanhas: ['Lasanha de Carne', 'Lasanha de Frango', 'Lasanha Mista'],
+  calzones: ['Calzone de Carne de Sol', 'Calzone de Frango', 'Calzone do Chef', 'Calzone de Chocolate', 'Calzone de Chocolate Branco'],
   bebidas: ['Coca-Cola', 'Fanta Laranja', 'Cajuína', 'Cerveja', 'H2OH! 500 ml', 'Água mineral 500 ml'],
 };
 
@@ -29,14 +30,14 @@ async function openProduct(page: Page, slug: string) {
   await page.waitForLoadState('networkidle');
 }
 
-/** Pizza Calabresa Grande + borda de Catupiry (R$ 50 + R$ 16), quantidade 2. */
+/** Pizza Calabresa Grande + borda de Catupiry (R$ 55 + R$ 16), quantidade 2. */
 async function addCalabresaG(page: Page) {
   await openProduct(page, 'pizza-calabresa');
   await page.getByText('Grande (G)').click();
   await page.getByText('Catupiry Original').click();
-  await expect(addButton(page)).toContainText('R$ 66,00');
+  await expect(addButton(page)).toContainText('R$ 71,00');
   await page.getByRole('button', { name: 'Aumentar quantidade' }).filter({ visible: true }).click();
-  await expect(addButton(page)).toContainText('R$ 132,00');
+  await expect(addButton(page)).toContainText('R$ 142,00');
   await addButton(page).click();
 }
 
@@ -79,7 +80,7 @@ test('todas as categorias e produtos aparecem no cardápio, na ordem e sem dupli
 
 test('pizza: tamanhos com preços corretos e borda somada conforme o tamanho', async ({ page }) => {
   await openProduct(page, 'pizza-calabresa');
-  const sizes: [string, string][] = [['Pequena (P)', 'R$ 25,00'], ['Média (M)', 'R$ 39,00'], ['Grande (G)', 'R$ 50,00'], ['Gigante (GG)', 'R$ 60,00'], ['Família (F)', 'R$ 75,00']];
+  const sizes: [string, string][] = [['Pequena (P)', 'R$ 30,00'], ['Média (M)', 'R$ 45,00'], ['Grande (G)', 'R$ 55,00'], ['Gigante (GG)', 'R$ 65,00'], ['Família (F)', 'R$ 80,00']];
   for (const [size, price] of sizes) {
     await expect(page.getByRole('radio', { name: new RegExp(size.replace(/[()]/g, '\\$&')) }).locator('..')).toContainText(price);
   }
@@ -88,12 +89,12 @@ test('pizza: tamanhos com preços corretos e borda somada conforme o tamanho', a
   await expect(page.getByText('Escolha o tamanho de Pizza Calabresa.').filter({ visible: true })).toBeVisible();
   await page.getByText('Pequena (P)').click();
   await page.getByText('Requeijão').click();
-  await expect(addButton(page)).toContainText('R$ 29,00');
+  await expect(addButton(page)).toContainText('R$ 34,00');
   await page.getByText('Família (F)').click();
   await page.getByText('Catupiry Original').click();
-  await expect(addButton(page)).toContainText('R$ 95,00');
+  await expect(addButton(page)).toContainText('R$ 100,00');
   await page.getByText('Sem borda recheada').click();
-  await expect(addButton(page)).toContainText('R$ 75,00');
+  await expect(addButton(page)).toContainText('R$ 80,00');
 });
 
 test('carrinho: preço unitário, subtotal, quantidade, remoção e persistência', async ({ page }) => {
@@ -103,13 +104,13 @@ test('carrinho: preço unitário, subtotal, quantidade, remoção e persistênci
   await expect(lines).toContainText('Pizza Calabresa');
   await expect(lines).toContainText('Grande (G)');
   await expect(lines).toContainText('Catupiry Original');
-  await expect(lines.getByTestId('line-unit')).toHaveText('R$ 66,00 cada');
-  await expect(lines.getByTestId('line-subtotal')).toHaveText('R$ 132,00');
-  await expect(page.getByTestId('cart-page-total')).toHaveText('R$ 132,00');
+  await expect(lines.getByTestId('line-unit')).toHaveText('R$ 71,00 cada');
+  await expect(lines.getByTestId('line-subtotal')).toHaveText('R$ 142,00');
+  await expect(page.getByTestId('cart-page-total')).toHaveText('R$ 142,00');
   await page.reload();
-  await expect(page.getByTestId('cart-page-total')).toHaveText('R$ 132,00');
+  await expect(page.getByTestId('cart-page-total')).toHaveText('R$ 142,00');
   await lines.getByRole('button', { name: 'Diminuir quantidade' }).click();
-  await expect(page.getByTestId('cart-page-total')).toHaveText('R$ 66,00');
+  await expect(page.getByTestId('cart-page-total')).toHaveText('R$ 71,00');
   await lines.getByRole('button', { name: /Remover Pizza Calabresa/ }).click();
   await expect(page.getByText('Seu carrinho está vazio').first()).toBeVisible();
 });
@@ -192,12 +193,12 @@ test('pedido com pizza e borda: total correto, registrado uma vez e resumo do Wh
   await page.getByText('Confirmo que os itens').click();
   await page.getByTestId('submit-order').dblclick();
   await expect(page).toHaveURL(/\/pedido\/ALC-/);
-  await expect(page.getByTestId('order-total')).toHaveText('R$ 132,00');
+  await expect(page.getByTestId('order-total')).toHaveText('R$ 142,00');
   const href = await page.getByTestId('open-whatsapp').first().getAttribute('href');
   const message = decodeURIComponent(new URL(href!).searchParams.get('text') ?? '');
-  expect(message).toContain('2x Pizza Calabresa — Grande (G) (R$ 132,00)');
+  expect(message).toContain('2x Pizza Calabresa — Grande (G) (R$ 142,00)');
   expect(message).toContain('Catupiry Original');
-  expect(message).toContain('*Total: R$ 132,00*');
+  expect(message).toContain('*Total: R$ 142,00*');
   const orders = await sql<{ total: string; n: number }>(
     `select o.total, (select count(*)::int from public.order_item_options x join public.order_items i on i.id = x.order_item_id where i.order_id = o.id) as n
        from public.orders o where o.customer_name = 'Cliente Cardápio'`,

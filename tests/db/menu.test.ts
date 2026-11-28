@@ -29,6 +29,7 @@ const EXPECTED: Record<string, string[]> = {
   petiscos: ['Batata Frita 400 g', 'Batata Frita com Cheddar e Bacon', 'Isca de Frango Crocante', 'Calabresa do Chef'],
   'pratos-da-casa': ['Picanha na Chapa', 'Filé Mignon na Chapa', 'Filé à Parmegiana de Frango', 'Peixe Frito'],
   lasanhas: ['Lasanha de Carne', 'Lasanha de Frango', 'Lasanha Mista'],
+  calzones: ['Calzone de Carne de Sol', 'Calzone de Frango', 'Calzone do Chef', 'Calzone de Chocolate', 'Calzone de Chocolate Branco'],
   bebidas: ['Coca-Cola', 'Fanta Laranja', 'Cajuína', 'Cerveja', 'H2OH! 500 ml', 'Água mineral 500 ml'],
 };
 
@@ -50,13 +51,13 @@ describe('cardápio oficial', () => {
     for (const [category, names] of Object.entries(EXPECTED)) {
       expect(rows.filter((r) => r.category === category).map((r) => r.name), category).toEqual(names);
     }
-    expect(rows).toHaveLength(46);
+    expect(rows).toHaveLength(51);
     const cats = await client.query(`select slug, section_type from public.categories where is_active order by sort_order`);
     expect(cats.rows.slice(0, 12).map((c) => c.slug)).toEqual([
-      'pizzas-tradicionais', 'pizzas-especiais', 'pizzas-premium', 'pizzas-doces', 'bordas-recheadas', 'lanches-tradicionais',
+      'pizzas-tradicionais', 'pizzas-especiais', 'pizzas-premium', 'pizzas-doces', 'calzones', 'bordas-recheadas', 'lanches-tradicionais',
       'lanches-especiais', 'beirute', 'petiscos', 'pratos-da-casa', 'lasanhas', 'molhos',
     ]);
-    expect(cats.rows[12]?.slug).toBe('bebidas');
+    expect(cats.rows[13]?.slug).toBe('bebidas');
     expect(cats.rows.filter((c) => c.section_type === 'options').map((c) => c.slug)).toEqual(['bordas-recheadas', 'molhos']);
   });
 
@@ -68,8 +69,7 @@ describe('cardápio oficial', () => {
       expect(p.kind).toBe('pizza');
       expect(p.sizes.map((s) => s.code)).toEqual(['P', 'M', 'G', 'GG', 'F']);
       expect(p.sizes.map((s) => s.name)).toEqual(['Pequena (P)', 'Média (M)', 'Grande (G)', 'Gigante (GG)', 'Família (F)']);
-      const reference = p.category === 'pizzas-especiais' || p.category === 'pizzas-premium';
-      expect(p.sizes.map((s) => Number(s.price)), p.name).toEqual(reference ? [30, 45, 55, 65, 80] : [25, 39, 50, 60, 75]);
+      expect(p.sizes.map((s) => Number(s.price)), p.name).toEqual([30, 45, 55, 65, 80]);
       expect(p.price_confirmed, p.name).toBe(true);
     }
   });
@@ -170,7 +170,7 @@ describe('cardápio oficial', () => {
     await client.query(`update public.products set image_url = 'https://exemplo.supabase.co/storage/v1/object/public/catalog/products/x.webp', base_price = 99 where slug = 'x-bacon'`);
     await client.query(MENU_SQL);
     const rows = await snapshot();
-    expect(rows).toHaveLength(46);
+    expect(rows).toHaveLength(51);
     const xbacon = rows.find((r) => r.name === 'X-Bacon');
     expect(Number(xbacon?.base_price)).toBe(19);
     expect(xbacon?.image_url).toContain('catalog/products/x.webp');

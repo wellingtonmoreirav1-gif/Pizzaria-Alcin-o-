@@ -84,7 +84,7 @@ test('Pedir pizzas: passo a passo tipo → tamanho → sabor', async ({ page }) 
   await expect(page.getByRole('heading', { name: 'Qual sabor?' })).toBeVisible();
   const calabresa = page.getByRole('button', { name: /Pizza Calabresa/ });
   await expect(calabresa).toContainText('Molho, calabresa e orégano.');
-  await expect(calabresa).toContainText('R$ 50,00');
+  await expect(calabresa).toContainText('R$ 55,00');
   await calabresa.click();
   await page.getByTestId('easy-add').click();
   await expect(page.getByText('Adicionado ao carrinho: Pizza Calabresa')).toBeVisible();
@@ -98,7 +98,7 @@ test('metadinha: 2 sabores na G, vale o preço do mais caro', async ({ page }) =
   await page.getByRole('button', { name: /Pizza Calabresa/ }).click();
   const sheet = page.getByRole('dialog', { name: 'Pizza Calabresa' });
   await expect(sheet.getByRole('button', { name: /1 sabor/ })).toHaveAttribute('aria-pressed', 'true');
-  await expect(sheet).toContainText('R$ 50,00');
+  await expect(sheet).toContainText('R$ 55,00');
   await sheet.getByTestId('half-two').click();
   await expect(sheet).toContainText('A outra metade vai ser de quê?');
   // Pode misturar tipos: a especial (R$ 55,00 na G) aparece junto das tradicionais.
